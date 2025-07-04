@@ -7,9 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:salespulse/models/categories_model.dart';
 import 'package:salespulse/models/product_model_pro.dart';
 import 'package:salespulse/models/vente_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
+import 'package:salespulse/services/categ_api.dart';
 import 'package:salespulse/services/stocks_api.dart';
 import 'package:salespulse/services/vente_api.dart';
 
@@ -22,7 +24,9 @@ class InventaireProPage extends StatefulWidget {
 
 class _InventaireProPageState extends State<InventaireProPage> {
   ServicesStocks api = ServicesStocks();
+   ServicesCategories apiCatego = ServicesCategories();
   List<ProductModel> produits = [];
+   List<CategoriesModel> _listCategories = [];
   List<VenteModel> ventesRecentes = [];
 
   String filtreCategorie = "Tout";
@@ -35,6 +39,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
     // Initialisation des données (à remplacer par API réel)
     _loadProducts();
     _loadVentes();
+    _getCategories();
   }
 
 // Fonction pour récupérer les produits depuis le serveur et ajouter au stream
@@ -53,6 +58,25 @@ class _InventaireProPageState extends State<InventaireProPage> {
       }
     } catch (e) {
       debugPrint("error $e");
+    }
+  }
+
+  // OBTENIR LES CATEGORIES API
+  Future<void> _getCategories() async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    try {
+      final res = await apiCatego.getCategories(userId, token);
+      final body = res.data;
+      if (res.statusCode == 200) {
+        setState(() {
+          _listCategories = (body["results"] as List)
+              .map((json) => CategoriesModel.fromJson(json))
+              .toList();
+        });
+      }
+    } catch (e) {
+      Exception(e); // Ajout d'une impression pour le debug
     }
   }
 
@@ -252,165 +276,190 @@ class _InventaireProPageState extends State<InventaireProPage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
-         backgroundColor: const Color(0xff001c30),
-        actions: [
-          IconButton(
-              tooltip: "Exporter en PDF",
-              onPressed: _exportInventairePdf,
-              icon: const Icon(Icons.print, size: 28,color: Colors.deepOrange,))
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            // Filtre + recherche
-            Row(
+  backgroundColor: Colors.grey[100],
+  appBar: AppBar(
+    title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
+    backgroundColor: const Color(0xff001c30),
+    actions: [
+      IconButton(
+        tooltip: "Exporter en PDF",
+        onPressed: _exportInventairePdf,
+        icon: const Icon(Icons.print, size: 28, color: Colors.deepOrange),
+      )
+    ],
+  ),
+  body: Padding(
+    padding: const EdgeInsets.all(12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ==== COLONNE GAUCHE : Ventes récentes ====
+        SizedBox(
+          width: 380,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text("Ventes récentes",
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold, fontSize: 18)),
+                const Divider(),
                 Expanded(
-                  flex: 2,
-                  child: DropdownButtonFormField<String>(
-                    value: filtreCategorie,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.deepPurple.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    items: ["Tout", "Téléphones", "Informatique"]
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        filtreCategorie = value!;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.deepPurple.shade50,
-                      prefixIcon: const Icon(Icons.search),
-                      hintText: "Rechercher un produit",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none),
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
+                  child: ventesRecentes.isEmpty
+                      ? Center(
+                          child: Text("Aucune vente", style: GoogleFonts.poppins()))
+                      : ListView.builder(
+                          itemCount: ventesRecentes.length,
+                          itemBuilder: (context, index) {
+                            final v = ventesRecentes[index];
+                            return ListTile(
+                              leading: const Icon(Icons.receipt_long, color: Colors.orange),
+                              title: Text(v.clientNom ?? "Occasionnel", style: GoogleFonts.poppins()),
+                              subtitle: Text(DateFormat('dd MMM yyyy').format(v.date),
+                                  style: GoogleFonts.poppins()),
+                              trailing: Text(
+                                NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa')
+                                    .format(v.total),
+                                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          },
+                        ),
+                )
               ],
             ),
+          ),
+        ),
 
-            const SizedBox(height: 16),
+        const SizedBox(width: 20),
 
-            Expanded(
-              child: filteredProduits.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                           Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                          Text("Aucun produit trouvé",
-                              style: GoogleFonts.poppins(fontSize: 14)),
-                        ],
-                      ))
-                  : ListView.builder(
-                      itemCount: filteredProduits.length,
-                      itemBuilder: (context, index) {
-                        final p = filteredProduits[index];
-                        final isLowStock = p.stocks <= p.seuilAlerte;
-                        return Card(
-                          elevation: 3,
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: NetworkImage(p.image ?? ""),
-                              radius: 28,
-                            ),
-                            title: Text(p.nom,
-                                style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Catégorie : ${p.categories}",
-                                    style: GoogleFonts.poppins()),
-                                Text("Stock : ${p.stocks} ${p.unite}",
-                                    style: GoogleFonts.poppins(
-                                        color: isLowStock
-                                            ? Colors.red
-                                            : Colors.green,
-                                        fontWeight: FontWeight.bold)),
-                                Text(
-                                    "Prix vente : ${NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa').format(p.prixVente)}",
-                                    style: GoogleFonts.poppins()),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon:
-                                  const Icon(Icons.edit, color: Colors.orange),
-                              onPressed: () => _modifierStock(p),
-                            ),
-                          ),
-                        );
+        // ==== COLONNE DROITE : Filtres + produits ====
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filtres
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      value: filtreCategorie,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.deepPurple.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      items: [
+                        const DropdownMenuItem(value: "Tout", child: Text("Tout")),
+                        ..._listCategories
+                            .map((c) => DropdownMenuItem(
+                                  value: c.name,
+                                  child: Text(c.name),
+                                ))
+                        
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          filtreCategorie = value!;
+                        });
                       },
                     ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Ventes récentes
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(12),
-              height: 300,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Ventes récentes",
-                        style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold, fontSize: 18)),
-                    const Divider(),
-                    ...ventesRecentes.map((v) {
-                      return ListTile(
-                        leading:
-                            const Icon(Icons.receipt_long, color: Colors.orange),
-                        title: Text(v.clientNom ?? "Occasionnel", style: GoogleFonts.poppins()),
-                        subtitle: Text(DateFormat('dd MMM yyyy').format(v.date),
-                            style: GoogleFonts.poppins()),
-                        trailing: Text(
-                          NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa')
-                              .format(v.total),
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 3,
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.deepPurple.shade50,
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: "Rechercher un produit",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
                         ),
-                      );
-                    })
-                  ],
-                ),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
               ),
-            )
-          ],
+              const SizedBox(height: 16),
+              // Liste des produits
+              Expanded(
+                child: filteredProduits.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/not_data.png",
+                                width: 200, height: 200, fit: BoxFit.cover),
+                            const SizedBox(height: 20),
+                            Text("Aucun produit trouvé",
+                                style: GoogleFonts.poppins(fontSize: 14)),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filteredProduits.length,
+                        itemBuilder: (context, index) {
+                          final p = filteredProduits[index];
+                          final isLowStock = p.stocks <= p.seuilAlerte;
+                          return Card(
+                            elevation: 1,
+                            color: Colors.white,
+                            shadowColor: Colors.grey[200],
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(p.image ?? ""),
+                                radius: 28,
+                              ),
+                              title: Text(p.nom,
+                                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Catégorie : ${p.categories}",
+                                      style: GoogleFonts.poppins()),
+                                  Text("Stock : ${p.stocks} ${p.unite}",
+                                      style: GoogleFonts.poppins(
+                                          color: isLowStock ? Colors.red : Colors.green,
+                                          fontWeight: FontWeight.bold)),
+                                  Text(
+                                      "Prix vente : ${NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa').format(p.prixVente)}",
+                                      style: GoogleFonts.poppins()),
+                                ],
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.orange),
+                                onPressed: () => _modifierStock(p),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
+
   }
 }

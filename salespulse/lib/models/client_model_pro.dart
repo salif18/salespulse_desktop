@@ -33,7 +33,7 @@ class ClientModel {
       userId:json["userId"],
       nom: json['nom'],
       contact: json['contact'],
-      image: json["image"],
+      image: json["image"] ?? "",
       creditTotal: json['credit_total'],
       montantPaye: json['montant_paye'],
       reste: json['reste'],

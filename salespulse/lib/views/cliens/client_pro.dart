@@ -20,14 +20,14 @@ class ClientsView extends StatefulWidget {
 
 class _ClientsViewState extends State<ClientsView> {
   ServicesClients api = ServicesClients();
-   final formData = FormData();
+  final formData = FormData();
   final GlobalKey<ScaffoldState> drawerKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
   final StreamController<List<ClientModel>> _listClients =
       StreamController<List<ClientModel>>();
 
-      final ImagePicker _picker = ImagePicker();
-      File? documentFile;
+  final ImagePicker _picker = ImagePicker();
+  File? documentFile;
 
   // Contrôleurs de formulaire pour ajout de client
   final TextEditingController _nom = TextEditingController();
@@ -101,49 +101,52 @@ class _ClientsViewState extends State<ClientsView> {
   }
 
 //AJOUTER CATEGORIE API
- Future<void> _sendToserver(BuildContext context) async {
-  final token = Provider.of<AuthProvider>(context, listen: false).token;
-  final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+  Future<void> _sendToserver(BuildContext context) async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-  if (_globalKey.currentState!.validate()) {
-    // Construction du FormData
-    final formData = FormData.fromMap({
-      "userId": userId,
-      "nom": _nom.text,
-      "contact": _contact.text,
-      "image": await MultipartFile.fromFile( documentFile!.path, filename: documentFile!.path.split('/').last),
-      "credit_total": int.tryParse(_creditTotal.text) ?? 0,
-      "montant_paye": int.tryParse(_montantPaye.text) ?? 0,
-      "reste": int.tryParse(_reste.text) ?? 0,
-      "monnaie": int.tryParse(_monnaie.text) ?? 0,
-      "recommandation": _recommandation.text,
-      "statut": _statut,
-      "date": DateTime.now().toIso8601String(),
-    });
+    if (_globalKey.currentState!.validate()) {
+      // Construction du FormData
+      final formData = FormData.fromMap({
+        "userId": userId,
+        "nom": _nom.text,
+        "contact": _contact.text,
+        "image": await MultipartFile.fromFile(documentFile!.path,
+            filename: documentFile!.path.split('/').last),
+        "credit_total": int.tryParse(_creditTotal.text) ?? 0,
+        "montant_paye": int.tryParse(_montantPaye.text) ?? 0,
+        "reste": int.tryParse(_reste.text) ?? 0,
+        "monnaie": int.tryParse(_monnaie.text) ?? 0,
+        "recommandation": _recommandation.text,
+        "statut": _statut,
+        "date": DateTime.now().toIso8601String(),
+      });
 
-    try {
-      showDialog(
-        context: context,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+      try {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
 
-      final res = await api.postClients(formData, token); // Important : méthode `postClients` doit accepter un `FormData`
+        final res = await api.postClients(formData,
+            token); // Important : méthode `postClients` doit accepter un `FormData`
 
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context); // Ferme le loading
+        // ignore: use_build_context_synchronously
+        Navigator.pop(context); // Ferme le loading
 
-      if (res.statusCode == 201) {
-        api.showSnackBarSuccessPersonalized(context, res.data["message"]);
-        _getClients();
-      } else {
-        api.showSnackBarErrorPersonalized(context, res.data["message"]);
+        if (res.statusCode == 201) {
+          api.showSnackBarSuccessPersonalized(context, res.data["message"]);
+          _getClients();
+        } else {
+          api.showSnackBarErrorPersonalized(context, res.data["message"]);
+        }
+      } catch (e) {
+        Navigator.pop(context);
+        api.showSnackBarErrorPersonalized(context, e.toString());
       }
-    } catch (e) {
-      Navigator.pop(context);
-      api.showSnackBarErrorPersonalized(context, e.toString());
     }
   }
-}
 
   Future<void> _refresh() async {
     await Future.delayed(const Duration(seconds: 3));
@@ -200,11 +203,16 @@ class _ClientsViewState extends State<ClientsView> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  Image.asset("assets/images/erreur.png",
+                                      width: 200,
+                                      height: 200,
+                                      fit: BoxFit.cover),
                                   const SizedBox(height: 20),
                                   Text(
                                     "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas!!",
-                                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400),
                                   ),
                                 ],
                               ))),
@@ -219,14 +227,22 @@ class _ClientsViewState extends State<ClientsView> {
                 )));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return SliverFillRemaining(
-                    child: Center(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                         Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                         const SizedBox(height: 20,),
-                        Text("Pas de données disponibles",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),),
-                      ],
-                    )));
+                    child: Center(
+                        child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("assets/images/not_data.png",
+                        width: 200, height: 200, fit: BoxFit.cover),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      "Pas de données disponibles",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14, fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                )));
               } else {
                 return SliverPadding(
                   padding: const EdgeInsets.all(16),
@@ -257,32 +273,32 @@ class _ClientsViewState extends State<ClientsView> {
                                     'PHOTO',
                                     style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                          color: Colors.black,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.bold),
                                   )),
                                   DataColumn(
                                       label: Text('NOM',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.black,
+                                              color: Colors.black,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('TEL',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.black,
+                                              color: Colors.black,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('STATUT',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.black,
+                                              color: Colors.black,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('ACTION',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.black,
+                                              color: Colors.black,
                                               fontWeight: FontWeight.bold))),
                                 ],
                                 rows: snapshot.data!.map((fournisseur) {
@@ -297,10 +313,15 @@ class _ClientsViewState extends State<ClientsView> {
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
-                                          child: ClipOval(child: Image.asset("assets/images/contact2.png",width: 50,height: 50,)),
+                                          child: ClipOval(
+                                              child: Image.asset(
+                                            "assets/images/contact2.png",
+                                            width: 50,
+                                            height: 50,
+                                          )),
                                         ),
                                       ),
-                      
+
                                       // Nom
                                       DataCell(Text(
                                         fournisseur.nom,
@@ -308,34 +329,89 @@ class _ClientsViewState extends State<ClientsView> {
                                           fontSize: 14,
                                         ),
                                       )),
-                      
+
                                       // Tél
                                       DataCell(
                                           Text(fournisseur.contact.toString(),
                                               style: GoogleFonts.roboto(
                                                 fontSize: 14,
                                               ))),
-                      
+
                                       // Produit
                                       DataCell(Text(fournisseur.statut,
                                           style: GoogleFonts.roboto(
-                                            fontSize: 14,
-                                            color: fournisseur.statut == "actif" ? Colors.green : Colors.black
-                                          ))),
-                      
+                                              fontSize: 14,
+                                              color:
+                                                  fournisseur.statut == "actif"
+                                                      ? Colors.green
+                                                      : Colors.black))),
+
                                       // Action (supprimer)
                                       DataCell(
-                                        IconButton(
-                                          icon: const Icon(
-                                              Icons.person_remove_alt_1,
-                                              color: Colors.red),
-                                          onPressed: () async {
-                                            final confirm =
-                                                await showRemoveClient(context);
-                                            if (confirm == true) {
-                                              _removeClients(fournisseur.id);
-                                            }
-                                          },
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons
+                                                  .badge, color:Colors.blue),
+                                                  tooltip: "Pièce d'identitée",
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (_) => AlertDialog(
+                                                    title: Text(
+                                                        "Pièce du client",
+                                                        style:
+                                                            GoogleFonts.roboto(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                color: Colors
+                                                                    .black)),
+                                                    content: AspectRatio(
+                                                      aspectRatio: 1,
+                                                      child: fournisseur
+                                                              .image.isNotEmpty
+                                                          ? Image.network(
+                                                              fournisseur.image,
+                                                              width: 100,
+                                                              height: 100,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (context,
+                                                                      error,
+                                                                      stackTrace) {
+                                                                return const Icon(
+                                                                    Icons
+                                                                        .image_not_supported,
+                                                                    size: 40,
+                                                                    color: Colors
+                                                                        .grey);
+                                                              },
+                                                            )
+                                                          : const Icon(Icons
+                                                              .image_not_supported),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                  Icons.person_remove_alt_1,
+                                                  color: Colors.red),
+                                                  tooltip: "Supprimer le client",
+                                              onPressed: () async {
+                                                final confirm =
+                                                    await showRemoveClient(
+                                                        context);
+                                                if (confirm == true) {
+                                                  _removeClients(
+                                                      fournisseur.id);
+                                                }
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
@@ -372,192 +448,191 @@ class _ClientsViewState extends State<ClientsView> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder(
-      builder: (context, setStateDialog) { 
-        return AlertDialog(
-          title: Center(
-            child: Text(
-              "Ajouter un client",
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+        return StatefulBuilder(builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: Center(
+              child: Text(
+                "Ajouter un client",
+                style: GoogleFonts.roboto(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _globalKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                   SizedBox(
-                    height: 150,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (documentFile == null)
-                        IconButton(
-                          onPressed: () async {
-                            final imagePicke = await _picker.pickImage(
-                                source: ImageSource.gallery);
-                            if (imagePicke != null) {
-                              setStateDialog(() {
-                                documentFile = File(imagePicke.path);
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.image_sharp, size: 28),
-                        ),
-                        if (documentFile != null)
-                          ClipRRect(
-                            child: Image.file(
-                              documentFile!,
-                              width: 100,
-                              height: 100,
+            content: SingleChildScrollView(
+              child: Form(
+                key: _globalKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 150,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (documentFile == null)
+                            IconButton(
+                              onPressed: () async {
+                                final imagePicke = await _picker.pickImage(
+                                    source: ImageSource.gallery);
+                                if (imagePicke != null) {
+                                  setStateDialog(() {
+                                    documentFile = File(imagePicke.path);
+                                  });
+                                }
+                              },
+                              icon: const Icon(Icons.image_sharp, size: 28),
                             ),
-                          )
+                          if (documentFile != null)
+                            ClipRRect(
+                              child: Image.file(
+                                documentFile!,
+                                width: 100,
+                                height: 100,
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                    TextFormField(
+                      controller: _nom,
+                      validator: (value) => value!.isEmpty
+                          ? 'Veuillez entrer le nom du client'
+                          : null,
+                      decoration: InputDecoration(
+                        hintText: "Nom du client",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.person,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _contact,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) => value!.isEmpty
+                          ? 'Veuillez entrer le numéro du client'
+                          : null,
+                      decoration: InputDecoration(
+                        hintText: "Contact du client",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.phone,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _creditTotal,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "Crédit total",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.attach_money,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _montantPaye,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "Montant payé",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.payments,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _reste,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "Reste à payer",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.money_off,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _monnaie,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "Monnaie",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.monetization_on,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _recommandation,
+                      decoration: InputDecoration(
+                        hintText: "Recommandé par (facultatif)",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.group,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<String>(
+                      value: _statut,
+                      decoration: InputDecoration(
+                        hintText: "Statut du client",
+                        hintStyle: GoogleFonts.roboto(fontSize: 14),
+                        prefixIcon: const Icon(
+                          Icons.info_outline,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'actif', child: Text("Actif")),
+                        DropdownMenuItem(
+                            value: 'inactif', child: Text("Inactif")),
                       ],
+                      onChanged: (value) => setState(() => _statut = value!),
                     ),
-                  ),
-                  TextFormField(
-                    controller: _nom,
-                    validator: (value) => value!.isEmpty
-                        ? 'Veuillez entrer le nom du client'
-                        : null,
-                    decoration: InputDecoration(
-                      hintText: "Nom du client",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.person,
-                        color: Colors.purpleAccent,
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_globalKey.currentState!.validate()) {
+                          _sendToserver(context);
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: Text(
+                        "Enregistrer",
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _contact,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) => value!.isEmpty
-                        ? 'Veuillez entrer le numéro du client'
-                        : null,
-                    decoration: InputDecoration(
-                      hintText: "Contact du client",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.phone,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _creditTotal,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: "Crédit total",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.attach_money,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _montantPaye,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: "Montant payé",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.payments,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _reste,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: "Reste à payer",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.money_off,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _monnaie,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: "Monnaie",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.monetization_on,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _recommandation,
-                    decoration: InputDecoration(
-                      hintText: "Recommandé par (facultatif)",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.group,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    value: _statut,
-                    decoration: InputDecoration(
-                      hintText: "Statut du client",
-                      hintStyle: GoogleFonts.roboto(fontSize: 14),
-                      prefixIcon: const Icon(
-                        Icons.info_outline,
-                        color: Colors.purpleAccent,
-                      ),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'actif', child: Text("Actif")),
-                      DropdownMenuItem(
-                          value: 'inactif', child: Text("Inactif")),
-                    ],
-                    onChanged: (value) => setState(() => _statut = value!),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_globalKey.currentState!.validate()) {
-                        _sendToserver(context);
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: Text(
-                      "Enregistrer",
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      });
+          );
+        });
       },
     );
   }
