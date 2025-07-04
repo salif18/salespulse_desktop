@@ -294,9 +294,16 @@ class _StocksViewState extends State<StocksView> {
                             padding: const EdgeInsets.all(8.0),
                             child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.6,
-                                child: Text(
-                                  "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
-                                  style: GoogleFonts.roboto(fontSize: 14),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                     Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                                    Text(
+                                      "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
+                                      style: GoogleFonts.poppins(fontSize: 14),
+                                    ),
+                                  ],
                                 ))),
                         const SizedBox(width: 40),
                         IconButton(
@@ -310,10 +317,17 @@ class _StocksViewState extends State<StocksView> {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
-                        child: Text(
-                      "Aucune catégorie disponible.",
-                      style: GoogleFonts.poppins(fontSize: 18),
-                    )),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                             Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                         const SizedBox(height: 20,),
+                            Text(
+                                                  "Aucune catégorie disponible.",
+                                                  style: GoogleFonts.poppins(fontSize: 14),
+                                                ),
+                          ],
+                        )),
                   );
                 } else {
                   final articles = snapshot.data!;
@@ -346,247 +360,249 @@ class _StocksViewState extends State<StocksView> {
                   return SliverPadding(
                     padding: const EdgeInsets.all(16),
                     sliver: SliverToBoxAdapter(
-                      child: LayoutBuilder(builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints:
-                                BoxConstraints(minWidth: constraints.maxWidth),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.white,
-                              ),
-                              child: DataTable(
-                                columnSpacing: 20,
-                                headingRowColor:
-                                    WidgetStateProperty.all(Colors.orange),
-                                headingTextStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                                columns: [
-                                  DataColumn(
-                                    label: Text(
-                                      "Photo".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                      child: SingleChildScrollView(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints:
+                                  BoxConstraints(minWidth: constraints.maxWidth),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                ),
+                                child: DataTable(
+                                  columnSpacing: 20,
+                                  headingRowHeight: 35,
+                                  headingRowColor:
+                                      WidgetStateProperty.all(Colors.orange),
+                                  headingTextStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                  columns: [
+                                    DataColumn(
+                                      label: Text(
+                                        "Photo".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Name".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Name".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Categories".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Categories".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Prix d'achat".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Prix d'achat".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Prix de vente".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Prix de vente".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Quantités".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Quantités".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Date".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Date".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  DataColumn(
-                                    label: Text(
-                                      "Actions".toUpperCase(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    DataColumn(
+                                      label: Text(
+                                        "Actions".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                                rows: filteredArticles.map((article) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        (article.image ?? "").isEmpty
-                                            ? Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Image.asset(
-                                                  "assets/images/defaultImg.png",
-                                                  width: 50,
-                                                  height: 50,
+                                  ],
+                                  rows: filteredArticles.map((article) {
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          (article.image ?? "").isEmpty
+                                              ? Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Image.asset(
+                                                    "assets/images/defaultImg.png",
+                                                    width: 50,
+                                                    height: 50,
+                                                  ),
+                                                )
+                                              : Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Image.network(
+                                                    article.image!,
+                                                    width: 50,
+                                                    height: 50,
+                                                  ),
                                                 ),
-                                              )
-                                            : Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Image.network(
-                                                  article.image!,
-                                                  width: 50,
-                                                  height: 50,
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            article.nom,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            article.categories,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            formatPrice.formatNombre(
+                                                article.prixAchat.toString()),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            formatPrice.formatNombre(
+                                                article.prixVente.toString()),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            article.stocks.toString(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            DateFormat("dd MMM yyyy")
+                                                .format(article.dateAchat),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Row(
+                                            children: [
+                                              if (article.stocks > 0)
+                                                Expanded(
+                                                  child: IconButton(
+                                                    icon: const Icon(Icons.edit,
+                                                        color: Colors.blue),
+                                                    onPressed: () {
+                                                      // Action pour supprimer le produit
+                                                    },
+                                                  ),
                                                 ),
-                                              ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          article.nom,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          article.categories,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          formatPrice.formatNombre(
-                                              article.prixAchat.toString()),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          formatPrice.formatNombre(
-                                              article.prixVente.toString()),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          article.stocks.toString(),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          DateFormat("dd MMM yyyy")
-                                              .format(article.dateAchat),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          children: [
-                                            if (article.stocks > 0)
-                                              Expanded(
-                                                child: IconButton(
-                                                  icon: const Icon(Icons.edit,
+                                              if (article.stocks == 0)
+                                                IconButton(
+                                                  icon: const Icon(
+                                                      Icons
+                                                          .disabled_by_default_rounded,
                                                       color: Color.fromARGB(
-                                                          255, 53, 146, 30)),
+                                                          255, 255, 67, 67)),
                                                   onPressed: () {
-                                                    // Action pour supprimer le produit
+                                                    // Action pour éditer le produit
+                                                    _showAlertDelete(
+                                                        context, article);
                                                   },
                                                 ),
-                                              ),
-                                            if (article.stocks == 0)
-                                              IconButton(
-                                                icon: const Icon(
-                                                    Icons
-                                                        .disabled_by_default_rounded,
-                                                    color: Color.fromARGB(
-                                                        255, 255, 67, 67)),
+                                              TextButton.icon(
                                                 onPressed: () {
-                                                  // Action pour éditer le produit
-                                                  _showAlertDelete(
-                                                      context, article);
-                                                },
-                                              ),
-                                            TextButton.icon(
-                                              onPressed: () {
-                                                final token =
-                                                    Provider.of<AuthProvider>(
-                                                            context,
-                                                            listen: false)
-                                                        .token;
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        MouvementsListFiltered(
-                                                      productId: article.id,
-                                                      token: token,
+                                                  final token =
+                                                      Provider.of<AuthProvider>(
+                                                              context,
+                                                              listen: false)
+                                                          .token;
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          MouvementsListFiltered(
+                                                        productId: article.id,
+                                                        token: token,
+                                                      ),
                                                     ),
-                                                  ),
-                                                );
-                                              },
-                                              label: Text(
-                                                "historique",
-                                                style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                              ),
-                                              icon: const Icon(
-                                                  Icons.history_outlined),
-                                            )
-                                          ],
+                                                  );
+                                                },
+                                                label: Text(
+                                                  "historique",
+                                                  style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w400),
+                                                ),
+                                                icon: const Icon(
+                                                    Icons.history_outlined),
+                                              )
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }),
+                          );
+                        }),
+                      ),
                     ),
                   );
                 }

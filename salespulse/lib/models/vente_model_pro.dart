@@ -50,6 +50,7 @@ class VenteModel {
   final String userId;
   final String? clientId;
   final String? clientNom;
+  final String? contactClient;
   final List<ProductItemModel> produits;
   final int total;
   final int montantRecu;
@@ -64,6 +65,7 @@ class VenteModel {
     required this.userId,
     this.clientId,
     this.clientNom,
+    this.contactClient,
     required this.produits,
     required this.total,
     required this.montantRecu,
@@ -81,6 +83,7 @@ class VenteModel {
       clientId: json['clientId'] ?? "",
       // ignore: unnecessary_type_check
       clientNom: json['nom'],
+      contactClient:json["contactClient"] ?? "",
       produits: (json['produits'] as List)
           .map((item) => ProductItemModel.fromJson(item))
           .toList(),
@@ -100,6 +103,7 @@ class VenteModel {
       'userId': userId,
       'clientId': clientId,
       'nom':clientNom,
+      'contactClient':contactClient,
       'produits': produits.map((p) => p.toJson()).toList(),
       'total': total,
       'montant_recu': montantRecu,

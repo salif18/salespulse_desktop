@@ -103,15 +103,24 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   void _ajouterAuPanier() {
     if (selectedProducts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Veuillez sélectionner au moins un produit")),
+        SnackBar(
+          content: Text(
+            "Veuillez sélectionner au moins un produit",
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (_quantiteController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez entrer une quantité")),
+        SnackBar(
+          content: Text("Veuillez entrer une quantité",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -119,7 +128,10 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     int qte = int.tryParse(_quantiteController.text) ?? 1;
     if (qte <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Quantité invalide")),
+        SnackBar(
+            backgroundColor: Colors.red,
+            content: Text("Quantité invalide",
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white))),
       );
       return;
     }
@@ -163,7 +175,17 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
         Provider.of<AuthProvider>(context, listen: false).userName;
     int montantRecu = int.tryParse(_montantRecuController.text) ?? 0;
     monnaie = montantRecu > total ? (montantRecu - total) : 0;
-
+    if (panier.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+              "Votre panier est vide",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+            )),
+      );
+      return;
+    }
     // Calcul du reste (solde dû)
     int reste = total - montantRecu;
     if (reste < 0) reste = 0;
@@ -182,6 +204,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
       "userId": userId,
       "clientId": selectedClient?.id,
       "nom": selectedClient?.nom ?? "Occasionnel",
+      "contactClient": selectedClient?.contact,
       "produits": panier.map((e) => e.toJson()).toList(),
       "total": total,
       "montant_recu": montantRecu,
@@ -197,8 +220,11 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.green,
-          content: Text("Vente enregistrée avec succès", style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),)),
+            backgroundColor: Colors.green,
+            content: Text(
+              "Vente enregistrée avec succès",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+            )),
       );
       setState(() {
         panier.clear();
@@ -229,7 +255,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          backgroundColor: Colors.deepPurple.shade700,
+          backgroundColor: Colors.blueAccent,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
@@ -240,254 +266,327 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     );
 
     return Theme(
-      data: theme,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Nouvelle vente",
-            style: GoogleFonts.poppins(
-                fontSize: 16, color: Colors.white, fontWeight: FontWeight.w700),
+        data: theme,
+        child: Scaffold(
+          backgroundColor: Colors.grey[100],
+          appBar: AppBar(
+            title: Text(
+              "Nouvelle vente",
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            backgroundColor: const Color(0xff001c30),
+            elevation: 2,
           ),
-          backgroundColor: const Color(0xff001c30),
-          elevation: 2,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _ouvrirModalSelectionProduit,
-                onLongPress: () {
-                  if (selectedProducts.isNotEmpty) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Produits sélectionnés"),
-                        content: SizedBox(
-                          width: double.maxFinite,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: selectedProducts.length,
-                            itemBuilder: (context, index) {
-                              final produit = selectedProducts[index];
-                              return ListTile(
-                                leading: Image.network(
-                                  produit.image ?? '',
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Icon(Icons.image_not_supported),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ==== Colonne Gauche (Sélection + Panier) ====
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Sélection produit
+                        GestureDetector(
+                          onTap: _ouvrirModalSelectionProduit,
+                          onLongPress: () {
+                            if (selectedProducts.isNotEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text("Produits sélectionnés"),
+                                  content: SizedBox(
+                                    width: double.maxFinite,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: selectedProducts.length,
+                                      itemBuilder: (context, index) {
+                                        final produit = selectedProducts[index];
+                                        return ListTile(
+                                          leading: Image.network(
+                                            produit.image ?? '',
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Icon(
+                                                    Icons.image_not_supported),
+                                          ),
+                                          title: Text(produit.nom),
+                                          subtitle:
+                                              Text("${produit.prixVente} Fcfa"),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text("Fermer"),
+                                    ),
+                                  ],
                                 ),
-                                title: Text(produit.nom),
-                                subtitle: Text("${produit.prixVente} Fcfa"),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selectedProducts.isNotEmpty
+                                      ? Icons.check_circle
+                                      : Icons.add_shopping_cart,
+                                  color: selectedProducts.isNotEmpty
+                                      ? Colors.green
+                                      : Colors.blue.shade700,
+                                  size: 32,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    selectedProducts.isNotEmpty
+                                        ? "${selectedProducts.length} produit(s) sélectionné(s)"
+                                        : "Choisir un ou plusieurs produits",
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_drop_down,
+                                    color: Colors.blue.shade700),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Quantité
+                        TextField(
+                          controller: _quantiteController,
+                          decoration:
+                              const InputDecoration(labelText: "Quantité"),
+                          keyboardType: TextInputType.number,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        // Ajouter au panier
+                        ElevatedButton.icon(
+                          onPressed: _ajouterAuPanier,
+                          label: const Text("Ajouter au panier"),
+                          icon: const Icon(Icons.shopify_outlined, size: 28),
+                        ),
+                        const SizedBox(height: 16),
+                        // Panier
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: panier.length,
+                            itemBuilder: (context, index) {
+                              final item = panier[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                color: Colors.white,
+                                shadowColor: Colors.grey[100],
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      Image.network(
+                                        item.image ?? '',
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(
+                                                Icons.image_not_supported),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(item.nom,
+                                                style:
+                                                    theme.textTheme.bodyMedium),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                                "Unité: ${item.prixUnitaire} Fcfa",
+                                                style:
+                                                    theme.textTheme.bodySmall),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                                "Sous-total: ${item.sousTotal} Fcfa",
+                                                style:
+                                                    theme.textTheme.bodySmall),
+                                          ],
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.remove_circle_outline,
+                                                color: Colors.red),
+                                            onPressed: () {
+                                              setState(() {
+                                                if (item.quantite > 1) {
+                                                  item.quantite--;
+                                                  item.sousTotal =
+                                                      item.quantite *
+                                                          item.prixUnitaire;
+                                                } else {
+                                                  panier.removeAt(index);
+                                                }
+                                                total = panier.fold(
+                                                    0,
+                                                    (sum, e) =>
+                                                        sum + e.sousTotal);
+                                              });
+                                            },
+                                          ),
+                                          Text('${item.quantite}',
+                                              style:
+                                                  theme.textTheme.bodyMedium),
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.add_circle_outline,
+                                                color: Colors.green),
+                                            onPressed: () {
+                                              if (item.quantite >=
+                                                  item.stocks!) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    backgroundColor:
+                                                        Colors.redAccent,
+                                                    content: Text(
+                                                      "Stock insuffisant pour ${item.nom}",
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                              fontSize: 14,
+                                                              color:
+                                                                  Colors.white),
+                                                    ),
+                                                  ),
+                                                );
+                                                return;
+                                              }
+                                              setState(() {
+                                                item.quantite++;
+                                                item.sousTotal = item.quantite *
+                                                    item.prixUnitaire;
+                                                total = panier.fold(
+                                                    0,
+                                                    (sum, e) =>
+                                                        sum + e.sousTotal);
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
                               );
                             },
                           ),
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Fermer"),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(8),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      if (selectedProducts.isNotEmpty)
-                        const Icon(Icons.check_circle,
-                            color: Colors.green, size: 32)
-                      else
-                        Icon(Icons.add_shopping_cart,
-                            color: Colors.blue.shade700),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          selectedProducts.isNotEmpty
-                              ? "${selectedProducts.length} produit(s) sélectionné(s)"
-                              : "Choisir un ou plusieurs produits",
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
-                      Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _quantiteController,
-                decoration: const InputDecoration(labelText: "Quantité"),
-                keyboardType: TextInputType.number,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _ajouterAuPanier,
-                child: const Text("Ajouter au panier"),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: panier.length,
-                  itemBuilder: (context, index) {
-                    final item = panier[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Image.network(
-                              item.image ?? '',
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const Icon(Icons.image_not_supported),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(item.nom,
-                                      style: theme.textTheme.bodyMedium),
-                                  const SizedBox(height: 4),
-                                  Text("Unité: ${item.prixUnitaire} Fcfa",
-                                      style: theme.textTheme.bodySmall),
-                                  const SizedBox(height: 4),
-                                  Text("Sous-total: ${item.sousTotal} Fcfa",
-                                      style: theme.textTheme.bodySmall),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (item.quantite > 1) {
-                                        item.quantite--;
-                                        item.sousTotal =
-                                            item.quantite * item.prixUnitaire;
-                                      } else {
-                                        panier.removeAt(index);
-                                      }
-                                      total = panier.fold(
-                                          0, (sum, e) => sum + e.sousTotal);
-                                    });
-                                  },
-                                ),
-                                Text('${item.quantite}',
-                                    style: theme.textTheme.bodyMedium),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline,
-                                      color: Colors.green),
-                                  onPressed: () {
-                                    if (item.quantite >= item.stocks!) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          backgroundColor: Colors.redAccent,
-                                            content: Text(
-                                                "Stock insuffisant pour ${item.nom}",
-                                                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),)),
-                                      );
-                                      return;
-                                    }
 
-                                    setState(() {
-                                      item.quantite++;
-                                      item.sousTotal =
-                                          item.quantite * item.prixUnitaire;
-                                      total = panier.fold(
-                                          0, (sum, e) => sum + e.sousTotal);
-                                    });
-                                  },
-                                ),
-                              ],
-                            )
-                          ],
+                  const SizedBox(width: 32),
+
+                  // ==== Colonne Droite (Client + Paiement) ====
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Total: $total Fcfa",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Total: $total Fcfa",
-                style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold, color: Colors.orange.shade800),
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _ouvrirModalSelectionClient,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.person, color: Colors.blue.shade700),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          selectedClient != null
-                              ? selectedClient!.nom
-                              : "Choisir un client (optionnel)",
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: _ouvrirModalSelectionClient,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.person, color: Colors.blue.shade700),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    selectedClient != null
+                                        ? selectedClient!.nom
+                                        : "Choisir un client (optionnel)",
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_drop_down,
+                                    color: Colors.blue.shade700),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          value: selectedPaiement,
+                          decoration: const InputDecoration(
+                              labelText: "Mode de paiement"),
+                          items: modePaiementOptions
+                              .map((e) =>
+                                  DropdownMenuItem(value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => selectedPaiement = val!),
                           style: theme.textTheme.bodyMedium,
                         ),
-                      ),
-                      Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
-                    ],
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _montantRecuController,
+                          decoration:
+                              const InputDecoration(labelText: "Montant reçu"),
+                          keyboardType: TextInputType.number,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: _validerVente,
+                          label: const Text("Valider la vente"),
+                          icon: const Icon(Icons.check, size: 28),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedPaiement,
-                decoration:
-                    const InputDecoration(labelText: "Mode de paiement"),
-                items: modePaiementOptions
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (val) => setState(() => selectedPaiement = val!),
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _montantRecuController,
-                decoration: const InputDecoration(labelText: "Montant reçu"),
-                keyboardType: TextInputType.number,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _validerVente,
-                child: const Text("Valider la vente"),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   void _ouvrirModalSelectionProduit() {
@@ -593,7 +692,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
                       icon: const Icon(Icons.check_circle_outline),
                       label: const Text("Valider la sélection"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
+                        backgroundColor: Colors.orange.shade700,
                         foregroundColor: Colors.white,
                         minimumSize: const Size.fromHeight(45),
                       ),
@@ -664,7 +763,12 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
                       itemBuilder: (context, index) {
                         final client = clientsFiltres[index];
                         return ListTile(
-                          leading: const Icon(Icons.person_outline),
+                          leading: ClipOval(
+                              child: Image.asset(
+                            "assets/images/contact2.png",
+                            width: 50,
+                            height: 50,
+                          )),
                           title: Text(client.nom, style: GoogleFonts.poppins()),
                           subtitle: Text(client.contact),
                           onTap: () {

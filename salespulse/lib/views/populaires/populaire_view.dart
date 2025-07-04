@@ -162,15 +162,29 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
               ? const Center(child: CircularProgressIndicator())
               : errorMessage.isNotEmpty
                   ? Center(
-                      child: Text(errorMessage,
-                          style: const TextStyle(color: Colors.red)))
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                           Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                          Text(errorMessage,
+                              style: const TextStyle(color: Colors.red)),
+                        ],
+                      ))
                   : produitsTendance.isEmpty
                       ? Center(
-                          child: Text(
-                          "Aucune donnée disponible",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14, fontWeight: FontWeight.w400),
-                        ))
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                               Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                              Text(
+                              "Aucune donnée disponible",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 14, fontWeight: FontWeight.w400),
+                                                      ),
+                            ],
+                          ))
                       : LayoutBuilder(builder: (context, constraints) {
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -181,6 +195,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                 color: Colors.white,
                                 child: DataTable(
                                   columnSpacing: 20,
+                                  headingRowHeight: 35,
                                   headingRowColor:
                                       WidgetStateProperty.all(Colors.orange),
                                   headingTextStyle: const TextStyle(
@@ -191,7 +206,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                         label: Text(
                                       "Image".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black),
                                     )),
@@ -199,7 +214,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                         label: Text(
                                       "Nom".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black),
                                     )),
@@ -207,7 +222,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                         label: Text(
                                       "Quantité vendue".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black),
                                     )),
@@ -216,10 +231,13 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                     return DataRow(cells: [
                                       DataCell(
                                         produit.image.isNotEmpty
-                                            ? Image.network(produit.image,
-                                                width: 60,
-                                                height: 60,
-                                                fit: BoxFit.cover)
+                                            ? Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Image.network(produit.image,
+                                                  width: 60,
+                                                  height: 60,
+                                                  fit: BoxFit.cover),
+                                            )
                                             : const Icon(
                                                 Icons.image_not_supported),
                                       ),

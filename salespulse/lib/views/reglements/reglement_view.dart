@@ -46,52 +46,64 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
         backgroundColor: const Color(0xff001c30),
       ),
       body: reglements.isEmpty
-    ? const Center(child: CircularProgressIndicator())
-    : LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minWidth: constraints.maxWidth),
-              child: Container(
-                color: Colors.white,
-                child: DataTable(
-                  columnSpacing: 20,
-                  headingRowColor: WidgetStateProperty.all(Colors.orange.shade700),
-                  headingTextStyle: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                  columns: [
-                    DataColumn(label: Expanded(child: Text("Nom".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black)))),
-                    DataColumn(label: Text("Montant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                    DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                    DataColumn(label: Text("Mode".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                    DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                    DataColumn(label: Text("Opérateur".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                  ],
-                  rows: reglements.map((r) {
-                    return DataRow(cells: [
-                      DataCell(Text(r.nom , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                      DataCell(Text("${r.montant} Fcfa" , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                      DataCell(Text(
-                        r.type,
-                        style: TextStyle(
-                            color: r.type == "règlement"
-                                ? Colors.green
-                                : Colors.red,
-                            fontWeight: FontWeight.bold),
-                      )),
-                      DataCell(Text(r.mode  , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                      DataCell(Text(DateFormat('dd/MM/yyyy').format(r.date) , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                      DataCell(Text(r.operateur , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                    ]);
-                  }).toList(),
+    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                           Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                          Text("Aucun produit trouvé",
+                              style: GoogleFonts.poppins(fontSize: 14)),
+                        ],
+                      ))
+    : SingleChildScrollView(
+      child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              padding: const EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: Container(
+                  color: Colors.white,
+                  child: DataTable(
+                    columnSpacing: 20,
+                    headingRowHeight: 35,
+                    headingRowColor: WidgetStateProperty.all(Colors.orange.shade700),
+                    headingTextStyle: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                    columns: [
+                      DataColumn(label: Expanded(child: Text("Nom".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black)))),
+                      DataColumn(label: Text("Montant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                      DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                      DataColumn(label: Text("Mode".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                      DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                      DataColumn(label: Text("Opérateur".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                    ],
+                    rows: reglements.map((r) {
+                      return DataRow(cells: [
+                        DataCell(Text(r.nom , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
+                        DataCell(Text("${r.montant} Fcfa" , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
+                        DataCell(Text(
+                          r.type,
+                          style: TextStyle(
+                              color: r.type == "règlement"
+                                  ? Colors.green
+                                  : Colors.red,
+                              fontWeight: FontWeight.bold),
+                        )),
+                        DataCell(Text(r.mode  , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
+                        DataCell(Text(DateFormat('dd/MM/yyyy').format(r.date) , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
+                        DataCell(Text(r.operateur , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
+                      ]);
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      )
+            );
+          },
+        ),
+    )
 
     );
   }

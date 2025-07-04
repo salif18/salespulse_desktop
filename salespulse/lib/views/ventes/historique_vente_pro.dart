@@ -8,10 +8,12 @@ import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
+import 'package:salespulse/models/profil_model.dart';
 import 'package:salespulse/models/vente_model_pro.dart';
 import 'package:salespulse/models/client_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/client_api.dart';
+import 'package:salespulse/services/profil_api.dart';
 import 'package:salespulse/services/reglement_api.dart';
 import 'package:salespulse/services/vente_api.dart';
 
@@ -170,13 +172,14 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
             // Zone de filtres
             Container(
               color: const Color.fromARGB(255, 0, 40, 68),
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   Row(
                     children: [
                       SizedBox(
                         width: 500,
+                        height: 40,
                         child: TextField(
                           style: GoogleFonts.roboto(fontSize: 14),
                           decoration: InputDecoration(
@@ -297,7 +300,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                               DropdownMenuItem(
                                   value: null, child: Text("Tous les statuts", style: GoogleFonts.poppins(
                                     fontSize: 13, color: Colors.black))),
-                              ...["payée", "crédit", "en attente"]
+                              ...["payée", "crédit", "partiel"]
                                   .map((statut) {
                                 return DropdownMenuItem(
                                   value: statut,
@@ -325,208 +328,222 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
 
             // Liste des ventes
             Expanded(
-              child: LayoutBuilder(builder: (context, constraints) {
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: BoxBorder.all(color: Colors.grey[200]!),
-                          borderRadius: BorderRadius.circular(10)),
-                      child: DataTable(
-                        columnSpacing: 20,
-                        headingRowColor: WidgetStateProperty.all(Colors.orange),
-                        headingTextStyle: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                        columns: [
-                          DataColumn(
-                              label: Text("Date".toUpperCase(),
+              child: SingleChildScrollView(
+                child: LayoutBuilder(builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: BoxBorder.all(color: Colors.grey[200]!),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: DataTable(
+                          columnSpacing: 20,
+                          headingRowHeight: 35,
+                          headingRowColor: WidgetStateProperty.all(Colors.orange.shade700),
+                          headingTextStyle: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                          columns: [
+                            DataColumn(
+                                label: Text("Date".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Client".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                             DataColumn(
+                                label: Text("Contact".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Total".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Paiement".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Statut".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Reste".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Monnaie".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Produits".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Règlement de compte".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                          ],
+                          rows: filteredVentes.map((vente) {
+                            return DataRow(cells: [
+                              DataCell(Text(
+                                  DateFormat('dd/MM/yyyy').format(vente.date),
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Client".toUpperCase(),
+                              DataCell(Text(vente.clientNom ?? "Occasionnel",
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Total".toUpperCase(),
+                               DataCell(Text(vente.contactClient ?? "Occasionnel",
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Paiement".toUpperCase(),
+                              DataCell(Text("${vente.total} Fcfa",
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Statut".toUpperCase(),
+                              DataCell(Text(vente.typePaiement,
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Reste".toUpperCase(),
+                              DataCell(Text(vente.statut,
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Monnaie".toUpperCase(),
+                              DataCell(Text(vente.reste.toString(),
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Produits".toUpperCase(),
+                              DataCell(Text(vente.monnaie.toString(),
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                          DataColumn(
-                              label: Text("Règlement de compte".toUpperCase(),
-                                  style: GoogleFonts.roboto(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black))),
-                        ],
-                        rows: filteredVentes.map((vente) {
-                          return DataRow(cells: [
-                            DataCell(Text(
-                                DateFormat('dd/MM/yyyy').format(vente.date),
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text(vente.clientNom ?? "Occasionnel",
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text("${vente.total} Fcfa",
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text(vente.typePaiement,
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text(vente.statut,
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text(vente.reste.toString(),
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(Text(vente.monnaie.toString(),
-                                style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black))),
-                            DataCell(
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.list),
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => AlertDialog(
-                                          title: Text("Produits vendus",
-                                              style: GoogleFonts.roboto(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
-                                                  color: Colors.black)),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children:
-                                                vente.produits.map((prod) {
-                                              return ListTile(
-                                                leading: prod.image != null &&
-                                                        prod.image!.isNotEmpty
-                                                    ? Image.network(prod.image!,
-                                                        width: 40)
-                                                    : const Icon(Icons
-                                                        .image_not_supported),
-                                                title: Text(prod.nom),
-                                                subtitle: Text(
-                                                    "${prod.quantite} x ${prod.prixUnitaire} Fcfa",
-                                                    style: GoogleFonts.roboto(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color: Colors.black)),
-                                                trailing: Text(
-                                                    "${prod.sousTotal} Fcfa",
-                                                    style: GoogleFonts.roboto(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color: Colors.black)),
-                                              );
-                                            }).toList(),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.list),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                            title: Text("Produits vendus",
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black)),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children:
+                                                  vente.produits.map((prod) {
+                                                return ListTile(
+                                                  leading: prod.image != null &&
+                                                          prod.image!.isNotEmpty
+                                                      ? Image.network(prod.image!,
+                                                          width: 40)
+                                                      : const Icon(Icons
+                                                          .image_not_supported),
+                                                  title: Text(prod.nom),
+                                                  subtitle: Text(
+                                                      "${prod.quantite} x ${prod.prixUnitaire} Fcfa",
+                                                      style: GoogleFonts.roboto(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          color: Colors.black)),
+                                                  trailing: Text(
+                                                      "${prod.sousTotal} Fcfa",
+                                                      style: GoogleFonts.roboto(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          color: Colors.black)),
+                                                );
+                                              }).toList(),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.print,
-                                        color: Colors.blue),
-                                    tooltip: "Imprimer la facture",
-                                    onPressed: () => generateFacturePdf(vente),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            DataCell(
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (vente.reste > 0)
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blueAccent),
-                                      child: Text('Règlement',
-                                          style: GoogleFonts.roboto(
-                                              fontSize: 14,
-                                              color: Colors.white)),
-                                      onPressed: () => _ouvrirDialogReglement(
-                                          context, vente, "règlement"),
+                                        );
+                                      },
                                     ),
-                                  if (vente.monnaie > 0)
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blueAccent),
-                                      child: Text('Remboursement',
-                                          style: GoogleFonts.roboto(
-                                              fontSize: 14,
-                                              color: Colors.white)),
-                                      onPressed: () => _ouvrirDialogReglement(
-                                          context, vente, "remboursement"),
+                                    IconButton(
+                                      icon: const Icon(Icons.print,
+                                          color: Colors.blue),
+                                      tooltip: "Imprimer la facture",
+                                      onPressed: () => generateFacturePdf(vente),
                                     ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            )
-                          ]);
-                        }).toList(),
+                              DataCell(
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (vente.reste > 0)
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blueAccent),
+                                        child: Text('Règlement',
+                                            style: GoogleFonts.roboto(
+                                                fontSize: 14,
+                                                color: Colors.white)),
+                                        onPressed: () => _ouvrirDialogReglement(
+                                            context, vente, "règlement"),
+                                      ),
+                                    if (vente.monnaie > 0)
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blueAccent),
+                                        child: Text('Remboursement',
+                                            style: GoogleFonts.roboto(
+                                                fontSize: 14,
+                                                color: Colors.white)),
+                                        onPressed: () => _ouvrirDialogReglement(
+                                            context, vente, "remboursement"),
+                                      ),
+                                  ],
+                                ),
+                              )
+                            ]);
+                          }).toList(),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ],
         ),
@@ -653,10 +670,24 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     final pdf = pw.Document();
     final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
     // Charger logo depuis assets
-    const String logoUrl = 'https://exemple.com/logo.png';
+    
+    ProfilModel? profil;
+   
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+  
+    try {
+    final res = await ServicesProfil().getProfils(userId, token);
+    if (res.statusCode == 200) {
+      profil = ProfilModel.fromJson(res.data["profils"]);
+    }
+  } catch (e) {
+    debugPrint("Erreur chargement profil: $e");
+  }
+  
 
     // Tente de charger le logo depuis le net
-    final pw.MemoryImage? logoNetwork = await tryLoadNetworkImage(logoUrl);
+    final pw.MemoryImage? logoNetwork = await tryLoadNetworkImage(profil?.image ?? "");
 
     // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
     final pw.ImageProvider logoLocal = pw.MemoryImage(
@@ -760,6 +791,31 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     final pdf = pw.Document();
     final format = DateFormat('dd/MM/yyyy');
 
+  ProfilModel? profil;
+   
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+  
+    try {
+    final res = await ServicesProfil().getProfils(userId, token);
+    if (res.statusCode == 200) {
+      profil = ProfilModel.fromJson(res.data["profils"]);
+    }
+  } catch (e) {
+    debugPrint("Erreur chargement profil: $e");
+  }
+  
+
+    // Tente de charger le logo depuis le net
+    final pw.MemoryImage? logoNetwork = await tryLoadNetworkImage(profil?.image ?? "");
+
+    // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
+    final pw.ImageProvider logoLocal = pw.MemoryImage(
+      (await rootBundle.load('assets/logos/salespulse.jpg'))
+          .buffer
+          .asUint8List(),
+    );
+
     final total = ventes.fold<int>(0, (sum, v) => sum + v.total);
     final moyenne = ventes.isNotEmpty ? (total ~/ ventes.length) : 0;
 
@@ -801,11 +857,12 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             // En-tête
-            pw.Text("SALES PULSE",
-                style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.orange800)),
+              pw.Image(
+                logoNetwork ?? logoLocal,
+                width: 100,
+                height: 100,
+              ), // Logo centré
+              pw.SizedBox(height: 10),
             pw.SizedBox(height: 20),
             pw.Text("Rapport de ventes",
                 style: const pw.TextStyle(fontSize: 16)),
@@ -924,4 +981,5 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
       ),
     );
   }
+
 }

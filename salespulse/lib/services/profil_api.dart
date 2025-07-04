@@ -1,11 +1,11 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart';
 import 'package:salespulse/https/domaine.dart';
 
 const String domaineName = Domaine.domaineURI;
 
-class ServicesClients {
+class ServicesProfil {
   Dio dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(milliseconds: 15000), // 15 secondes
@@ -14,21 +14,21 @@ class ServicesClients {
   );
 
   //ajouter de categorie pour formulaire
-  postClients(data, token) async {
-    var uri = "$domaineName/clients";
+  postProfil(data, token) async {
+    var uri = "$domaineName/profils";
     return await dio.post(uri,
         data: data,
         options: Options(
           headers: {
-           "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
             "Authorization": "Bearer $token"
           },
         ));
   }
 
   //obtenir categorie pour formulaire
-  getClients(userId, token) async {
-    var uri = "$domaineName/clients/$userId";
+  getProfils(userId, token) async {
+    var uri = "$domaineName/profils/$userId";
     return await dio.get(uri,
         options: Options(
           headers: {
@@ -39,8 +39,8 @@ class ServicesClients {
   }
 
   //supprimer categorie
-  deleteClients(id, token) async {
-    var uri = "$domaineName/clients/single/$id";
+  deleteProfils(id, token) async {
+    var uri = "$domaineName/profils/single/$id";
     return await dio.delete(uri,
         options: Options(
           headers: {
@@ -65,7 +65,7 @@ class ServicesClients {
     ));
   }
 
-  //messade d'affichage des reponse de la requette en cas dechec
+//messade d'affichage des reponse de la requette en cas dechec
   void showSnackBarErrorPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,

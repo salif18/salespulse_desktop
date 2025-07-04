@@ -276,7 +276,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
                     value: filtreCategorie,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.orange.shade100,
+                      fillColor: Colors.deepPurple.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -299,7 +299,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.orange.shade100,
+                      fillColor: Colors.deepPurple.shade50,
                       prefixIcon: const Icon(Icons.search),
                       hintText: "Rechercher un produit",
                       border: OutlineInputBorder(
@@ -317,8 +317,15 @@ class _InventaireProPageState extends State<InventaireProPage> {
             Expanded(
               child: filteredProduits.isEmpty
                   ? Center(
-                      child: Text("Aucun produit trouvé",
-                          style: GoogleFonts.poppins(fontSize: 16)))
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                           Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                          Text("Aucun produit trouvé",
+                              style: GoogleFonts.poppins(fontSize: 14)),
+                        ],
+                      ))
                   : ListView.builder(
                       itemCount: filteredProduits.length,
                       itemBuilder: (context, index) {
@@ -370,7 +377,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
             // Ventes récentes
             Container(
               decoration: BoxDecoration(
-                color: Colors.orange.shade100,
+                color: Colors.deepPurple.shade50,
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.all(12),

@@ -276,9 +276,15 @@ class _DepensesViewState extends State<DepensesView> {
                               child: SizedBox(
                                   width:
                                       MediaQuery.of(context).size.width * 0.6,
-                                  child: Text(
-                                    "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
-                                    style: GoogleFonts.roboto(fontSize: 14),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                      Text(
+                                        "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
+                                       style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),
+                                      ),
+                                    ],
                                   ))),
                           const SizedBox(width: 40),
                           IconButton(
@@ -292,7 +298,14 @@ class _DepensesViewState extends State<DepensesView> {
                     )),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return  SliverFillRemaining(child: Text("Aucun produit disponible.",style: GoogleFonts.poppins(fontSize: 18),));
+                  return  SliverFillRemaining(child: Center(child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                       Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                         const SizedBox(height: 20,),
+                      Text("Aucune dépense disponible.",style: GoogleFonts.poppins(fontSize: 18),),
+                    ],
+                  )));
                 } else {
                   final List<DepensesModel> depenses = snapshot.data!;
                   // Filtrer les articles par la date sélectionnée
@@ -309,8 +322,15 @@ class _DepensesViewState extends State<DepensesView> {
                          if (filteredDepenses.isEmpty) {
                       return SliverFillRemaining(
                         child: Center(
-                          child: Text(
-                              "Aucune dépense trouvé pour la date sélectionnée.",style: GoogleFonts.poppins(fontSize: 18),),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                               Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                         const SizedBox(height: 20,),
+                              Text(
+                                  "Aucune dépense trouvé pour la date sélectionnée.",style: GoogleFonts.poppins(fontSize: 18),),
+                            ],
+                          ),
                         ),
                       );
                     }

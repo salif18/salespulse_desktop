@@ -146,13 +146,6 @@ class _FournisseurViewState extends State<FournisseurView> {
             expandedHeight: 50, // Augmentation de la hauteur
             pinned: true,
             floating: true,
-            // leading: IconButton(
-            //   onPressed: () {
-            //     Navigator.pop(context);
-            //   },
-            //   icon: const Icon(Icons.arrow_back_ios_rounded,
-            //       size: 24, color: Colors.white),
-            // ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 "Mes fournisseurs",
@@ -187,9 +180,15 @@ class _FournisseurViewState extends State<FournisseurView> {
                           padding: const EdgeInsets.all(8.0),
                           child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.6,
-                              child: Text(
-                                "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas!!",
-                                style: GoogleFonts.roboto(fontSize: 14),
+                              child: Column(
+                                children: [
+                                   Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas!!",
+                                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),
+                                  ),
+                                ],
                               ))),
                       const SizedBox(width: 40),
                       IconButton(
@@ -202,140 +201,147 @@ class _FournisseurViewState extends State<FournisseurView> {
                   ),
                 )));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const SliverFillRemaining(
-                    child: Center(child: Text("Pas de données disponibles")));
+                return SliverFillRemaining(
+                    child: Center(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                         Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                        Text("Pas de données disponibles",style: GoogleFonts.poppins(fontSize: 14,fontWeight: FontWeight.w400),),
+                      ],
+                    )));
               } else {
                 return SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverToBoxAdapter(
-                    child: LayoutBuilder(builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(minWidth: constraints.maxWidth),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Colors.white,
-                            ),
-                            child: DataTable(
-                              columnSpacing: 20,
-                              headingRowColor:
-                                  WidgetStateProperty.all(Colors.orange),
-                              headingTextStyle: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                              columns: [
-                                DataColumn(
-                                    label: Text(
-                                  'PHOTO',
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black
-                                      ),
-                                )),
-                                DataColumn(
-                                    label: Text('NOM',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                              color: Colors.black,
-                                            fontWeight: FontWeight.bold))),
-                                DataColumn(
-                                    label: Text('TEL',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                              color: Colors.black,
-                                            fontWeight: FontWeight.bold))),
-                                DataColumn(
-                                    label: Text('PRODUIT',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                              color: Colors.black,
-                                            fontWeight: FontWeight.bold))),
-                                DataColumn(
-                                    label: Text('ADRESSE',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                              color: Colors.black,
-                                            fontWeight: FontWeight.bold))),
-                                DataColumn(
-                                    label: Text('ACTION',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                              color: Colors.black,
-                                            fontWeight: FontWeight.bold))),
-                              ],
-                              rows: snapshot.data!.map((fournisseur) {
-                                return DataRow(
-                                  cells: [
-                                    // Logo
-                                    DataCell(
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                    child: SingleChildScrollView(
+                      child: LayoutBuilder(builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints:
+                                BoxConstraints(minWidth: constraints.maxWidth),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white,
+                              ),
+                              child: DataTable(
+                                columnSpacing: 20,
+                                headingRowHeight: 35,
+                                headingRowColor:
+                                    WidgetStateProperty.all(Colors.orange),
+                                headingTextStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                                columns: [
+                                  DataColumn(
+                                      label: Text(
+                                    'PHOTO',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black
                                         ),
-                                        child: Image.asset(
-                                          "assets/logos/salespulse.jpg",
-                                          fit: BoxFit.cover,
+                                  )),
+                                  DataColumn(
+                                      label: Text('NOM',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                                color: Colors.black,
+                                              fontWeight: FontWeight.bold))),
+                                  DataColumn(
+                                      label: Text('TEL',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                                color: Colors.black,
+                                              fontWeight: FontWeight.bold))),
+                                  DataColumn(
+                                      label: Text('PRODUIT',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                                color: Colors.black,
+                                              fontWeight: FontWeight.bold))),
+                                  DataColumn(
+                                      label: Text('ADRESSE',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                                color: Colors.black,
+                                              fontWeight: FontWeight.bold))),
+                                  DataColumn(
+                                      label: Text('ACTION',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                                color: Colors.black,
+                                              fontWeight: FontWeight.bold))),
+                                ],
+                                rows: snapshot.data!.map((fournisseur) {
+                                  return DataRow(
+                                    cells: [
+                                      // Logo
+                                      DataCell(
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: ClipOval(child: Image.asset("assets/images/contact2.png",width: 50,height: 50,)),
                                         ),
                                       ),
-                                    ),
-
-                                    // Nom
-                                    DataCell(Text(
-                                      fournisseur.prenom,
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 14,
+                      
+                                      // Nom
+                                      DataCell(Text(
+                                        fournisseur.prenom,
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 14,
+                                        ),
+                                      )),
+                      
+                                      // Tél
+                                      DataCell(Text(fournisseur.numero.toString(),
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 14,
+                                          ))),
+                      
+                                      // Produit
+                                      DataCell(Text(fournisseur.produit,
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 14,
+                                          ))),
+                      
+                                      // Adresse
+                                      DataCell(Text(fournisseur.address,
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 14,
+                                          ))),
+                      
+                                      // Action (supprimer)
+                                      DataCell(
+                                        IconButton(
+                                          icon: const Icon(
+                                              Icons.person_remove_alt_1,
+                                              color: Colors.red),
+                                          onPressed: () async {
+                                            final confirm =
+                                                await showRemoveFournisseur(
+                                                    context);
+                                            if (confirm == true) {
+                                              _removeFournisseur(fournisseur.id);
+                                            }
+                                          },
+                                        ),
                                       ),
-                                    )),
-
-                                    // Tél
-                                    DataCell(Text(fournisseur.numero.toString(),
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 14,
-                                        ))),
-
-                                    // Produit
-                                    DataCell(Text(fournisseur.produit,
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 14,
-                                        ))),
-
-                                    // Adresse
-                                    DataCell(Text(fournisseur.address,
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 14,
-                                        ))),
-
-                                    // Action (supprimer)
-                                    DataCell(
-                                      IconButton(
-                                        icon: const Icon(
-                                            Icons.person_remove_alt_1,
-                                            color: Colors.red),
-                                        onPressed: () async {
-                                          final confirm =
-                                              await showRemoveFournisseur(
-                                                  context);
-                                          if (confirm == true) {
-                                            _removeFournisseur(fournisseur.id);
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
                 );
               }

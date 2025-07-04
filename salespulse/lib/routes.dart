@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:salespulse/components/add_photo.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/views/auth/login_view.dart';
 import 'package:salespulse/views/auth/update_password.dart';
@@ -70,6 +71,8 @@ class _RoutesState extends State<Routes> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const PikedPhoto(),
+                const SizedBox(height: 10,),
                 Text(
                   store,
                   style: GoogleFonts.roboto(
@@ -78,11 +81,13 @@ class _RoutesState extends State<Routes> {
                     color: Colors.orange,
                   ),
                 ),
-                Text(
-                  number,
-                  style: GoogleFonts.roboto(
-                    fontSize: 14,
-                    color: const Color.fromARGB(255, 231, 231, 231),
+                Expanded(
+                  child: Text(
+                    number,
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      color: const Color.fromARGB(255, 231, 231, 231),
+                    ),
                   ),
                 ),
               ],
@@ -93,18 +98,18 @@ class _RoutesState extends State<Routes> {
           _buildDrawerItem(
               Icons.stacked_bar_chart_rounded, "Tableau de bord", 0,
               iconBgColor: Colors.orange),
-          _buildDrawerItem(Icons.view_in_ar_outlined, "Stocks", 1,
-              iconBgColor: Colors.blue),
-           _buildDrawerItem(Icons.add, "Ajouter produits", 2,
-              iconBgColor: Colors.blue),
-          _buildDrawerItem(Icons.inventory_2_rounded, "Inventaires", 3,
-              iconBgColor: Colors.deepPurple),
-              _buildDrawerItem(Icons.assignment_add, "Mouvement inventaires", 4,
-              iconBgColor: Colors.deepOrange),
-          _buildDrawerItem(Icons.category, "Catégories", 5,
-              iconBgColor: Colors.green),
-          _buildDrawerItem( Icons.point_of_sale, "Point de vente", 6,
+           _buildDrawerItem( Icons.shopping_cart_outlined, "Point de vente", 1,
               iconBgColor: Colors.teal, ),
+          _buildDrawerItem(Icons.assured_workload_rounded, "Entrepots", 2,
+              iconBgColor: Colors.blue),
+           _buildDrawerItem(Icons.add, "Ajouter produits", 3,
+              iconBgColor: Colors.blue),
+          _buildDrawerItem(Icons.inventory_2_rounded, "Inventaires", 4,
+              iconBgColor: Colors.deepPurple),
+              _buildDrawerItem(Icons.assignment_add, "Mouvement inventaires", 5,
+              iconBgColor: Colors.deepOrange),
+          _buildDrawerItem(Icons.category, "Catégories", 6,
+              iconBgColor: Colors.green),
           _buildDrawerItem(Icons.library_books_sharp, "Historique de ventes", 7,
               iconBgColor: Colors.cyan),
           _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 8,
@@ -167,12 +172,12 @@ class _RoutesState extends State<Routes> {
   Widget _buildPage() {
     final pages = [
       const DashboardView(),
+      const AddVenteScreen(),
       const StocksView(),
       const AddProduitPage(),
       const InventaireProPage(),
       const HistoriqueMouvementsScreen(),
-      const CategoriesView(),
-      const AddVenteScreen(),
+      const CategoriesView(),     
       const HistoriqueVentesScreen(),
       const StatistiquesProduitsPage(),
       const DepensesView(),

@@ -138,10 +138,6 @@ class _CategoriesViewState extends State<CategoriesView> {
           expandedHeight: 50,
           pinned: true,
           floating: true,
-          // leading: IconButton(
-          //     onPressed: () => Navigator.pop(context),
-          //     icon: const Icon(Icons.arrow_back_ios_new_outlined,
-          //         color: Colors.white, size: 20)),
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               "Liste des catégories",
@@ -178,10 +174,17 @@ class _CategoriesViewState extends State<CategoriesView> {
                         padding: const EdgeInsets.all(8.0),
                         child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.6,                          
-                                child: Text(
-                                  "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
-                                  style: GoogleFonts.roboto(
-                                      fontSize: 14),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                     Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                                    Text(
+                                      "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 14,fontWeight: FontWeight.w400),
+                                    ),
+                                  ],
                                 ))
                       ),
                       const SizedBox(width: 40),
@@ -196,9 +199,16 @@ class _CategoriesViewState extends State<CategoriesView> {
                 )),
               );
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const SliverFillRemaining(
+              return SliverFillRemaining(
                 child: Center(
-                  child: Text("Pas de données disponibles"),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                       Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                      Text("Pas de données disponibles",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),),
+                    ],
+                  ),
                 ),
               );
             } else {

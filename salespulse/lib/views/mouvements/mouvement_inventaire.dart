@@ -24,7 +24,7 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
   List<MouvementModel> mouvements = [];
   int currentPage = 1;
   int totalPages = 1;
-  int rowsPerPage = 20;
+  int rowsPerPage = 12;
 
   String selectedType = "Tous";
   DateTime? dateDebut;
@@ -253,14 +253,15 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
                           // ignore: deprecated_member_use
                           headingRowColor: MaterialStateProperty.all(Colors.orange.shade700),
                           headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                          headingRowHeight: 35,
                           columns:[
-                            DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                            DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
                           ],
                           rows: mouvements.map((m) {
                             return DataRow(cells: [

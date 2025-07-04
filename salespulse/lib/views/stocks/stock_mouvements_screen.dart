@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +25,7 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
 
   List<MouvementModel> mouvements = [];
   int page = 1;
-  int limit = 20;
+  int limit = 5;
   int totalPages = 1;
 
   String? selectedType;
@@ -34,10 +34,27 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
 
   bool isLoading = false;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     fetchMouvements();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent &&
+          !isLoading &&
+          page <= totalPages) {
+        fetchMouvements();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchMouvements({bool reset = false}) async {
@@ -129,14 +146,13 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
                       value: 'modification',
                       child: Text('Modification',
                           style: GoogleFonts.poppins(
-                              fontSize: 14, color: Colors.white))),
+                              fontSize: 14, color: Colors.black))),
                 ],
                 onChanged: (value) {
                   tempType = value;
                 },
               ),
               const SizedBox(height: 12),
-              // Date pickers
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700),
@@ -269,7 +285,10 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
         backgroundColor: const Color(0xff001c30),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.orange.shade700,),
+            icon: Icon(
+              Icons.filter_list,
+              color: Colors.orange.shade700,
+            ),
             tooltip: "Filtrer",
             onPressed: _showFilterDialog,
           ),
@@ -277,99 +296,104 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
       ),
       body: mouvements.isEmpty && !isLoading
           ? Center(
-              child: Text(
-                "Aucun mouvement trouvé.",
-                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-              ),
-            )
-          : NotificationListener<ScrollNotification>(
-              onNotification: (scrollInfo) {
-                if (!isLoading &&
-                    scrollInfo.metrics.pixels ==
-                        scrollInfo.metrics.maxScrollExtent &&
-                    page <= totalPages) {
-                  fetchMouvements();
-                  return true;
-                }
-                return false;
-              },
-              child: ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                itemCount: mouvements.length + (isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == mouvements.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  final mouv = mouvements[index];
-                  final color = _colorForType(mouv.type);
-
-                  return Card(
-                    color: Colors.white,
-                    elevation: 3,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0)),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 16),
-                      leading: CircleAvatar(
-                        // ignore: deprecated_member_use
-                        backgroundColor: color.withOpacity(0.2),
-                        child: Icon(
-                          _iconForType(mouv.type),
-                          color: color,
-                          size: 28,
-                        ),
-                      ),
-                      title: Text(
-                        "${mouv.type.toUpperCase()} • ${mouv.quantite}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: color,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          "${DateFormat('dd/MM/yyyy HH:mm').format(mouv.date)}\n${mouv.description}",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      trailing: Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            "Avant : ${mouv.ancienStock}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          Text(
-                            "Après : ${mouv.nouveauStock}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Colors.indigo.shade900,
-                            ),
-                          ),
+                           Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  const SizedBox(height: 20),
+                          Text("Aucun produit trouvé",
+                              style: GoogleFonts.poppins(fontSize: 14)),
                         ],
+                      ))
+          : Column(
+              children: [
+                Expanded(
+                  child:  SingleChildScrollView(
+                  controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(builder: (context, constraints) {
+                          return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                           constraints:  BoxConstraints(minWidth: constraints.maxWidth),
+                        child: Container(
+                          decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                ),
+                          child: DataTable(
+                             columnSpacing: 20,
+                             headingRowHeight: 35,
+                                  headingRowColor:
+                                      WidgetStateProperty.all(Colors.orange),
+                                  headingTextStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                            columns: [
+                               DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black),)),
+                               DataColumn(label: Text("Quantité".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                               DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                               DataColumn(label: Text("Description".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                               DataColumn(label: Text("Avant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                               DataColumn(label: Text("Après".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                            ],
+                            rows: mouvements.map((mouv) {
+                              final color = _colorForType(mouv.type);
+                              return DataRow(cells: [
+                                DataCell(Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: color.withOpacity(0.2),
+                                      radius: 14,
+                                      child: Icon(
+                                        _iconForType(mouv.type),
+                                        color: color,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      mouv.type.toUpperCase(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: color),
+                                    ),
+                                  ],
+                                )),
+                                DataCell(Text(
+                                  mouv.quantite.toString(),
+                                  style: TextStyle(color: color),
+                                )),
+                                DataCell(Text(
+                                    DateFormat('dd/MM/yyyy HH:mm').format(mouv.date))),
+                                DataCell(
+                                  SizedBox(
+                                    width: 250,
+                                    child: Text(
+                                      mouv.description,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(Text(mouv.ancienStock.toString())),
+                                DataCell(Text(
+                                  mouv.nouveauStock.toString(),
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                )),
+                              ]);
+                            }).toList(),
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                    );}
+                                    ),
+                  )),
+                if (isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
     );
   }
