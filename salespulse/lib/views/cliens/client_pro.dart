@@ -101,18 +101,17 @@ class _ClientsViewState extends State<ClientsView> {
   }
 
 //AJOUTER CATEGORIE API
-  Future<void> _sendToserver(BuildContext context) async {
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+Future<void> _sendToserver(BuildContext context) async {
+  final token = Provider.of<AuthProvider>(context, listen: false).token;
+  final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-    if (_globalKey.currentState!.validate()) {
+  if (_globalKey.currentState!.validate()) {
+    try {
       // Construction du FormData
-      final formData = FormData.fromMap({
+      final formDataMap = {
         "userId": userId,
         "nom": _nom.text,
         "contact": _contact.text,
-        "image": await MultipartFile.fromFile(documentFile!.path,
-            filename: documentFile!.path.split('/').last),
         "credit_total": int.tryParse(_creditTotal.text) ?? 0,
         "montant_paye": int.tryParse(_montantPaye.text) ?? 0,
         "reste": int.tryParse(_reste.text) ?? 0,
@@ -120,33 +119,45 @@ class _ClientsViewState extends State<ClientsView> {
         "recommandation": _recommandation.text,
         "statut": _statut,
         "date": DateTime.now().toIso8601String(),
-      });
+      };
 
-      try {
-        showDialog(
-          context: context,
-          builder: (context) =>
-              const Center(child: CircularProgressIndicator()),
+      // Ajoute le fichier seulement s’il est sélectionné
+      if (documentFile != null) {
+        formDataMap["image"] = await MultipartFile.fromFile(
+          documentFile!.path,
+          filename: documentFile!.path.split('/').last,
         );
+      }
 
-        final res = await api.postClients(formData,
-            token); // Important : méthode `postClients` doit accepter un `FormData`
+      final formData = FormData.fromMap(formDataMap);
 
-        // ignore: use_build_context_synchronously
-        Navigator.pop(context); // Ferme le loading
+      showDialog(
+        context: context,
+        builder: (context) =>
+            const Center(child: CircularProgressIndicator()),
+      );
 
-        if (res.statusCode == 201) {
-          api.showSnackBarSuccessPersonalized(context, res.data["message"]);
-          _getClients();
-        } else {
-          api.showSnackBarErrorPersonalized(context, res.data["message"]);
-        }
-      } catch (e) {
+      final res = await api.postClients(formData, token);
+
+      if (!context.mounted) return; // <-- sécurité si le widget est démonté
+      Navigator.pop(context); // Ferme le loader
+       Navigator.pop(context); // Ferme le dialog
+
+      if (res.statusCode == 201) {
+        api.showSnackBarSuccessPersonalized(context, res.data["message"]);
+        _getClients();
+      } else {
+        api.showSnackBarErrorPersonalized(context, res.data["message"]);
+      }
+    } catch (e) {
+      if (context.mounted) {
         Navigator.pop(context);
         api.showSnackBarErrorPersonalized(context, e.toString());
       }
     }
   }
+}
+
 
   Future<void> _refresh() async {
     await Future.delayed(const Duration(seconds: 3));
@@ -351,8 +362,8 @@ class _ClientsViewState extends State<ClientsView> {
                                         Row(
                                           children: [
                                             IconButton(
-                                              icon: const Icon(Icons
-                                                  .badge, color:Colors.blue),
+                                              icon: Icon(Icons
+                                                  .badge, color:Colors.grey[500]),
                                                   tooltip: "Pièce d'identitée",
                                               onPressed: () {
                                                 showDialog(
@@ -368,30 +379,31 @@ class _ClientsViewState extends State<ClientsView> {
                                                                         .w400,
                                                                 color: Colors
                                                                     .black)),
-                                                    content: AspectRatio(
-                                                      aspectRatio: 1,
-                                                      child: fournisseur
-                                                              .image.isNotEmpty
-                                                          ? Image.network(
-                                                              fournisseur.image,
-                                                              width: 100,
-                                                              height: 100,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder:
-                                                                  (context,
-                                                                      error,
-                                                                      stackTrace) {
-                                                                return const Icon(
-                                                                    Icons
-                                                                        .image_not_supported,
-                                                                    size: 40,
-                                                                    color: Colors
-                                                                        .grey);
-                                                              },
-                                                            )
-                                                          : const Icon(Icons
-                                                              .image_not_supported),
-                                                    ),
+                                                    content: fournisseur
+                                                            .image.isNotEmpty
+                                                        ? Image.network(
+                                                            fournisseur.image,
+                                                            width: 500,
+                                                            height: 300,
+                                                            fit: BoxFit.cover,
+                                                            errorBuilder:
+                                                                (context,
+                                                                    error,
+                                                                    stackTrace) {
+                                                              return  Image.asset(
+                                                                      "assets/images/defaultImg.png",
+                                                                      width: 500,
+                                                                      height: 300,
+                                                                      fit: BoxFit.cover,
+                                                                   );
+                                                            },
+                                                          )
+                                                        : Image.asset(
+                                                                      "assets/images/defaultImg.png",
+                                                                      width: 500,
+                                                                      height: 300,
+                                                                      fit: BoxFit.cover,
+                                                                   )
                                                   ),
                                                 );
                                               },
@@ -611,7 +623,6 @@ class _ClientsViewState extends State<ClientsView> {
                       onPressed: () {
                         if (_globalKey.currentState!.validate()) {
                           _sendToserver(context);
-                          Navigator.pop(context);
                         }
                       },
                       style: ElevatedButton.styleFrom(

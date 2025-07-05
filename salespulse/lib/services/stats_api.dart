@@ -1,31 +1,62 @@
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:salespulse/https/domaine.dart';
 
 const String domaineName = Domaine.domaineURI;
 
 class ServicesStats {
   //obtenir depenses
-  getStatsByCategories(token, userId) async {
-    var uri = "$domaineName/ventes/stats-by-categories/$userId";
-    return await http.get(Uri.parse(uri), headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token"
-    }).timeout(const Duration(seconds: 15));
+   Dio dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(milliseconds: 15000), // 15 secondes
+      receiveTimeout: const Duration(milliseconds: 15000), // 15 secondes
+    ),
+  );
+
+
+  getStatsGenerales(userId, selectedMonth,token)async{
+    var uri = "$domaineName/stats/$userId?mois=$selectedMonth";
+    return await dio.get(uri,
+      options: Options(
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token"
+          },
+        ));
   }
 
-  getStatsHebdo(token, userId) async {
-    var uri = "$domaineName/ventes/stats-by-hebdo/$userId";
-    return await http.get(Uri.parse(uri), headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token"
-    }).timeout(const Duration(seconds: 15));
-  }
+  Future<Response> getVentesDuJour(String userId, String token) async {
+  final uri = "$domaineName/stats/jour/$userId";
+  return await dio.get(uri,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      }));
+}
 
-  getStatsByMonth(token, userId) async {
-    var uri = "$domaineName/ventes/stats-by-month/$userId";
-    return await http.get(Uri.parse(uri), headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token"
-    }).timeout(const Duration(seconds: 15));
-  }
+Future<Response> getVentesHebdomadaires(String userId, String token) async {
+  final uri = "$domaineName/stats/semaine/$userId";
+  return await dio.get(uri,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      }));
+}
+
+Future<Response> getVentesAnnee(String userId, String token) async {
+  final uri = "$domaineName/stats/annee/$userId";
+  return await dio.get(uri,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      }));
+}
+
+Future<Response> getClientRetard(String userId, String token) async {
+  final uri = "$domaineName/stats/clients-en-retard/$userId";
+  return await dio.get(uri,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      }));
+}
 }

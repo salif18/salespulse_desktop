@@ -147,24 +147,12 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: const Color(0xff001c30),
-        title: Text(
-          "Historique des ventes",
-          style: GoogleFonts.roboto(
-              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print, size: 24, color: Colors.deepOrange),
-            onPressed: _generatePdf,
-          ),
-          IconButton(
-            icon: Icon(Icons.refresh, size: 24, color: Colors.orange.shade700),
-            onPressed: resetFilters,
-            tooltip: "Réinitialiser les filtres",
-          )
-        ],
-      ),
+          backgroundColor: const Color(0xff001c30),
+          title: Text(
+            "Historique des ventes",
+            style: GoogleFonts.roboto(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          )),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -283,9 +271,9 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                            color: Colors.white,
+                          color: Colors.white,
                         ),
-                         child: DropdownButtonHideUnderline(
+                        child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: selectedStatut,
                             hint: Text("Filtrer par statut",
@@ -298,15 +286,18 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                 color: Colors.black, fontSize: 13),
                             items: [
                               DropdownMenuItem(
-                                  value: null, child: Text("Tous les statuts", style: GoogleFonts.poppins(
-                                    fontSize: 13, color: Colors.black))),
-                              ...["payée", "crédit", "partiel"]
-                                  .map((statut) {
+                                  value: null,
+                                  child: Text("Tous les statuts",
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 13, color: Colors.black))),
+                              ...["payée", "crédit", "partiel"].map((statut) {
                                 return DropdownMenuItem(
                                   value: statut,
-                                  child: Text(statut[0].toUpperCase() +
-                                      statut.substring(1), style: GoogleFonts.poppins(
-                                    fontSize: 13, color: Colors.black87)),
+                                  child: Text(
+                                      statut[0].toUpperCase() +
+                                          statut.substring(1),
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 13, color: Colors.black87)),
                                 );
                               })
                             ],
@@ -319,6 +310,17 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                           ),
                         ),
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.print,
+                            size: 24, color: Colors.deepOrange),
+                        onPressed: _generatePdf,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.refresh,
+                            size: 24, color: Colors.orange.shade700),
+                        onPressed: resetFilters,
+                        tooltip: "Réinitialiser les filtres",
+                      )
                     ],
                   )
                 ],
@@ -333,7 +335,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                      constraints:
+                          BoxConstraints(minWidth: constraints.maxWidth),
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.white,
@@ -342,7 +345,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                         child: DataTable(
                           columnSpacing: 20,
                           headingRowHeight: 35,
-                          headingRowColor: WidgetStateProperty.all(Colors.orange.shade700),
+                          headingRowColor:
+                              WidgetStateProperty.all(Colors.orange.shade700),
                           headingTextStyle: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                           columns: [
@@ -358,7 +362,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black))),
-                             DataColumn(
+                            DataColumn(
                                 label: Text("Contact".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
@@ -420,7 +424,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
                                       color: Colors.black))),
-                               DataCell(Text(vente.contactClient ?? "Occasionnel",
+                              DataCell(Text(
+                                  vente.contactClient ?? "Occasionnel",
                                   style: GoogleFonts.roboto(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
@@ -471,7 +476,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                                 return ListTile(
                                                   leading: prod.image != null &&
                                                           prod.image!.isNotEmpty
-                                                      ? Image.network(prod.image!,
+                                                      ? Image.network(
+                                                          prod.image!,
                                                           width: 40)
                                                       : const Icon(Icons
                                                           .image_not_supported),
@@ -501,7 +507,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                       icon: const Icon(Icons.print,
                                           color: Colors.blue),
                                       tooltip: "Imprimer la facture",
-                                      onPressed: () => generateFacturePdf(vente),
+                                      onPressed: () =>
+                                          generateFacturePdf(vente),
                                     ),
                                   ],
                                 ),
@@ -670,24 +677,24 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     final pdf = pw.Document();
     final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
     // Charger logo depuis assets
-    
+
     ProfilModel? profil;
-   
+
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-  
+
     try {
-    final res = await ServicesProfil().getProfils(userId, token);
-    if (res.statusCode == 200) {
-      profil = ProfilModel.fromJson(res.data["profils"]);
+      final res = await ServicesProfil().getProfils(userId, token);
+      if (res.statusCode == 200) {
+        profil = ProfilModel.fromJson(res.data["profils"]);
+      }
+    } catch (e) {
+      debugPrint("Erreur chargement profil: $e");
     }
-  } catch (e) {
-    debugPrint("Erreur chargement profil: $e");
-  }
-  
 
     // Tente de charger le logo depuis le net
-    final pw.MemoryImage? logoNetwork = await tryLoadNetworkImage(profil?.image ?? "");
+    final pw.MemoryImage? logoNetwork =
+        await tryLoadNetworkImage(profil?.image ?? "");
 
     // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
     final pw.ImageProvider logoLocal = pw.MemoryImage(
@@ -791,23 +798,23 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     final pdf = pw.Document();
     final format = DateFormat('dd/MM/yyyy');
 
-  ProfilModel? profil;
-   
+    ProfilModel? profil;
+
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-  
+
     try {
-    final res = await ServicesProfil().getProfils(userId, token);
-    if (res.statusCode == 200) {
-      profil = ProfilModel.fromJson(res.data["profils"]);
+      final res = await ServicesProfil().getProfils(userId, token);
+      if (res.statusCode == 200) {
+        profil = ProfilModel.fromJson(res.data["profils"]);
+      }
+    } catch (e) {
+      debugPrint("Erreur chargement profil: $e");
     }
-  } catch (e) {
-    debugPrint("Erreur chargement profil: $e");
-  }
-  
 
     // Tente de charger le logo depuis le net
-    final pw.MemoryImage? logoNetwork = await tryLoadNetworkImage(profil?.image ?? "");
+    final pw.MemoryImage? logoNetwork =
+        await tryLoadNetworkImage(profil?.image ?? "");
 
     // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
     final pw.ImageProvider logoLocal = pw.MemoryImage(
@@ -857,12 +864,12 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             // En-tête
-              pw.Image(
-                logoNetwork ?? logoLocal,
-                width: 100,
-                height: 100,
-              ), // Logo centré
-              pw.SizedBox(height: 10),
+            pw.Image(
+              logoNetwork ?? logoLocal,
+              width: 100,
+              height: 100,
+            ), // Logo centré
+            pw.SizedBox(height: 10),
             pw.SizedBox(height: 20),
             pw.Text("Rapport de ventes",
                 style: const pw.TextStyle(fontSize: 16)),
@@ -981,5 +988,4 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
       ),
     );
   }
-
 }

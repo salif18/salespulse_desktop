@@ -129,155 +129,173 @@ class _CategoriesViewState extends State<CategoriesView> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-     backgroundColor: Colors.grey[100],
-      body: CustomScrollView(slivers: [
-        SliverAppBar(
-          backgroundColor: const Color(0xff001c30),
-          expandedHeight: 50,
-          pinned: true,
-          floating: true,
-          flexibleSpace: FlexibleSpaceBar(
-            title: Text(
-              "Liste des catégories",
-              style: GoogleFonts.roboto(
-                  fontSize: 15, color: Colors.white),
-            ),
-          ),
-        ),
-        StreamBuilder<List<CategoriesModel>>(
-          stream: _listCategories.stream,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return SliverFillRemaining(
-                    child: Center(
-                        child: LoadingAnimationWidget.staggeredDotsWave(
-                          color:Colors.orange,
-                            size:50
-                        )),
-                  );
-            } else if (snapshot.hasError) {
-              return SliverFillRemaining(
-                child: Center(
-                    child: Container(
-                  padding: const EdgeInsets.all(8),
-                  height: MediaQuery.of(context).size.width * 0.4,
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20)),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.6,                          
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                     Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                                    Text(
-                                      "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
-                                      style: GoogleFonts.poppins(
-                                          fontSize: 14,fontWeight: FontWeight.w400),
-                                    ),
-                                  ],
-                                ))
-                      ),
-                      const SizedBox(width: 40),
-                      IconButton(
-                          onPressed: () {
-                            _refresh();
-                          },
-                          icon:const Icon(Icons.refresh_outlined,
-                              size:24))
-                    ],
-                  ),
-                )),
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                       Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                      Text("Pas de données disponibles",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),),
-                    ],
-                  ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor:Colors.grey[100],
+    body: RefreshIndicator(
+      onRefresh: () async => _refresh(),
+      child: Container(
+        color: Colors.white,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              backgroundColor: const Color(0xff001c30),
+              elevation: 4,
+              pinned: true,
+              floating: true,
+              expandedHeight: 60,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.only(left: 16, bottom: 12),
+                title: Text(
+                  "Gestion des catégories",
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-              );
-            } else {
-              return SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      CategoriesModel categorie = snapshot.data![index];
-                      return Dismissible(
-                        key: Key(categorie.id.toString()),
-                        direction: DismissDirection.endToStart,
-                        onDismissed: (direction) {
-                          _removeCategories(categorie.id);
-                        },
-                        confirmDismiss: (direction) async {
-                          return await showRemoveCategorie(context);
-                        },
-                        background: Container(
-                          color: Colors.red,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Icon(Icons.delete_outline,
-                                  color: Colors.white, size: 24),
-                              SizedBox(width: 50),
-                            ],
-                          ),
+              ),
+            ),
+        
+            // STREAM
+            StreamBuilder<List<CategoriesModel>>(
+              stream: _listCategories.stream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: LoadingAnimationWidget.staggeredDotsWave(
+                        color: Colors.orange,
+                        size: 50,
+                      ),
+                    ),
+                  );
+                }
+        
+                if (snapshot.hasError) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/erreur.png", width: 160),
+                            const SizedBox(height: 20),
+                            Text(
+                              "Erreur lors du chargement.\nVeuillez vérifier votre connexion.",
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(fontSize: 14),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: () => _refresh(),
+                              icon: const Icon(Icons.refresh, size: 20),
+                              label: const Text("Réessayer"),
+                            ),
+                          ],
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border(
-                                  bottom: BorderSide(
-                                      color:
-                                          Colors.grey[200]!))),
-                          child: ListTile(
-                            title: Text(
-                              categorie.name,
-                              style: GoogleFonts.roboto(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600
+                      ),
+                    ),
+                  );
+                }
+        
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset("assets/images/not_data.png", width: 160),
+                          const SizedBox(height: 20),
+                          Text(
+                            "Aucune catégorie enregistrée.",
+                            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+        
+                // DONNEES DISPONIBLES
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final categorie = snapshot.data![index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Dismissible(
+                            key: Key(categorie.id.toString()),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: const Icon(Icons.delete_forever, color: Colors.white),
+                            ),
+                            confirmDismiss: (direction) async => await showRemoveCategorie(context),
+                            onDismissed: (_) => _removeCategories(categorie.id),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    // ignore: deprecated_member_use
+                                    color: Colors.grey.withOpacity(0.1),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xff001c30),
+                                  child: Text(
+                                    categorie.name[0].toUpperCase(),
+                                    style: GoogleFonts.poppins(color: Colors.white),
+                                  ),
                                 ),
+                                title: Text(
+                                  categorie.name,
+                                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                                ),
+                                trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                                onTap: () {
+                                  // Tu peux ouvrir une page de détails ici
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                    childCount: snapshot.data!.length,
+                        );
+                      },
+                      childCount: snapshot.data!.length,
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-        ),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor:const Color.fromARGB(255, 255, 136, 0),
-        onPressed: () {
-          _addCateShow(context);
-        },
-        child: const Icon(
-          Icons.add,
-          size: 24,
-          color: Colors.white,
+                );
+              },
+            )
+          ],
         ),
       ),
-    );
-  }
+    ),
+    floatingActionButton: FloatingActionButton.extended(
+      backgroundColor: const Color(0xfff57c00),
+      onPressed: () => _addCateShow(context),
+      icon: const Icon(Icons.add, size: 20),
+      label: const Text("Ajouter"),
+    ),
+  );
+}
+
 
 //FENETRE POUR AJOUTER CATEGORIE
   void _addCateShow(BuildContext context) {

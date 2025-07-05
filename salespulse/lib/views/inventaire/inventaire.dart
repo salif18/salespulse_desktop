@@ -280,13 +280,6 @@ class _InventaireProPageState extends State<InventaireProPage> {
   appBar: AppBar(
     title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
     backgroundColor: const Color(0xff001c30),
-    actions: [
-      IconButton(
-        tooltip: "Exporter en PDF",
-        onPressed: _exportInventairePdf,
-        icon: const Icon(Icons.print, size: 28, color: Colors.deepOrange),
-      )
-    ],
   ),
   body: Padding(
     padding: const EdgeInsets.all(12),
@@ -392,6 +385,11 @@ class _InventaireProPageState extends State<InventaireProPage> {
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
+                   IconButton(
+        tooltip: "Exporter en PDF",
+        onPressed: _exportInventairePdf,
+        icon: const Icon(Icons.print, size: 28, color: Colors.deepOrange),
+      )
                 ],
               ),
               const SizedBox(height: 16),

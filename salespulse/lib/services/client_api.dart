@@ -54,8 +54,8 @@ class ServicesClients {
   void showSnackBarSuccessPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
-      backgroundColor: const Color.fromARGB(255, 11, 26, 73),
+          style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
+      backgroundColor: Colors.green,
       duration: const Duration(seconds: 5),
       action: SnackBarAction(
           label: "",
@@ -69,8 +69,8 @@ class ServicesClients {
   void showSnackBarErrorPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
-      backgroundColor: const Color.fromARGB(255, 255, 35, 19),
+          style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.red,
       duration: const Duration(seconds: 5),
       action: SnackBarAction(
         label: "",

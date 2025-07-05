@@ -31,6 +31,12 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
 
   final TextEditingController _quantiteController = TextEditingController();
   final TextEditingController _montantRecuController = TextEditingController();
+  final TextEditingController _remiseGlobaleController =
+      TextEditingController();
+  String _remiseGlobaleType = 'fcfa';
+  final TextEditingController _tvaGlobaleController = TextEditingController();
+  final TextEditingController _livraisonController = TextEditingController();
+  final TextEditingController _emballageController = TextEditingController();
 
   int total = 0;
   int monnaie = 0;
@@ -100,7 +106,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     }
   }
 
-  void _ajouterAuPanier() {
+  void _ajouterAuPanier() async {
     if (selectedProducts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -114,58 +120,57 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
       return;
     }
 
-    if (_quantiteController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Veuillez entrer une quantité",
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
-          backgroundColor: Colors.red,
-        ),
+    for (var produit in selectedProducts) {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => _FormulaireProduitDialog(produit: produit),
       );
-      return;
-    }
 
-    int qte = int.tryParse(_quantiteController.text) ?? 1;
-    if (qte <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            backgroundColor: Colors.red,
-            content: Text("Quantité invalide",
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white))),
-      );
-      return;
-    }
+      if (result != null) {
+        int qte = result["quantite"];
+        int remise = result["remise"];
+        String remiseType = result["remiseType"];
+        int tva = result["tva"];
+        int fraisLivraison = result["fraisLivraison"];
+        int fraisEmballage = result["fraisEmballage"];
 
-    setState(() {
-      for (var produit in selectedProducts) {
-        // Vérifier si produit est déjà dans le panier
-        final index = panier.indexWhere((item) => item.productId == produit.id);
-        if (index != -1) {
-          // Produit déjà présent, incrémenter quantité et recalculer sous-total
-          final existingItem = panier[index];
-          existingItem.quantite += qte;
-          existingItem.sousTotal =
-              existingItem.quantite * existingItem.prixUnitaire;
-        } else {
-          // Nouveau produit, ajouter au panier
-          panier.add(ProductItemModel(
-            productId: produit.id,
-            nom: produit.nom,
-            image: produit.image,
-            prixUnitaire: produit.prixVente,
-            quantite: qte,
-            sousTotal: produit.prixVente * qte,
-            stocks: produit.stocks, // ✅ stock ici
-          ));
-        }
+        // Calcul du prix final
+        int prixInitial = produit.prixVente;
+        int prixRemise = remiseType == 'pourcent'
+            ? (prixInitial - (prixInitial * remise ~/ 100))
+            : (prixInitial - remise);
+
+        if (prixRemise < 0) prixRemise = 0;
+
+        int sousTotalBase = prixRemise * qte;
+
+        int sousTotalTva = (sousTotalBase + fraisLivraison + fraisEmballage);
+        sousTotalTva += (tva > 0) ? (sousTotalBase * tva ~/ 100) : 0;
+
+        final item = ProductItemModel(
+          productId: produit.id,
+          nom: produit.nom,
+          image: produit.image,
+          prixAchat: produit.prixAchat,
+          prixUnitaire: prixRemise,
+          quantite: qte,
+          sousTotal: sousTotalTva,
+          stocks: produit.stocks,
+          remise: remise,
+          remiseType: remiseType,
+          tva: tva,
+          fraisLivraison: fraisLivraison,
+          fraisEmballage: fraisEmballage,
+        );
+
+        setState(() {
+          panier.add(item);
+          total = panier.fold(0, (sum, p) => sum + p.sousTotal);
+        });
       }
+    }
 
-      // Recalculer le total global du panier
-      total = panier.fold(0, (prev, element) => prev + element.sousTotal);
-
-      _quantiteController.clear();
-      selectedProducts.clear();
-    });
+    selectedProducts.clear();
   }
 
   void _validerVente() async {
@@ -186,6 +191,21 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
       );
       return;
     }
+
+    for (var item in panier) {
+  if (item.stocks! < item.quantite) {
+    showDialog(
+
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Stock insuffisant", style: GoogleFonts.poppins(fontSize: 14,color:Colors.black),),
+        content: Text("Le stock de ${item.nom} est insuffisant.",style: GoogleFonts.poppins(fontSize: 14,color:Colors.black)),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text("OK",style: GoogleFonts.poppins(fontSize: 14,color:Colors.black)))],
+      ),
+    );
+    return;
+  }
+}
     // Calcul du reste (solde dû)
     int reste = total - montantRecu;
     if (reste < 0) reste = 0;
@@ -208,6 +228,11 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
       "produits": panier.map((e) => e.toJson()).toList(),
       "total": total,
       "montant_recu": montantRecu,
+      "remiseGlobale": int.tryParse(_remiseGlobaleController.text) ?? 0,
+      "remiseGlobaleType": _remiseGlobaleType,
+      "tvaGlobale": int.tryParse(_tvaGlobaleController.text) ?? 0,
+      "livraison": int.tryParse(_livraisonController.text) ?? 0,
+      "emballage": int.tryParse(_emballageController.text) ?? 0,
       "monnaie": monnaie,
       "reste": reste,
       "type_paiement": selectedPaiement,
@@ -232,6 +257,11 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
         _montantRecuController.clear();
         selectedClientId = null;
         selectedPaiement = 'cash';
+        _remiseGlobaleController.clear();
+        _remiseGlobaleType = 'fcfa';
+        _tvaGlobaleController.clear();
+        _livraisonController.clear();
+        _emballageController.clear();
       });
     }
   }
@@ -574,6 +604,52 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 12),
+                        // Remise globale
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _remiseGlobaleController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: "Remise globale",
+                            suffixText: 'Fcfa',
+                          ),
+                        ),
+// Type de remise
+                        DropdownButtonFormField<String>(
+                          value: _remiseGlobaleType,
+                          decoration:
+                              const InputDecoration(labelText: "Type remise"),
+                          items: ['fcfa', 'pourcent']
+                              .map((v) =>
+                                  DropdownMenuItem(value: v, child: Text(v)))
+                              .toList(),
+                          onChanged: (v) =>
+                              setState(() => _remiseGlobaleType = v!),
+                        ),
+// TVA globale
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _tvaGlobaleController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: "TVA globale (%)"),
+                        ),
+// Frais livraison
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _livraisonController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: "Frais livraison (Fcfa)"),
+                        ),
+// Frais emballage
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _emballageController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: "Frais emballage (Fcfa)"),
+                        ),
                         ElevatedButton.icon(
                           onPressed: _validerVente,
                           label: const Text("Valider la vente"),
@@ -787,6 +863,83 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
           },
         );
       },
+    );
+  }
+}
+
+class _FormulaireProduitDialog extends StatefulWidget {
+  final ProductModel produit;
+  const _FormulaireProduitDialog({required this.produit});
+
+  @override
+  State<_FormulaireProduitDialog> createState() =>
+      _FormulaireProduitDialogState();
+}
+
+class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
+  final _qteCtrl = TextEditingController(text: "1");
+  final _remiseCtrl = TextEditingController(text: "0");
+  final _tvaCtrl = TextEditingController(text: "0");
+  final _livraisonCtrl = TextEditingController(text: "0");
+  final _emballageCtrl = TextEditingController(text: "0");
+  String _remiseType = 'fcfa';
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Détails pour ${widget.produit.nom}"),
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            TextField(
+                controller: _qteCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Quantité")),
+            TextField(
+                controller: _remiseCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Remise")),
+            DropdownButtonFormField<String>(
+              value: _remiseType,
+              items: ["fcfa", "pourcent"]
+                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .toList(),
+              onChanged: (val) => setState(() => _remiseType = val!),
+              decoration: InputDecoration(labelText: "Type de remise"),
+            ),
+            TextField(
+                controller: _tvaCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "TVA (%)")),
+            TextField(
+                controller: _livraisonCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Frais de livraison")),
+            TextField(
+                controller: _emballageCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Frais d'emballage")),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler")),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context, {
+              "quantite": int.tryParse(_qteCtrl.text) ?? 1,
+              "remise": int.tryParse(_remiseCtrl.text) ?? 0,
+              "remiseType": _remiseType,
+              "tva": int.tryParse(_tvaCtrl.text) ?? 0,
+              "fraisLivraison": int.tryParse(_livraisonCtrl.text) ?? 0,
+              "fraisEmballage": int.tryParse(_emballageCtrl.text) ?? 0,
+            });
+          },
+          child: const Text("Ajouter"),
+        )
+      ],
     );
   }
 }

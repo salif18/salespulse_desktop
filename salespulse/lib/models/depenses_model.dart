@@ -3,6 +3,7 @@ class DepensesModel {
   String userId;
   int montants;
   String motifs;
+  final String type;
   DateTime date;
 
   DepensesModel(
@@ -11,6 +12,7 @@ class DepensesModel {
       required this.userId,
       required this.montants,
       required this.motifs,
+      required this.type,
       required this.date
       });
 
@@ -20,6 +22,7 @@ class DepensesModel {
         userId: json["userId"],
         montants: json["montants"],
         motifs: json["motifs"],
+        type: json["type"],
         date: DateTime.parse(json["createdAt"]));
   }
 
@@ -29,6 +32,7 @@ class DepensesModel {
       "userId": userId,
       "montants": montants,
       "motifs": motifs,
+      "type":type,
       "createdAt": date.toIso8601String()
     };
   }

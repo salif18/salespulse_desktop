@@ -32,12 +32,12 @@ class ServicesDepense{
   //obtenir depenses
   getAllDepenses(token,userId) async {
     var uri = "$domaineName/depenses/$userId";
-    return await http.get(
-      Uri.parse(uri),
-     headers: {
+    return await dio.get(
+     uri,
+     options:Options(headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
-      }).timeout(const Duration(seconds: 15));
+      })).timeout(const Duration(seconds: 15));
   }
 
   //messade d'affichage de reponse de la requette recus

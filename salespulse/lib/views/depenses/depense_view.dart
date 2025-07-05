@@ -1,508 +1,344 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/models/depenses_model.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/depense_api.dart';
-import 'package:salespulse/utils/app_size.dart';
-import 'package:salespulse/utils/format_prix.dart';
 
-class DepensesView extends StatefulWidget {
-  const DepensesView({super.key});
+class DepenseScreen extends StatefulWidget {
+  const DepenseScreen({super.key});
 
   @override
-  State<DepensesView> createState() => _DepensesViewState();
+  State<DepenseScreen> createState() => _DepenseScreenState();
 }
 
-class _DepensesViewState extends State<DepensesView> {
-  FormatPrice formatPrice = FormatPrice();
-  final GlobalKey<ScaffoldState> drawerKey = GlobalKey<ScaffoldState>();
-  // Clé Key du formulaire
-  final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
-  DateTime? selectedDate;
-  ServicesDepense api = ServicesDepense();
-  final StreamController<List<DepensesModel>> _streamController =
-      StreamController();
-  List<DepensesModel> filteredDepenses = [];
-  final _montantController = TextEditingController();
-  final _motifController = TextEditingController();
+class _DepenseScreenState extends State<DepenseScreen> {
+  List<DepensesModel> _depenses = [];
+  List<DepensesModel> _filtered = [];
+
+  final TextEditingController _motifController = TextEditingController();
+  final TextEditingController _montantController = TextEditingController();
+  String _selectedType = "transport";
+
+  final List<Map<String, dynamic>> _typeOptions = [
+    {"label": "Transport", "value": "transport", "icon": Icons.directions_car},
+    {"label": "Salaire", "value": "salaire", "icon": Icons.person},
+    {"label": "Paiement", "value": "paiement", "icon": Icons.sell},
+    {"label": "Achat", "value": "achat", "icon": Icons.shopping_cart},
+    {"label": "Autre", "value": "autre", "icon": Icons.receipt},
+  ];
+
+  String _filterType = "all";
+  String _filterMotif = "";
+  DateTimeRange? _filterDate;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts(); // Charger les produits au démarrage
+    _fetchDepenses();
   }
 
-  @override
-  void dispose() {
-    _montantController.dispose();
-    _motifController.dispose();
-    _streamController
-        .close(); // Fermer le StreamController pour éviter les fuites de mémoire
-    super.dispose();
-  }
-
-  //rafraichire la page en actualisanst la requete
-  Future<void> _refresh() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      // Vérifier si le widget est monté avant d'appeler setState()
-      setState(() {
-        _loadProducts(); // Rafraîchir les produits
-      });
-    }
-    if (!mounted) return;
-  }
-
-  Future<void> _loadProducts() async {
+  Future<void> _fetchDepenses() async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final token = Provider.of<AuthProvider>(context, listen: false).token;
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-      final res = await api.getAllDepenses(token, userId);
-      final body = jsonDecode(res.body);
-
+      final res = await ServicesDepense().getAllDepenses(token, userId);
       if (res.statusCode == 200) {
-        final depenses = (body["results"] as List)
-            .map((json) => DepensesModel.fromJson(json))
-            .toList();
-
-        if (!_streamController.isClosed) {
-          _streamController.add(depenses); // Ajouter les dépenses au stream
-        }
-      if (!mounted) return;
+        final List data = res.data["depenses"];
         setState(() {
-          filteredDepenses = selectedDate == null
-              ? depenses
-              : depenses.where((article) {
-                  return article.date.year == selectedDate!.year &&
-                      article.date.month == selectedDate!.month &&
-                      article.date.day == selectedDate!.day;
-                }).toList();
+          _depenses = data.map((e) => DepensesModel.fromJson(e)).toList();
+          _applyFilters();
         });
-        
-      } else {
-        if (!_streamController.isClosed) {
-          _streamController.addError("Failed to load depenses");
-        }
       }
     } catch (e) {
-      if (!_streamController.isClosed) {
-        _streamController.addError("Error loading depenses");
-      }
+      debugPrint("Erreur fetch dépenses: $e");
     }
   }
 
-  // Envoie des donnees vers le server
-  Future<void> _sendNewDepenseToServer() async {
-    if (_globalKey.currentState!.validate()) {
-      final token = Provider.of<AuthProvider>(context, listen: false).token;
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+  void _applyFilters() {
+    setState(() {
+      _filtered = _depenses.where((d) {
+        final typeOk = _filterType == "all" || d.type == _filterType;
+        final motifOk = d.motifs.toLowerCase().contains(_filterMotif.toLowerCase());
+        final dateOk = _filterDate == null || (d.date.isAfter(_filterDate!.start.subtract(const Duration(days: 1))) && d.date.isBefore(_filterDate!.end.add(const Duration(days: 1))));
+        return typeOk && motifOk && dateOk;
+      }).toList();
+    });
+  }
 
-      final data = {
-        "userId": userId,
-        "montants": _montantController.text,
-        "motifs": _motifController.text
-      };
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) {
+        return SizedBox(
+          height: 400,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Filtres", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                TextField(
+                  onChanged: (val) {
+                    _filterMotif = val;
+                    _applyFilters();
+                  },
+                  decoration: const InputDecoration(labelText: "Rechercher un motif"),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: _filterType,
+                  items: [
+                    const DropdownMenuItem(value: "all", child: Text("Tous les types")),
+                    ..._typeOptions.map((t) => DropdownMenuItem(value: t["value"], child: Text(t["label"]))),
+                  ],
+                  onChanged: (val) {
+                    _filterType = val!;
+                    _applyFilters();
+                  },
+                  decoration: const InputDecoration(labelText: "Type"),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () async {
+                    final range = await showDateRangePicker(
+                      context: context,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (range != null) {
+                      _filterDate = range;
+                      _applyFilters();
+                    }
+                  },
+                  icon: const Icon(Icons.date_range, color: Colors.white,),
+                  label: Text("Choisir une période",style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
+                ),
+                const SizedBox(height: 10),
+                TextButton(
+                  style: TextButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      _filterDate = null;
+                      _filterMotif = "";
+                      _filterType = "all";
+                      _applyFilters();
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Text("Réinitialiser les filtres",style: GoogleFonts.roboto(fontSize: 14, color: Colors.white),),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-      try {
-        final res = await api.postNewDepenses(data, token);
-        if (res.statusCode == 201) {
-          // ignore: use_build_context_synchronously
-          api.showSnackBarSuccessPersonalized(context, res.data["message"]);
-          // ignore: use_build_context_synchronously
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const DepensesView()));
-        } else {
-          // ignore: use_build_context_synchronously
-          api.showSnackBarErrorPersonalized(context, res.data["message"]);
-        }
-      } catch (e) {
-        // ignore: use_build_context_synchronously
-        api.showSnackBarErrorPersonalized(context, e.toString());
-      }
+  void _showAddDepenseBottomSheet() {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16, right: 16, top: 24),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text("Nouvelle dépense", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _motifController,
+                  decoration: const InputDecoration(labelText: "Motif", prefixIcon: Icon(Icons.description)),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _montantController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: "Montant", prefixIcon: Icon(Icons.money)),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _selectedType,
+                  decoration: const InputDecoration(labelText: "Type de dépense", prefixIcon: Icon(Icons.category)),
+                  items: _typeOptions.map((option) {
+                    return DropdownMenuItem<String>(
+                      value: option["value"],
+                      child: Row(
+                        children: [
+                          Icon(option["icon"], size: 20),
+                          const SizedBox(width: 10),
+                          Text(option["label"]),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedType = value!),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrange,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  onPressed: () async {
+                    final token = Provider.of<AuthProvider>(context, listen: false).token;
+                    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+
+                    final data = {
+                      "userId": userId,
+                      "motifs": _motifController.text,
+                      "montants": int.tryParse(_montantController.text) ?? 0,
+                      "type": _selectedType,
+                      "date": DateTime.now().toIso8601String(),
+                    };
+
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      final res = await ServicesDepense().postNewDepenses(data, token);
+                      Navigator.pop(context);
+                      if (res.statusCode == 201) {
+                        _motifController.clear();
+                        _montantController.clear();
+                        setState(() => _selectedType = "transport");
+                        Navigator.pop(context);
+                        _fetchDepenses();
+                      }
+                    } catch (e) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  icon: const Icon(Icons.check, color: Colors.white,),
+                  label: Text("Enregistrer", style: GoogleFonts.roboto(fontSize: 14, color: Colors.white),),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type) {
+      case 'transport': return Icons.directions_car;
+      case 'salaire': return Icons.person;
+      case 'achat': return Icons.shopping_cart;
+      default: return Icons.receipt;
     }
   }
 
-  int _totalFilter() {
-    return filteredDepenses.isEmpty
-        ? 0
-        : filteredDepenses
-            .map((article) => article.montants)
-            .reduce((a, b) => a + b);
+  Color _getColorForType(String type) {
+    switch (type) {
+      case 'transport': return Colors.orange;
+      case 'salaire': return Colors.blue;
+      case 'achat': return Colors.purple;
+      default: return Colors.grey;
+    }
+  }
+
+  double _getTotalFiltered() {
+    return _filtered.fold(0.0, (sum, e) => sum + e.montants);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: RefreshIndicator(
-        backgroundColor: Colors.transparent,
-        color: Colors.grey[100],
-        onRefresh: _refresh,
-        displacement: 50,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              backgroundColor: const Color(0xff001c30),
-              expandedHeight: 40,
-              pinned: true,
-              floating: true,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text("Dépenses",
-                    style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white)),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Container(
-                color: const Color.fromARGB(255, 0, 40, 68),
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+      appBar: AppBar(
+        title: Text("Dépenses", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xff001c30),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: _filtered.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(                  
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                            padding: const EdgeInsets.all(10),
-                            child: Text(
-                              "Total",
-                              style: GoogleFonts.roboto(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange),
-                            )),
-                        Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Text(
-                              "${_totalFilter()} XOF",
-                              style: GoogleFonts.roboto(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange),
-                            )),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      constraints:
-                          const BoxConstraints(maxWidth: 250, maxHeight: 40),
-                      child: InkWell(
-                          onTap: () async {
-                            final DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime(2100),
-                              builder: (context, child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    colorScheme: const ColorScheme.light(
-                                      primary: Color.fromARGB(255, 255, 136, 0),
-                                      onPrimary: Colors.white,
-                                      onSurface: Colors.black,
-                                    ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
-                        
-                            if (picked != null && mounted) {
-                              setState(() {
-                                selectedDate = picked;
-                              });
-                              await _loadProducts(); // Recharge avec filtre
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 255, 136, 0),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.calendar_today, color: Colors.white, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  selectedDate == null
-                                      ? 'Choisir une date'
-                                      : DateFormat('dd MMM yyyy').format(selectedDate!),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ),
+                    Image.asset("assets/images/not_data.png", width: 200),
+                    const SizedBox(height: 20),
+                    Text("Aucune dépense trouvée",
+                        style: GoogleFonts.poppins(fontSize: 16)),
                   ],
                 ),
-              ),
-            ),
-            StreamBuilder<List<DepensesModel>>(
-              stream: _streamController.stream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SliverFillRemaining(
-                    child: Center(
-                        child: LoadingAnimationWidget.staggeredDotsWave(
-                          color:Colors.orange,
-                            size:50
-                        )),
-                  );
-                } else if (snapshot.hasError) {
-                  return SliverFillRemaining(
-                    child: Center(
-                        child: Container(
-                      padding: const EdgeInsets.all(8),
-                      height: MediaQuery.of(context).size.width * 0.4,
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.6,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
-                                      Text(
-                                        "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
-                                       style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),
-                                      ),
-                                    ],
-                                  ))),
-                          const SizedBox(width: 40),
-                          IconButton(
-                              onPressed: () {
-                                _refresh();
-                              },
-                              icon:
-                                  const Icon(Icons.refresh_outlined, size: 24))
-                        ],
-                      ),
-                    )),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return  SliverFillRemaining(child: Center(child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                       Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                         const SizedBox(height: 20,),
-                      Text("Aucune dépense disponible.",style: GoogleFonts.poppins(fontSize: 18),),
-                    ],
-                  )));
-                } else {
-                  final List<DepensesModel> depenses = snapshot.data!;
-                  // Filtrer les articles par la date sélectionnée
-                  filteredDepenses = selectedDate == null
-                      ? depenses
-                      : depenses.where((article) {
-                          if (selectedDate != null) {
-                            return article.date.year == selectedDate!.year &&
-                                article.date.month == selectedDate!.month &&
-                                article.date.day == selectedDate!.day;
-                          }
-                          return false;
-                        }).toList();
-                         if (filteredDepenses.isEmpty) {
-                      return SliverFillRemaining(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                               Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                         const SizedBox(height: 20,),
-                              Text(
-                                  "Aucune dépense trouvé pour la date sélectionnée.",style: GoogleFonts.poppins(fontSize: 18),),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                  return SliverPadding(
-                    padding: const EdgeInsets.all(16),
-                    sliver: SliverToBoxAdapter(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: filteredDepenses.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          DepensesModel depense = filteredDepenses[index];
-                          return Container(
-                            height: 70,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Colors.white,
-                              border: const Border(
-                                bottom: BorderSide(
-                                    color: Color.fromARGB(255, 230, 230, 230)),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 15),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              depense.motifs,
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                formatPrice.formatNombre(
-                                                    depense.montants.toString()),
-                                                style: GoogleFonts.roboto(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[500],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Date",
-                                        style: GoogleFonts.montserrat(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                      Expanded(
-                                        child: Text(DateFormat("dd MMM yyyy")
-                                            .format(depense.date)),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 255, 136, 0),
-        ),
-        onPressed: () {
-          _addDepenses(context);
-        },
-        child: const Icon(Icons.add,
-            size: AppSizes.iconLarge, color: Colors.white),
-      ),
-    );
-  }
-
-  void _addDepenses(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(15),
-          height: MediaQuery.of(context).size.height * 0.5,
-          child: Form(
-            key: _globalKey,
-            child: SingleChildScrollView(
-              child: Column(
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Enregistrer vos depenses",
-                      style: GoogleFonts.roboto(
-                          fontSize: AppSizes.fontMedium,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 20),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller: _montantController,
-                    decoration: const InputDecoration(
-                        labelText: "Somme depensée",
-                        border: OutlineInputBorder()),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Le nom du produit est requis";
-                      }
-                      return null;
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Total: ${NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa').format(_getTotalFiltered())}",
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600, fontSize: 16),
+                      ),
+                       IconButton(
+            onPressed: _showFilterSheet,
+            icon: const Icon(Icons.filter_alt_outlined, color: Colors.black,),
+            tooltip: "Filtrer",
+          )
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _motifController,
-                    keyboardType: TextInputType.name,
-                    decoration: const InputDecoration(
-                        labelText: "Motif du depense",
-                        border: OutlineInputBorder()),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "La description est requise";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
-                        minimumSize: const Size(400, 50)),
-                    onPressed: () {
-                      _sendNewDepenseToServer();
-                      Navigator.pop(context);
-                    },
-                    child: Text("Enregistrer",
-                        style: GoogleFonts.roboto(
-                            fontSize: AppSizes.fontMedium,
-                            color: Colors.white)),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _filtered.length,
+                      itemBuilder: (context, index) {
+                        final d = _filtered[index];
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: _getColorForType(d.type),
+                              child: Icon(_getIconForType(d.type),
+                                  color: Colors.white),
+                            ),
+                            title: Text(d.motifs,
+                                style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600)),
+                            subtitle: Text(
+                                DateFormat('dd MMM yyyy – HH:mm')
+                                    .format(d.date),
+                                style: GoogleFonts.poppins(fontSize: 13)),
+                            trailing: Text(
+                              NumberFormat.currency(
+                                      locale: 'fr_FR', symbol: 'Fcfa')
+                                  .format(d.montants),
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-        );
-      },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.deepOrange,
+        onPressed: _showAddDepenseBottomSheet,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }

@@ -9,9 +9,10 @@ import 'package:salespulse/views/auth/login_view.dart';
 import 'package:salespulse/views/auth/update_password.dart';
 import 'package:salespulse/views/categories/categories_view.dart';
 import 'package:salespulse/views/cliens/client_pro.dart';
-import 'package:salespulse/views/dashbord/dashboard.dart';
+import 'package:salespulse/views/dashbord/dash_prod.dart';
 import 'package:salespulse/views/depenses/depense_view.dart';
 import 'package:salespulse/views/fournisseurs/fournisseurs_view.dart';
+import 'package:salespulse/views/impaye/impaye_pro.dart';
 import 'package:salespulse/views/inventaire/inventaire.dart';
 import 'package:salespulse/views/mouvements/mouvement_inventaire.dart';
 import 'package:salespulse/views/panier/add_vente_pro.dart';
@@ -112,16 +113,18 @@ class _RoutesState extends State<Routes> {
               iconBgColor: Colors.green),
           _buildDrawerItem(Icons.library_books_sharp, "Historique de ventes", 7,
               iconBgColor: Colors.cyan),
-          _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 8,
+                _buildDrawerItem(Icons.credit_card_off, "Clients impayés", 8,
+              iconBgColor: Colors.yellow),
+          _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 9,
               iconBgColor: Colors.pink),
-          _buildDrawerItem(Icons.balance_sharp, "Dépenses", 9,
+          _buildDrawerItem(Icons.balance_sharp, "Dépenses", 10,
               iconBgColor: Colors.redAccent),
-          _buildDrawerItem(Icons.contact_phone_rounded, "Fournisseurs", 10,
+          _buildDrawerItem(Icons.contact_phone_rounded, "Fournisseurs", 11,
               iconBgColor: Colors.grey),
-           _buildDrawerItem(Icons.contact_phone_rounded, "Mes clients", 11,
+           _buildDrawerItem(Icons.contact_phone_rounded, "Mes clients", 12,
               iconBgColor: Colors.teal),
           _buildDrawerItem(
-              FontAwesomeIcons.handshake, "Règlements de dette", 12,
+              FontAwesomeIcons.handshake, "Règlements de dette", 13,
               iconBgColor: Colors.deepOrange),
           const Divider(color: Colors.grey),
 
@@ -171,7 +174,7 @@ class _RoutesState extends State<Routes> {
 
   Widget _buildPage() {
     final pages = [
-      const DashboardView(),
+      const StatistiquesScreen(),
       const AddVenteScreen(),
       const StocksView(),
       const AddProduitPage(),
@@ -179,8 +182,9 @@ class _RoutesState extends State<Routes> {
       const HistoriqueMouvementsScreen(),
       const CategoriesView(),     
       const HistoriqueVentesScreen(),
+      const ClientsEnRetardScreen(),
       const StatistiquesProduitsPage(),
-      const DepensesView(),
+      const DepenseScreen(),
       const FournisseurView(),
       const ClientsView(),
       const HistoriqueReglementsScreen()
