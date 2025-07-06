@@ -29,7 +29,10 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
   int totalDepenses = 0;
   int etatCaisse = 0;
   int coutAchatTotal = 0;
+  int coutAchatPertes = 0 ;       // Produits retirés/volés       // Produits en stock
+  int quantitePertes = 0;
   int benefice = 0;
+  int totalRemises = 0 ;
 
   String selectedMonth = DateFormat('yyyy-MM').format(DateTime.now());
   List<Map<String, dynamic>> moisFiltres = [];
@@ -77,6 +80,9 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         coutAchatTotal = data['coutAchatTotal'] ?? 0;
         etatCaisse = data["etatCaisse"] ?? 0;
         benefice = data['benefice'] ?? 0;
+        coutAchatPertes = data["coutAchatPertes"] ?? 0;
+        quantitePertes  = data["quantitePertes"] ?? 0;
+        totalRemises = data["totalRemises"] ?? 0;
         statsParMois = data['statsParMois'] ?? {};
       });
     }
@@ -98,8 +104,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         setState(() {
           ventesDuJour = List<Map<String, dynamic>>.from(resJour.data);
           ventesAnnee = List<Map<String, dynamic>>.from(resAnnee.data);
-          ventesHebdo = List<Map<String, dynamic>>.from(
-              resHebdo.data); // Nouvelle variable
+          ventesHebdo = List<Map<String, dynamic>>.from(resHebdo.data); // Nouvelle variable
         });
       }
     } catch (e) {
@@ -253,40 +258,18 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
               crossAxisSpacing: 8,
               childAspectRatio: 6, // Ratio 1/2 comme demandé
               children: [
-                _buildCard("🧾 Nombre de ventes", "$nombreVentes", Icons.receipt_long,
-                    Colors.indigo),
-                _buildCard("💰 Total ventes", "$totalVentes Fcfa",
-                    Icons.attach_money, Colors.green),
-                _buildCard("📥 Montant encaissé", "$montantEncaisse Fcfa",
-                    Icons.payments, Colors.teal),
-                _buildCard("🧾Total crédit impayés", "$resteTotal Fcfa",
-                    Icons.pending_actions, Colors.redAccent),
-                  _buildCard(
-                    "👥 Total à rembourser", "$montantRembourse", Icons.people, Colors.green),
-                _buildCard("📈 Coût d'achat", "$coutAchatTotal Fcfa",
-                    Icons.trending_up, Colors.purple),
-                _buildCard("💸 Dépenses", "$totalDepenses Fcfa",
-                    Icons.money_off, Colors.brown),
-                _buildCard("💼 Bénéfice", "$benefice Fcfa",
-                    Icons.account_balance_wallet, Colors.deepPurple),
-                _buildCard("📊 Caisse nette (globale)", "$etatCaisse Fcfa",
-                    Icons.account_balance, Colors.pink),
-                // 🆕 Stats par mois sélectionné
-                _buildCard(
-                    "📅 Ventes du mois",
-                    "${statsParMois[selectedMonth]?['ventes'] ?? 0} Fcfa",
-                    Icons.calendar_today,
-                    Colors.teal),
-                _buildCard(
-                    "💳 Dépenses du mois",
-                    "${statsParMois[selectedMonth]?['depenses'] ?? 0} Fcfa",
-                    Icons.credit_card,
-                    Colors.red),
-                _buildCard(
-                    "🏦 Caisse du mois sélectionné",
-                    "${statsParMois[selectedMonth]?['etatCaisse'] ?? 0} Fcfa",
-                    Icons.savings,
-                    Colors.orange),
+                _buildCard("📈 Coût d'achat globale", "$coutAchatTotal Fcfa",Icons.trending_up, Colors.purple),
+                _buildCard("🧾 Nombre de ventes", "$nombreVentes", Icons.receipt_long,Colors.indigo),
+                _buildCard("💰 Total ventes", "$totalVentes Fcfa",Icons.attach_money, Colors.green),
+                _buildCard("📥 Montant encaissé", "$montantEncaisse Fcfa",Icons.payments, Colors.teal),
+                _buildCard("🧾Total crédit impayés", "$resteTotal Fcfa",Icons.pending_actions, Colors.redAccent),
+                _buildCard("👥 Total rembourser", "$montantRembourse", Icons.people, Colors.green),
+                _buildCard("🏦 Remises totales", "$totalRemises Fcfa", Icons.savings, Colors.orange),
+                _buildCard("📅 Produit perdu","$quantitePertes ",Icons.dangerous,Colors.teal),
+                _buildCard("💳 Montant perdu","$coutAchatPertes Fcfa",Icons.credit_card, Colors.red),
+                _buildCard("💸 Dépenses", "$totalDepenses Fcfa",Icons.money_off, Colors.brown),
+                _buildCard("💼 Bénéfice", "$benefice Fcfa",Icons.account_balance_wallet, Colors.deepPurple),
+                _buildCard("📊 Caisse nette (globale du mois)", "$etatCaisse Fcfa",Icons.account_balance, Colors.pink),              
               ],
             ),
             const SizedBox(height: 20),
@@ -321,7 +304,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
     return AspectRatio(
       aspectRatio: 2.63,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(25),
         decoration: BoxDecoration(
           color: const Color(0xFF292D4E),
           borderRadius: BorderRadius.circular(12),
@@ -334,6 +317,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           ],
         ),
         child: BarChart(
+            swapAnimationDuration: const Duration(milliseconds: 20),
+          swapAnimationCurve: Curves.linear,
           BarChartData(
             minY: 0,
             maxY: maxValue * 1.2,
@@ -413,6 +398,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                         Colors.amber,
                         Colors.red,
                       ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       stops: [0.1, 1.0],
                     ),
                     borderRadius: BorderRadius.circular(4),

@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -38,7 +39,6 @@ class ClientRetard {
 }
 
 class ClientsEnRetardScreen extends StatefulWidget {
-
   const ClientsEnRetardScreen({super.key});
 
   @override
@@ -56,7 +56,7 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
   }
 
   Future<List<ClientRetard>> _fetchClientsEnRetard() async {
-   final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     final response = await api.getClientRetard(userId, token);
@@ -79,14 +79,16 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
           pw.Header(level: 0, text: 'Rapport des Clients en Retard'),
           pw.Table.fromTextArray(
             headers: ['Nom', 'Contact', 'Total', 'Reçu', 'Reste', 'Date'],
-            data: clients.map((c) => [
-              c.nomClient,
-              c.contact ?? '-',
-              '${c.total} F',
-              '${c.montantRecu} F',
-              '${c.reste} F',
-              dateFormat.format(c.date)
-            ]).toList(),
+            data: clients
+                .map((c) => [
+                      c.nomClient,
+                      c.contact ?? '-',
+                      '${c.total} F',
+                      '${c.montantRecu} F',
+                      '${c.reste} F',
+                      dateFormat.format(c.date)
+                    ])
+                .toList(),
           )
         ],
       ),
@@ -98,11 +100,17 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text("Clients en Retard de Paiement"),
+        backgroundColor: const Color(0xff001c30),
+        title: Text("Clients en Retard de Paiement",
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
+            icon: const Icon(
+              Icons.picture_as_pdf,
+              color: Colors.white,
+            ),
             onPressed: () async {
               final clients = await _clientsFuture;
               _generatePdf(clients);
@@ -124,31 +132,119 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
           final clients = snapshot.data ?? [];
 
           if (clients.isEmpty) {
-            return const Center(child: Text("Aucun client en retard de paiement."));
+            return Center(
+              child: Text("Aucun client en retard de paiement.",
+                  style: GoogleFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black)),
+            );
           }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text("Nom")),
-                DataColumn(label: Text("Contact")),
-                DataColumn(label: Text("Total")),
-                DataColumn(label: Text("Reçu")),
-                DataColumn(label: Text("Reste")),
-                DataColumn(label: Text("Date")),
-              ],
-              rows: clients.map((c) {
-                return DataRow(cells: [
-                  DataCell(Text(c.nomClient)),
-                  DataCell(Text(c.contact ?? '-')),
-                  DataCell(Text("${c.total} F")),
-                  DataCell(Text("${c.montantRecu} F")),
-                  DataCell(Text("${c.reste} F")),
-                  DataCell(Text(DateFormat('dd/MM/yyyy').format(c.date))),
-                ]);
-              }).toList(),
-            ),
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: LayoutBuilder(builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minWidth: constraints.maxWidth),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
+                        ),
+                        child: DataTable(
+                          columnSpacing: 20,
+                          headingRowHeight: 35,
+                          headingRowColor:
+                              WidgetStateProperty.all(Colors.orange),
+                          headingTextStyle: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                          columns: [
+                            DataColumn(
+                                label: Text(
+                              "Nom".toUpperCase(),
+                              style: GoogleFonts.roboto(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            )),
+                            DataColumn(
+                                label: Text("Contact".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Total".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Reçu".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Reste".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                            DataColumn(
+                                label: Text("Date".toUpperCase(),
+                                    style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black))),
+                          ],
+                          rows: clients.map((c) {
+                            return DataRow(cells: [
+                              DataCell(Text(c.nomClient,
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                              DataCell(Text(c.contact ?? '-',
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                              DataCell(Text("${c.total.toStringAsFixed(2)} F",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                              DataCell(Text(
+                                  "${c.montantRecu.toStringAsFixed(2)} F",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                              DataCell(Text("${c.reste.toStringAsFixed(2)} F",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                              DataCell(Text(
+                                  DateFormat('dd/MM/yyyy').format(c.date),
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black))),
+                            ]);
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  );
+                })),
           );
         },
       ),

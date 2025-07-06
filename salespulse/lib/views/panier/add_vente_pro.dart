@@ -142,7 +142,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
 
         if (prixRemise < 0) prixRemise = 0;
 
-        int sousTotalBase = prixRemise * qte;
+        int sousTotalBase = prixInitial * qte;
 
         int sousTotalTva = (sousTotalBase + fraisLivraison + fraisEmballage);
         sousTotalTva += (tva > 0) ? (sousTotalBase * tva ~/ 100) : 0;
@@ -152,7 +152,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
           nom: produit.nom,
           image: produit.image,
           prixAchat: produit.prixAchat,
-          prixUnitaire: prixRemise,
+          prixUnitaire: prixInitial,
           quantite: qte,
           sousTotal: sousTotalTva,
           stocks: produit.stocks,
@@ -212,9 +212,11 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
 
     // Déterminer le statut de la vente selon le montant reçu
     String statut;
-    if (montantRecu >= total) {
+    int livraison = int.tryParse(_livraisonController.text) ?? 0;
+    int emballage = int.tryParse(_emballageController.text) ?? 0;
+    if ((montantRecu + livraison + emballage) >= total) {
       statut = "payée";
-    } else if (montantRecu > 0 && montantRecu < total) {
+    } else if (montantRecu > 0 && (montantRecu + livraison + emballage) < total) {
       statut = "partiel";
     } else {
       statut = "crédit";

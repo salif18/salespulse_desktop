@@ -154,9 +154,16 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
       appBar: AppBar(
         title: Text("Historique des mouvements", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xff001c30),
-        actions: [
-           IconButton(
-      icon: const Icon(Icons.print, color: Colors.deepOrange,),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                    IconButton(
+      icon: const Icon(Icons.print, color: Colors.blue,),
       tooltip: "Imprimer le rapport",
       onPressed: _generatePdf,
     ),
@@ -165,12 +172,8 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
             tooltip: "Réinitialiser filtres",
             onPressed: _resetFilters,
           )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
+              ],
+            ),
             // Filtres
             Row(
               children: [
@@ -240,55 +243,62 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
-                          ],
-                        ),
-                        child: DataTable(
-                          // ignore: deprecated_member_use
-                          headingRowColor: MaterialStateProperty.all(Colors.orange.shade700),
-                          headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                          headingRowHeight: 35,
-                          columns:[
-                            DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                            DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                          ],
-                          rows: mouvements.map((m) {
-                            return DataRow(cells: [
-                              DataCell(Text(DateFormat('dd/MM/yyyy HH:mm').format(m.date),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(Text(m.type[0].toUpperCase() + m.type.substring(1),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(Text(m.productNom,style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(Text(m.quantite.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(Text(m.ancienStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(Text(m.nouveauStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                              DataCell(
-                                Tooltip(
-                                  message: m.description,
-                                  child: SizedBox(
-                                    width: 200,
-                                    child: Text(
-                                      m.description,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black)
+                    child: LayoutBuilder(builder: (context, constraints) {
+                            return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                            constraints:
+                                  BoxConstraints(minWidth: constraints.maxWidth),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
+                              ],
+                            ),
+                            child: DataTable(
+                              // ignore: deprecated_member_use
+                              headingRowColor: MaterialStateProperty.all(Colors.orange.shade700),
+                              headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                              headingRowHeight: 35,
+                              columns:[
+                                DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                              ],
+                              rows: mouvements.map((m) {
+                                return DataRow(cells: [
+                                  DataCell(Text(DateFormat('dd/MM/yyyy HH:mm').format(m.date),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(Text(m.type[0].toUpperCase() + m.type.substring(1),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(Text(m.productNom,style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(Text(m.quantite.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(Text(m.ancienStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(Text(m.nouveauStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
+                                  DataCell(
+                                    Tooltip(
+                                      message: m.description,
+                                      child: SizedBox(
+                                        width: 200,
+                                        child: Text(
+                                          m.description,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black)
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ]);
-                          }).toList(),
+                                ]);
+                              }).toList(),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );}),
+                  )
             ),
 
             // Pagination

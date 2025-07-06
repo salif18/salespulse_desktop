@@ -977,6 +977,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Règlement effectué")));
+                 fetchVentes();
                 // Tu peux recharger les crédits ici
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(

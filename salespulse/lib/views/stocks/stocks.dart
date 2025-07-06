@@ -131,7 +131,7 @@ class _StocksViewState extends State<StocksView> {
   Future<void> _removeArticles(article) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     try {
-      final res = await api.deleteProduct(article.productId, token);
+      final res = await api.deleteProduct(article.id, token);
       final body = jsonDecode(res.body);
       if (res.statusCode == 200) {
         // ignore: use_build_context_synchronously
@@ -620,17 +620,18 @@ class _StocksViewState extends State<StocksView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Supprimer"),
+          title: Text("Supprimer",style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),),
           content:
-              const Text("Êtes-vous sûr de vouloir supprimer cet article ?"),
+              Text("Êtes-vous sûr de vouloir supprimer cet article ?",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
           actions: <Widget>[
             TextButton(
               onPressed: () => _removeArticles(article),
-              child: const Text("Supprimer"),
+              child:Text("Supprimer",style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w400)),
             ),
             TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.redAccent),
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text("Annuler"),
+              child:Text("Annuler",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
             ),
           ],
         );
