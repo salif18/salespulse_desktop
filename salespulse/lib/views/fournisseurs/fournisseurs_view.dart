@@ -524,13 +524,14 @@ class _FournisseurViewState extends State<FournisseurView> {
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14)),
+              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
             ),
             TextButton(
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14)),
+              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14,color: Colors.white)),
             ),
           ],
         );

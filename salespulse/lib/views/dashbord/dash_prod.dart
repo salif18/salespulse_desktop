@@ -1,12 +1,14 @@
 // ignore_for_file: depend_on_referenced_packages, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/stats_api.dart';
+import 'package:salespulse/utils/format_prix.dart';
 
 class StatistiquesScreen extends StatefulWidget {
   const StatistiquesScreen({super.key});
@@ -17,6 +19,7 @@ class StatistiquesScreen extends StatefulWidget {
 
 class _StatistiquesScreenState extends State<StatistiquesScreen> {
   final ServicesStats api = ServicesStats();
+  final FormatPrice _formatPrice = FormatPrice();
 
   int totalVentes = 0;
   int montantEncaisse = 0;
@@ -25,14 +28,16 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
   int nombreVentes = 0;
   int nombreClients = 0;
   int produitsEnStock = 0;
+  int totalPiecesEnStock = 0;
   int produitsRupture = 0;
   int totalDepenses = 0;
   int etatCaisse = 0;
   int coutAchatTotal = 0;
-  int coutAchatPertes = 0 ;       // Produits retirés/volés       // Produits en stock
+  int coutAchatPertes = 0; // Produits retirés/volés       // Produits en stock
   int quantitePertes = 0;
   int benefice = 0;
-  int totalRemises = 0 ;
+  int totalRemises = 0;
+  int totalTVACollectee = 0;
 
   String selectedMonth = DateFormat('yyyy-MM').format(DateTime.now());
   List<Map<String, dynamic>> moisFiltres = [];
@@ -75,14 +80,16 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         nombreVentes = data['nombreVentes'] ?? 0;
         nombreClients = data['nombreClients'] ?? 0;
         produitsEnStock = data['produitsEnStock'] ?? 0;
+        totalPiecesEnStock = data["totalPiecesEnStock"] ?? "" ;
         produitsRupture = data['produitsRupture'] ?? 0;
         totalDepenses = data['totalDepenses'] ?? 0;
         coutAchatTotal = data['coutAchatTotal'] ?? 0;
         etatCaisse = data["etatCaisse"] ?? 0;
         benefice = data['benefice'] ?? 0;
         coutAchatPertes = data["coutAchatPertes"] ?? 0;
-        quantitePertes  = data["quantitePertes"] ?? 0;
+        quantitePertes = data["quantitePertes"] ?? 0;
         totalRemises = data["totalRemises"] ?? 0;
+        totalTVACollectee = data["totalTVACollectee"] ?? 0;
         statsParMois = data['statsParMois'] ?? {};
       });
     }
@@ -104,7 +111,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         setState(() {
           ventesDuJour = List<Map<String, dynamic>>.from(resJour.data);
           ventesAnnee = List<Map<String, dynamic>>.from(resAnnee.data);
-          ventesHebdo = List<Map<String, dynamic>>.from(resHebdo.data); // Nouvelle variable
+          ventesHebdo = List<Map<String, dynamic>>.from(
+              resHebdo.data); // Nouvelle variable
         });
       }
     } catch (e) {
@@ -220,10 +228,10 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                       _buildCard(
-                    "👥 Clients", "$nombreClients", Icons.people, Colors.blue),
-                     const SizedBox(height: 4),
-                      _buildCard("📦 En stock", "$produitsEnStock",
+                      _buildCard("📦 Total des produits", "$totalPiecesEnStock", Icons.inventory_rounded,
+                          Colors.blue),
+                      const SizedBox(height: 4),
+                      _buildCard("📦 Variétes en stock", "$produitsEnStock",
                           Icons.inventory, Colors.teal),
                       const SizedBox(height: 4),
                       _buildCard("⛔ En rupture", "$produitsRupture",
@@ -234,7 +242,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                               fontSize: 14, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        // padding: const EdgeInsets.all(8),
                         height:
                             150, // Hauteur réduite pour le graphique journalier
                         decoration: BoxDecoration(
@@ -258,18 +266,67 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
               crossAxisSpacing: 8,
               childAspectRatio: 6, // Ratio 1/2 comme demandé
               children: [
-                _buildCard("📈 Coût d'achat globale", "$coutAchatTotal Fcfa",Icons.trending_up, Colors.purple),
-                _buildCard("🧾 Nombre de ventes", "$nombreVentes", Icons.receipt_long,Colors.indigo),
-                _buildCard("💰 Total ventes", "$totalVentes Fcfa",Icons.attach_money, Colors.green),
-                _buildCard("📥 Montant encaissé", "$montantEncaisse Fcfa",Icons.payments, Colors.teal),
-                _buildCard("🧾Total crédit impayés", "$resteTotal Fcfa",Icons.pending_actions, Colors.redAccent),
-                _buildCard("👥 Total rembourser", "$montantRembourse", Icons.people, Colors.green),
-                _buildCard("🏦 Remises totales", "$totalRemises Fcfa", Icons.savings, Colors.orange),
-                _buildCard("📅 Produit perdu","$quantitePertes ",Icons.dangerous,Colors.teal),
-                _buildCard("💳 Montant perdu","$coutAchatPertes Fcfa",Icons.credit_card, Colors.red),
-                _buildCard("💸 Dépenses", "$totalDepenses Fcfa",Icons.money_off, Colors.brown),
-                _buildCard("💼 Bénéfice", "$benefice Fcfa",Icons.account_balance_wallet, Colors.deepPurple),
-                _buildCard("📊 Caisse nette (globale du mois)", "$etatCaisse Fcfa",Icons.account_balance, Colors.pink),              
+                _buildCard("👥 Clients", "$nombreClients", Icons.people,
+                          Colors.blue),
+                _buildCard(
+                    "📈 Coût d'achat globale",
+                    _formatPrice.formatNombre(coutAchatTotal.toString()),
+                    Icons.trending_up,
+                    Colors.purple),
+                _buildCard("🧾 Nombre de ventes", "$nombreVentes",
+                    Icons.receipt_long, Colors.indigo),
+                _buildCard(
+                    "💰 Total ventes",
+                    _formatPrice.formatNombre(totalVentes.toString()),
+                    Icons.attach_money,
+                    Colors.green),
+                _buildCard(
+                    "📥 Montant encaissé",
+                    _formatPrice.formatNombre(montantEncaisse.toString()),
+                    Icons.payments,
+                    Colors.teal),
+                _buildCard(
+                    "🧾Total crédit impayés",
+                    _formatPrice.formatNombre(resteTotal.toString()),
+                    Icons.pending_actions,
+                    Colors.redAccent),
+                _buildCard(
+                    "👥 Total rembourser",
+                    _formatPrice.formatNombre(montantRembourse.toString()),
+                    FontAwesomeIcons.replyAll,
+                    Colors.blue),
+                _buildCard(
+                    "🏦 Remises totales",
+                    _formatPrice.formatNombre(totalRemises.toString()),
+                    Icons.savings,
+                    Colors.orange),
+                _buildCard(
+                    "🏦 Totales Tva collectée",
+                    _formatPrice.formatNombre(totalTVACollectee.toString()),
+                    Icons.receipt,
+                    Colors.deepPurple),
+                _buildCard("📅 Produit perdu", "$quantitePertes ",
+                    Icons.warning, Colors.yellow),
+                _buildCard(
+                    "💳 Montant perdu",
+                    _formatPrice.formatNombre(coutAchatPertes.toString()),
+                    Icons.trending_down,
+                    Colors.red),
+                _buildCard(
+                    "💸 Dépenses",
+                    _formatPrice.formatNombre(totalDepenses.toString()),
+                    Icons.money_off,
+                    Colors.brown),
+                _buildCard(
+                    "💼 Bénéfice",
+                    _formatPrice.formatNombre(benefice.toString()),
+                    Icons.account_balance_wallet,
+                    Colors.deepPurple),
+                _buildCard(
+                    "📊 Caisse nette (globale du mois)",
+                    _formatPrice.formatNombre(etatCaisse.toString()),
+                    Icons.account_balance,
+                    Colors.pink),
               ],
             ),
             const SizedBox(height: 20),
@@ -304,9 +361,9 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
     return AspectRatio(
       aspectRatio: 2.63,
       child: Container(
-        padding: const EdgeInsets.all(25),
+        padding: const EdgeInsets.only(top: 25, bottom: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF292D4E),
+          color: const Color.fromARGB(207, 65, 71, 124),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -317,7 +374,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           ],
         ),
         child: BarChart(
-            swapAnimationDuration: const Duration(milliseconds: 20),
+          swapAnimationDuration: const Duration(milliseconds: 20),
           swapAnimationCurve: Curves.linear,
           BarChartData(
             minY: 0,
@@ -366,11 +423,14 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                     ];
                     return SideTitleWidget(
                       axisSide: meta.axisSide,
-                      child: Text(
-                        days[value.toInt()],
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white70,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          days[value.toInt()],
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     );
@@ -390,7 +450,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                 barRods: [
                   BarChartRodData(
                     toY: data['total'].toDouble(),
-                    width: 22,
+                    width: 50,
                     gradient: const LinearGradient(
                       colors: [
                         // Colors.blue.shade400,
@@ -398,8 +458,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                         Colors.amber,
                         Colors.red,
                       ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       stops: [0.1, 1.0],
                     ),
                     borderRadius: BorderRadius.circular(4),

@@ -23,7 +23,19 @@ class ServicesAuth {
     return await http.post(Uri.parse(url), body: jsonEncode(data), headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer "
-    }).timeout(const Duration(seconds: 15));
+    });
+  }
+
+   //obtenir categorie pour formulaire
+  getUsers(userId, token) async {
+    var uri = "$domaineName/auth/utilisateurs/$userId";
+    return await dio.get(uri,
+        options: Options(
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token"
+          },
+        ));
   }
 
 // fonction de creation de compte
@@ -32,7 +44,7 @@ class ServicesAuth {
     return await http.post(Uri.parse(url), body: jsonEncode(data), headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer "
-    }).timeout(const Duration(seconds: 15));
+    });
   }
 
 //fontion de modification de passeword
@@ -45,7 +57,7 @@ class ServicesAuth {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
       },
-    ).timeout(const Duration(seconds: 15));
+    );
   }
 
   //fontion de modification de passeword
@@ -58,7 +70,7 @@ class ServicesAuth {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
       },
-    ).timeout(const Duration(seconds: 15));
+    );
   }
 
   //fontion de reinitialisation de password
@@ -68,7 +80,7 @@ class ServicesAuth {
       Uri.parse(uri),
       body: jsonEncode(data),
       headers: {"Content-Type": "application/json", "Authorization": "Bearer "},
-    ).timeout(const Duration(seconds: 15));
+    );
   }
 
   //fontion de validation de mot de password reinitialiser
@@ -78,7 +90,7 @@ class ServicesAuth {
       Uri.parse(uri),
       body: jsonEncode(data),
       headers: {"Content-Type": "application/json", "Authorization": "Bearer "},
-    ).timeout(const Duration(seconds: 15));
+    );
   }
 
   //message en cas de succès!

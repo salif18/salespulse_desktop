@@ -5,6 +5,7 @@ class MouvementModel {
   final String userId;
   final String type;
   final int quantite;
+  final int prixAchat;
   final int ancienStock;
   final int nouveauStock;
   final String description;
@@ -17,6 +18,7 @@ class MouvementModel {
     required this.userId,
     required this.type,
     required this.quantite,
+    required this.prixAchat,
     required this.ancienStock,
     required this.nouveauStock,
     required this.description,
@@ -31,6 +33,7 @@ class MouvementModel {
       userId: json['userId'] != null ? json['userId']['_id'] ?? '' : '',
       type: json['type'] ?? '',
       quantite: json['quantite'] ?? 0,
+      prixAchat:  json["prix_achat"] ?? 0,
       ancienStock: json['ancien_stock'] ?? 0,
       nouveauStock: json['nouveau_stock'] ?? 0,
       description: json['description'] ?? '',

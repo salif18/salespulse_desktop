@@ -23,7 +23,7 @@ class AddProduitPage extends StatefulWidget {
 
 class _AddProduitPageState extends State<AddProduitPage> {
   ServicesStocks api = ServicesStocks();
-    ServicesCategories apiCatego = ServicesCategories();
+  ServicesCategories apiCatego = ServicesCategories();
   final _formKey = GlobalKey<FormState>();
   final picker = ImagePicker();
   List<CategoriesModel> _categoriesList = [];
@@ -45,14 +45,12 @@ class _AddProduitPageState extends State<AddProduitPage> {
   DateTime? _dateExpiration;
   bool _isPromo = false;
 
-
   @override
   void initState() {
     super.initState();
     // Charger les produits au démarrage
     _loadCategories();
   }
-
 
   Future<void> _pickImageFromGallery() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -105,7 +103,6 @@ class _AddProduitPageState extends State<AddProduitPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Produit ajouté avec succès")),
         );
-        
       } else {
         throw Exception("Erreur API");
       }
@@ -169,7 +166,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                           style: GoogleFonts.montserrat(
                               fontSize: 14, color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade700,
+                        backgroundColor: Colors.green.shade700,
                         maximumSize: const Size(280, 40),
                       ),
                     ),
@@ -182,7 +179,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                           style: GoogleFonts.montserrat(
                               fontSize: 14, color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
+                        backgroundColor: Colors.blueAccent,
                         minimumSize: const Size(250, 40),
                       ),
                     ),
@@ -230,33 +227,39 @@ class _AddProduitPageState extends State<AddProduitPage> {
                   child: Column(
                     children: [
                       _buildField(_nom, "Nom du produit"),
-                    Padding(
-  padding: const EdgeInsets.only(bottom: 12),
-  child: SizedBox(
-    width: 800,
-    child: DropdownButtonFormField<String>(
-      value: _selectedCategorie,
-      items: _categoriesList
-          .map((cat) => DropdownMenuItem<String>(
-                value: cat.name, // Use the id or another unique string property
-                child: Text(cat.name, style: GoogleFonts.roboto(fontSize: 14)),
-              ))
-          .toList(),
-      onChanged: (value) {
-        setState(() => _selectedCategorie = value);
-      },
-      decoration: InputDecoration(
-        labelText: "Catégorie",
-        filled: true,
-        fillColor: Colors.grey[50],
-        labelStyle: GoogleFonts.roboto(fontSize: 14, color: Colors.black),
-        border: const OutlineInputBorder(borderSide: BorderSide.none),
-      ),
-      validator: (value) =>
-          value == null || value.isEmpty ? "Veuillez sélectionner une catégorie" : null,
-    ),
-  ),
-),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: SizedBox(
+                          width: 800,
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCategorie,
+                            items: _categoriesList
+                                .map((cat) => DropdownMenuItem<String>(
+                                      value: cat
+                                          .name, // Use the id or another unique string property
+                                      child: Text(cat.name,
+                                          style:
+                                              GoogleFonts.roboto(fontSize: 14)),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() => _selectedCategorie = value);
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Catégorie",
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                              labelStyle: GoogleFonts.roboto(
+                                  fontSize: 14, color: Colors.black),
+                              border: const OutlineInputBorder(
+                                  borderSide: BorderSide.none),
+                            ),
+                            validator: (value) => value == null || value.isEmpty
+                                ? "Veuillez sélectionner une catégorie"
+                                : null,
+                          ),
+                        ),
+                      ),
 
                       _buildField(_description, "Description", maxLines: 3),
                       _buildField(_prixAchat, "Prix d'achat",
@@ -354,7 +357,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                         onPressed: _submitForm,
                         icon: const Icon(Icons.check, color: Colors.white),
                         label: Text("Enregistrer",
-                            style: GoogleFonts.roboto(fontSize: 14)),
+                            style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange.shade700,
                           minimumSize: const Size.fromHeight(45),

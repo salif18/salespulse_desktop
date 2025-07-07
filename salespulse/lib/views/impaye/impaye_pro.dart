@@ -133,11 +133,18 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
 
           if (clients.isEmpty) {
             return Center(
-              child: Text("Aucun client en retard de paiement.",
-                  style: GoogleFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/images/not_data.png",
+                      width: 200, height: 200, fit: BoxFit.cover),
+                  const SizedBox(height: 20),
+                  Text("Aucun client en retard de paiement.",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          )),
+                ],
+              ),
             );
           }
 

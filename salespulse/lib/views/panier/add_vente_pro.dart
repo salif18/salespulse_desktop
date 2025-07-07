@@ -214,18 +214,40 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     String statut;
     int livraison = int.tryParse(_livraisonController.text) ?? 0;
     int emballage = int.tryParse(_emballageController.text) ?? 0;
-    if ((montantRecu + livraison + emballage) >= total) {
+    if (montantRecu  >= (total + livraison + emballage)) {
       statut = "payée";
-    } else if (montantRecu > 0 && (montantRecu + livraison + emballage) < total) {
+    } else if (montantRecu > 0 && montantRecu < (total + livraison + emballage)) {
       statut = "partiel";
     } else {
       statut = "crédit";
     }
 
+    // AVERTISSEMENT : vente à crédit ou partielle sans client
+if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text("Client requis", style: GoogleFonts.poppins(fontSize: 16)),
+      content: Text(
+        "Pour une vente à crédit ou un paiement partiel, vous devez sélectionner ou enregistrer le client.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text("OK", style: GoogleFonts.poppins()),
+        )
+      ],
+    ),
+  );
+  return;
+}
+
+
     final venteMap = {
       "userId": userId,
       "clientId": selectedClient?.id,
-      "nom": selectedClient?.nom ?? "Occasionnel",
+      "nom": selectedClient?.nom ?? "Anonyme",
       "contactClient": selectedClient?.contact,
       "produits": panier.map((e) => e.toJson()).toList(),
       "total": total,
@@ -411,7 +433,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
                         TextField(
                           controller: _quantiteController,
                           decoration:
-                              const InputDecoration(labelText: "Quantité"),
+                             const InputDecoration(labelText: "Quantité"),
                           keyboardType: TextInputType.number,
                           style: theme.textTheme.bodyMedium,
                         ),
@@ -889,46 +911,49 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Détails pour ${widget.produit.nom}"),
+      title: Text("Détails pour ${widget.produit.nom}",),
       content: SingleChildScrollView(
         child: Column(
           children: [
             TextField(
                 controller: _qteCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: "Quantité")),
+                decoration: const InputDecoration(labelText: "Quantité")),
             TextField(
                 controller: _remiseCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: "Remise")),
+                decoration: const InputDecoration(labelText: "Remise")),
             DropdownButtonFormField<String>(
               value: _remiseType,
               items: ["fcfa", "pourcent"]
                   .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                   .toList(),
               onChanged: (val) => setState(() => _remiseType = val!),
-              decoration: InputDecoration(labelText: "Type de remise"),
+              decoration: const InputDecoration(labelText: "Type de remise"),
             ),
             TextField(
                 controller: _tvaCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: "TVA (%)")),
+                decoration:const InputDecoration(labelText: "TVA (%)")),
             TextField(
                 controller: _livraisonCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: "Frais de livraison")),
+                decoration: const InputDecoration(labelText: "Frais de livraison")),
             TextField(
                 controller: _emballageCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: "Frais d'emballage")),
+                decoration:const InputDecoration(labelText: "Frais d'emballage")),
           ],
         ),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler")),
+            child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueAccent),)),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange.shade700
+          ),
           onPressed: () {
             Navigator.pop(context, {
               "quantite": int.tryParse(_qteCtrl.text) ?? 1,
@@ -939,7 +964,7 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
               "fraisEmballage": int.tryParse(_emballageCtrl.text) ?? 0,
             });
           },
-          child: const Text("Ajouter"),
+          child: Text("Ajouter", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
         )
       ],
     );

@@ -654,21 +654,22 @@ Future<void> _sendToserver(BuildContext context) async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Confirmer"),
-          content: const Text(
-              "Êtes-vous sûr de vouloir supprimer cette catégorie ?"),
+          title: Text("Confirmer" ,style:GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+          content: Text(
+              "Êtes-vous sûr de vouloir supprimer cette catégorie ?",style:GoogleFonts.poppins(fontSize: 14)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14)),
+              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14,color: Colors.blueAccent)),
             ),
             TextButton(
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14)),
+              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
             ),
           ],
         );

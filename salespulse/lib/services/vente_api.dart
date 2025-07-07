@@ -63,7 +63,7 @@ getAllVentes(
             "Content-Type": "application/json",
             "Authorization": "Bearer $token"
       },
-    ).timeout(const Duration(seconds: 15));
+    );
   }
 
   //messade d'affichage de reponse de la requette recus

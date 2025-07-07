@@ -143,7 +143,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
         builder: (context, setStateDialog) {
           return AlertDialog(
             title: Text('Modifier stock - ${produit.nom}',
-                style: GoogleFonts.poppins()),
+                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -152,13 +152,13 @@ class _InventaireProPageState extends State<InventaireProPage> {
                     controller: quantiteController,
                     keyboardType: TextInputType.number,
                     decoration:
-                        const InputDecoration(labelText: 'Quantité en stock'),
+                        InputDecoration(labelText: 'Quantité en stock',labelStyle: GoogleFonts.poppins(fontSize: 14)),
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: selectedType,
                     decoration:
-                        const InputDecoration(labelText: 'Type de mouvement'),
+                        InputDecoration(labelText: 'Type de mouvement',labelStyle: GoogleFonts.poppins(fontSize: 14)),
                     items: [
                       DropdownMenuItem(value: 'ajout', child: Text('Ajout',style: GoogleFonts.roboto(fontSize: 14),)),
                       DropdownMenuItem(value: 'vente', child: Text('Vente',style: GoogleFonts.roboto(fontSize: 14),)),
@@ -179,8 +179,9 @@ class _InventaireProPageState extends State<InventaireProPage> {
                   const SizedBox(height: 10),
                   TextField(
                     controller: descriptionController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Description (optionnel)',
+                      labelStyle: GoogleFonts.poppins(fontSize: 14)
                     ),
                     maxLines: 2,
                   ),
@@ -190,9 +191,10 @@ class _InventaireProPageState extends State<InventaireProPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: Text('Annuler', style: GoogleFonts.poppins()),
+                child: Text('Annuler', style: GoogleFonts.poppins(fontSize: 14, color: Colors.blueGrey)),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () async {
                   final nouvelleQte = int.tryParse(quantiteController.text);
                   if (nouvelleQte == null || nouvelleQte < 0) {
@@ -214,7 +216,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
                   });
                   Navigator.of(ctx).pop();
                 },
-                child: Text('Enregistrer', style: GoogleFonts.poppins()),
+                child: Text('Enregistrer', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
               ),
             ],
           );

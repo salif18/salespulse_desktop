@@ -21,6 +21,7 @@ import 'package:salespulse/views/profil/update_profil.dart';
 import 'package:salespulse/views/reglements/reglement_view.dart';
 import 'package:salespulse/views/creer_stocks/add_stock_pro_screen.dart';
 import 'package:salespulse/views/stocks/stocks.dart';
+import 'package:salespulse/views/users/user_pro.dart';
 import 'package:salespulse/views/ventes/historique_vente_pro.dart';
 
 
@@ -126,6 +127,9 @@ class _RoutesState extends State<Routes> {
           _buildDrawerItem(
               FontAwesomeIcons.handshake, "Règlements de dette", 13,
               iconBgColor: Colors.deepOrange),
+            _buildDrawerItem(
+              FontAwesomeIcons.userGroup, "Utilisateurs", 14,
+              iconBgColor: Colors.deepOrange),
           const Divider(color: Colors.grey),
 
           // ✅ Bloc actions utilisateur (profil)
@@ -187,7 +191,8 @@ class _RoutesState extends State<Routes> {
       const DepenseScreen(),
       const FournisseurView(),
       const ClientsView(),
-      const HistoriqueReglementsScreen()
+      const HistoriqueReglementsScreen(),
+      const UserManagementScreen()
     ];
     return pages[_currentIndex];
   }

@@ -2,7 +2,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:salespulse/https/domaine.dart';
 
    const String domaineName = Domaine.domaineURI;
@@ -37,7 +36,7 @@ class ServicesDepense{
      options:Options(headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
-      })).timeout(const Duration(seconds: 15));
+      }));
   }
 
   //messade d'affichage de reponse de la requette recus

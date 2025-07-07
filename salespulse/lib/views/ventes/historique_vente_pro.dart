@@ -943,7 +943,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-            child: const Text("Valider"),
+             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700),
+            child: Text("Valider",style: GoogleFonts.roboto(fontSize: 14,color: Colors.white),),
             onPressed: () async {
               final montant = int.tryParse(montantController.text) ?? 0;
               if (montant <= 0) {
@@ -976,7 +977,9 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
               if (res.statusCode == 201) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Règlement effectué")));
+                    SnackBar(
+                       backgroundColor: Colors.green,
+                      content: Text("Règlement effectué",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),)));
                  fetchVentes();
                 // Tu peux recharger les crédits ici
               } else {
