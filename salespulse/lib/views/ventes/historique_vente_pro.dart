@@ -159,7 +159,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
           children: [
             // Zone de filtres
             Container(
-              color: const Color.fromARGB(255, 0, 40, 68),
+              // color: const Color.fromARGB(255, 0, 40, 68),
+              color: Colors.white,
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
@@ -244,7 +245,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                     children: [
                       Text("Client: ",
                           style: GoogleFonts.poppins(
-                              fontSize: 14, color: Colors.white)),
+                              fontSize: 14, color: Colors.black)),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
@@ -312,7 +313,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.print,
-                            size: 24, color: Colors.deepOrange),
+                            size: 24, color: Colors.blue),
                         onPressed: _generatePdf,
                       ),
                       IconButton(

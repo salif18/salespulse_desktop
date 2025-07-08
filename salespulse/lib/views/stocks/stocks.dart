@@ -174,100 +174,104 @@ class _StocksViewState extends State<StocksView> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Container(
-                color: const Color.fromARGB(255, 0, 40, 68),
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      constraints: const BoxConstraints(
-                        maxWidth: 300,
-                        maxHeight:
-                            40, // un peu plus haut pour éviter que le texte soit coupé
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        isDense: true,
-                        value: _categorieValue,
-                        dropdownColor: const Color(0xff001c30),
-                        borderRadius: BorderRadius.circular(10),
-                        style: GoogleFonts.roboto(
-                            fontSize: 14, color: Colors.white),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          filled: true,
-                          fillColor: const Color.fromARGB(255, 255, 136, 0),
-                          hintText: "Choisir une catégorie",
-                          hintStyle: GoogleFonts.roboto(
-                            fontSize: 12,
-                            color: Colors.white,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
-                          ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  // color: const Color.fromARGB(255, 0, 40, 68),
+                  color:Colors.white,
+                  height: 80,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        constraints: const BoxConstraints(
+                          maxWidth: 300,
+                          maxHeight:
+                              40, // un peu plus haut pour éviter que le texte soit coupé
                         ),
-                        items: [
-                          const DropdownMenuItem<String>(
-                            value: null,
-                            child: Text(
-                              "Toutes les catégories",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          ..._listCategories.map((categorie) {
-                            return DropdownMenuItem<String>(
-                              value: categorie.name,
-                              child: Text(
-                                categorie.name,
-                                style: GoogleFonts.roboto(
-                                    fontSize: 13, color: Colors.white),
-                              ),
-                            );
-                          }),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _categorieValue = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return "La catégorie est requise";
-                          }
-                          return null;
-                        },
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        child: TextField(
-                          controller: _searchController,
+                        child: DropdownButtonFormField<String>(
+                          isDense: true,
+                          value: _categorieValue,
+                          dropdownColor: const Color(0xff001c30),
+                          borderRadius: BorderRadius.circular(10),
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Colors.white),
                           decoration: InputDecoration(
-                            hintText: "Rechercher un produit...",
-                            prefixIcon: const Icon(Icons.search),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            filled: true,
+                            fillColor: const Color.fromARGB(255, 255, 136, 0),
+                            hintText: "Choisir une catégorie",
+                            hintStyle: GoogleFonts.roboto(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
-                            filled: true,
-                            fillColor: Colors.white,
+                          ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(
+                                "Toutes les catégories",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            ..._listCategories.map((categorie) {
+                              return DropdownMenuItem<String>(
+                                value: categorie.name,
+                                child: Text(
+                                  categorie.name,
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 13, color: Colors.white),
+                                ),
+                              );
+                            }),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _categorieValue = value;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null) {
+                              return "La catégorie est requise";
+                            }
+                            return null;
+                          },
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: "Rechercher un produit...",
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

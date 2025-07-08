@@ -107,7 +107,7 @@ class _RoutesState extends State<Routes> {
               iconBgColor: Colors.cyan),
           _buildDrawerItem(Icons.credit_card_off, "Clients impayés", 4,
               iconBgColor: Colors.orangeAccent),
-          _buildDrawerItem(FontAwesomeIcons.handshake, "Règlements de dette", 5,
+          _buildDrawerItem(FontAwesomeIcons.handshake, "Historique règlements", 5,
               iconBgColor: Colors.deepOrange),
 
           // ✅ Section STOCKS
