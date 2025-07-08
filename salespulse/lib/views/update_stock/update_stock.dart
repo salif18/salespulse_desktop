@@ -1,25 +1,29 @@
+// ignore_for_file: depend_on_referenced_packages
+
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:excel/excel.dart' as excel;
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/models/categories_model.dart';
+import 'package:salespulse/models/product_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/categ_api.dart';
 import 'package:salespulse/services/stocks_api.dart';
 
-class AddProduitPage extends StatefulWidget {
-  const AddProduitPage({super.key});
+class EditProduitPage extends StatefulWidget {
+  final ProductModel product;
+
+  const EditProduitPage({super.key, required this.product});
 
   @override
-  State<AddProduitPage> createState() => _AddProduitPageState();
+  State<EditProduitPage> createState() => _EditProduitPageState();
 }
 
-class _AddProduitPageState extends State<AddProduitPage> {
+class _EditProduitPageState extends State<EditProduitPage> {
   final ServicesStocks api = ServicesStocks();
   final ServicesCategories apiCatego = ServicesCategories();
   final _formKey = GlobalKey<FormState>();
@@ -29,14 +33,14 @@ class _AddProduitPageState extends State<AddProduitPage> {
   File? _imageFile;
   String? _imageUrl;
 
-  final TextEditingController _nom = TextEditingController();
-  final TextEditingController _description = TextEditingController();
-  final TextEditingController _prixAchat = TextEditingController();
-  final TextEditingController _prixVente = TextEditingController();
-  final TextEditingController _stock = TextEditingController();
-  final TextEditingController _seuil = TextEditingController(text: '5');
-  final TextEditingController _unite = TextEditingController(text: 'pièce');
-  final TextEditingController _prixPromo = TextEditingController();
+  late TextEditingController _nom;
+  late TextEditingController _description;
+  late TextEditingController _prixAchat;
+  late TextEditingController _prixVente;
+  late TextEditingController _stock;
+  late TextEditingController _seuil;
+  late TextEditingController _unite;
+  late TextEditingController _prixPromo;
   String? _selectedCategorie;
 
   DateTime? _dateAchat;
@@ -47,6 +51,26 @@ class _AddProduitPageState extends State<AddProduitPage> {
   void initState() {
     super.initState();
     _loadCategories();
+    _initFormData();
+  }
+
+  void _initFormData() {
+    final product = widget.product;
+
+    _nom = TextEditingController(text: product.nom);
+    _description = TextEditingController(text: product.description);
+    _prixAchat = TextEditingController(text: product.prixAchat.toString());
+    _prixVente = TextEditingController(text: product.prixVente.toString());
+    _stock = TextEditingController(text: product.stocks.toString());
+    _seuil = TextEditingController(text: product.seuilAlerte.toString());
+    _unite = TextEditingController(text: product.unite);
+    _prixPromo = TextEditingController(text: product.prixPromo.toString());
+    _selectedCategorie = product.categories;
+
+    _isPromo = product.isPromo;
+    _dateAchat = product.dateAchat;
+    _dateExpiration = product.dateExpiration;
+    _imageUrl = product.image;
   }
 
   Future<void> _loadCategories() async {
@@ -91,7 +115,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
       debugPrint("Erreur sélection image: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur lors de la sélection de l'image")),
+          const SnackBar(
+              content: Text("Erreur lors de la sélection de l'image")),
         );
       }
     }
@@ -100,79 +125,85 @@ class _AddProduitPageState extends State<AddProduitPage> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validation des dates
-    if (_dateExpiration != null && _dateAchat != null && _dateExpiration!.isBefore(_dateAchat!)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("La date d'expiration doit être après la date d'achat")),
-      );
-      return;
-    }
-
-    // Validation des prix
-    final prixAchat = double.tryParse(_prixAchat.text);
-    final prixVente = double.tryParse(_prixVente.text);
-    if (prixAchat == null || prixVente == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez entrer des prix valides")),
-      );
-      return;
-    }
-
-    if (prixVente < prixAchat) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Le prix de vente doit être supérieur au prix d'achat")),
-      );
-      return;
-    }
-
+    // Création du FormData
     final formData = FormData();
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    // Ajout des champs
+    void addField(String key, dynamic value) {
+      if (value != null && value.toString().isNotEmpty) {
+        formData.fields.add(MapEntry(key, value.toString()));
+      }
+    }
 
-    formData.fields
-      ..add(MapEntry("userId", userId))
-      ..add(MapEntry("nom", _nom.text))
-      ..add(MapEntry("categories", _selectedCategorie!))
-      ..add(MapEntry("description", _description.text))
-      ..add(MapEntry("prix_achat", _prixAchat.text))
-      ..add(MapEntry("prix_vente", _prixVente.text))
-      ..add(MapEntry("stocks", _stock.text))
-      ..add(MapEntry("seuil_alerte", _seuil.text))
-      ..add(MapEntry("unite", _unite.text))
-      ..add(MapEntry("isPromo", _isPromo.toString()))
-      ..add(MapEntry("prix_promo", _prixPromo.text.isEmpty ? "0" : _prixPromo.text))
-      ..add(MapEntry("date_achat", _dateAchat?.toIso8601String() ?? ""))
-      ..add(MapEntry("date_expiration", _dateExpiration?.toIso8601String() ?? ""));
+    addField('nom', _nom.text);
+    addField('categories', _selectedCategorie);
+    addField('description', _description.text);
+    addField('prix_achat', _prixAchat.text);
+    addField('prix_vente', _prixVente.text);
+    addField('stocks', _stock.text);
+    addField('seuil_alerte', _seuil.text);
+    addField('unite', _unite.text);
+    addField('isPromo', _isPromo);
+    addField('prix_promo', _prixPromo.text.isNotEmpty ? _prixPromo.text : '0');
 
+    if (_dateAchat != null) {
+      formData.fields
+          .add(MapEntry('date_achat', _dateAchat!.toIso8601String()));
+    }
+
+    if (_dateExpiration != null) {
+      formData.fields
+          .add(MapEntry('date_expiration', _dateExpiration!.toIso8601String()));
+    }
+
+    // Gestion de l'image
     if (_imageFile != null) {
-      final fileName = _imageFile!.path.split('/').last;
       formData.files.add(MapEntry(
-        "image",
-        await MultipartFile.fromFile(_imageFile!.path, filename: fileName),
+        'image', // Le backend attend 'file' pour req.file
+        await MultipartFile.fromFile(
+          _imageFile!.path,
+          filename: _imageFile!.path.split('/').last,
+        ),
       ));
-    } else if (_imageUrl != null) {
-      formData.fields.add(MapEntry("image", _imageUrl!));
+    } else if (_imageUrl != null && _imageUrl!.isNotEmpty) {
+      formData.fields.add(MapEntry('image', _imageUrl!));
     }
 
     try {
-      final response = await api.postNewProduct(formData, token);
+      final response =
+          await api.updateProduct(formData, token, widget.product.id);
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Produit ajouté avec succès")),
-          );
-        }
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Produit modifié avec succès")),
+        );
+        Navigator.pop(context, true);
       } else {
         throw Exception("Erreur API: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint("Erreur soumission formulaire: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur : ${e.toString()}")),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur : ${e.toString()}")),
+      );
+    }
+  }
+
+  Future<void> _removeArticles(article) async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    try {
+      final res = await api.deleteProduct(article.id, token);
+      final body = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        // ignore: use_build_context_synchronously
+        api.showSnackBarSuccessPersonalized(context, body["message"]);
+      } else {
+        // ignore: use_build_context_synchronously
+        api.showSnackBarErrorPersonalized(context, body["message"]);
       }
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      api.showSnackBarErrorPersonalized(context, e.toString());
     }
   }
 
@@ -185,13 +216,19 @@ class _AddProduitPageState extends State<AddProduitPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         title: Text(
-          "Ajouter un produit",
+          "Modifier le produit",
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -237,7 +274,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     )
                                   : _imageUrl != null && _imageUrl!.isNotEmpty
                                       ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           child: Image.network(
                                             _imageUrl!,
                                             fit: BoxFit.cover,
@@ -245,7 +283,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                         )
                                       : Center(
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Icon(
                                                 Icons.image_search,
@@ -264,7 +303,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                         ),
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Boutons d'import
                             Wrap(
                               spacing: 12,
@@ -272,7 +311,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               children: [
                                 ElevatedButton.icon(
                                   onPressed: _pickImageFromGallery,
-                                  icon: const Icon(Icons.photo_library, size: 18),
+                                  icon:
+                                      const Icon(Icons.photo_library, size: 18),
                                   label: Text(
                                     "Galerie",
                                     style: GoogleFonts.poppins(fontSize: 13),
@@ -287,28 +327,12 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     ),
                                   ),
                                 ),
-                                ElevatedButton.icon(
-                                  onPressed: () => _importFromExcel(context),
-                                  icon: const Icon(Icons.insert_drive_file, size: 18),
-                                  label: Text(
-                                    "Importer Excel",
-                                    style: GoogleFonts.poppins(fontSize: 13),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green[600],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
                                 OutlinedButton.icon(
                                   onPressed: () {
                                     showDialog(
                                       context: context,
-                                      builder: (context) => _buildUrlImageDialog(),
+                                      builder: (context) =>
+                                          _buildUrlImageDialog(),
                                     );
                                   },
                                   icon: const Icon(Icons.link, size: 18),
@@ -331,9 +355,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(width: 32),
-                      
+
                       // Colonne droite - Formulaire
                       Flexible(
                         flex: 3,
@@ -359,7 +383,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Description
                             _buildTextField(
                               controller: _description,
@@ -368,7 +392,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               maxLines: 3,
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 2 - Dates
                             Row(
                               children: [
@@ -397,7 +421,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 3 - Prix
                             Row(
                               children: [
@@ -414,9 +438,15 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (double.parse(value) <= 0) return "Doit être supérieur à 0";
+                                      if (value == null || value.isEmpty) {
+                                        return "Ce champ est obligatoire";
+                                      }
+                                      if (double.tryParse(value) == null) {
+                                        return "Valeur numérique invalide";
+                                      }
+                                      if (double.parse(value) <= 0) {
+                                        return "Doit être supérieur à 0";
+                                      }
                                       return null;
                                     },
                                   ),
@@ -435,11 +465,20 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (double.parse(value) <= 0) return "Doit être supérieur à 0";
-                                      if (_prixAchat.text.isNotEmpty && double.tryParse(_prixAchat.text) != null) {
-                                        if (double.parse(value) <= double.parse(_prixAchat.text)) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Ce champ est obligatoire";
+                                      }
+                                      if (double.tryParse(value) == null) {
+                                        return "Valeur numérique invalide";
+                                      }
+                                      if (double.parse(value) <= 0) {
+                                        return "Doit être supérieur à 0";
+                                      }
+                                      if (_prixAchat.text.isNotEmpty &&
+                                          double.tryParse(_prixAchat.text) !=
+                                              null) {
+                                        if (double.parse(value) <=
+                                            double.parse(_prixAchat.text)) {
                                           return "Doit être supérieur au prix d'achat";
                                         }
                                       }
@@ -450,20 +489,26 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 4 - Stock et Unité
                             Row(
                               children: [
                                 Expanded(
                                   child: _buildTextField(
                                     controller: _stock,
-                                    label: "Stock initial*",
+                                    label: "Stock*",
                                     hint: "0",
                                     keyboardType: TextInputType.number,
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (int.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (int.parse(value) < 0) return "Doit être positif";
+                                      if (value == null || value.isEmpty) {
+                                        return "Ce champ est obligatoire";
+                                      }
+                                      if (int.tryParse(value) == null) {
+                                        return "Valeur numérique invalide";
+                                      }
+                                      if (int.parse(value) < 0) {
+                                        return "Doit être positif";
+                                      }
                                       return null;
                                     },
                                   ),
@@ -474,14 +519,15 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     controller: _unite,
                                     label: "Unité*",
                                     hint: "pièce, kg, litre...",
-                                    validator: (value) =>
-                                        value!.isEmpty ? "Ce champ est obligatoire" : null,
+                                    validator: (value) => value!.isEmpty
+                                        ? "Ce champ est obligatoire"
+                                        : null,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 5 - Seuil d'alerte
                             _buildTextField(
                               controller: _seuil,
@@ -490,22 +536,30 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value != null && value.isNotEmpty) {
-                                  if (int.tryParse(value) == null) return "Valeur numérique invalide";
-                                  if (int.parse(value) < 0) return "Doit être positif";
+                                  if (int.tryParse(value) == null) {
+                                    return "Valeur numérique invalide";
+                                  }
+                                  if (int.parse(value) < 0) {
+                                    return "Doit être positif";
+                                  }
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Promotion
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: _isPromo ? Colors.orange[50] : Colors.transparent,
+                                color: _isPromo
+                                    ? Colors.orange[50]
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: _isPromo ? Colors.orange[100]! : Colors.grey[200]!,
+                                  color: _isPromo
+                                      ? Colors.orange[100]!
+                                      : Colors.grey[200]!,
                                 ),
                               ),
                               child: Column(
@@ -539,11 +593,24 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                       validator: _isPromo
                                           ? (value) {
-                                              if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                              if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                              if (double.parse(value) <= 0) return "Doit être supérieur à 0";
-                                              if (_prixVente.text.isNotEmpty && double.tryParse(_prixVente.text) != null) {
-                                                if (double.parse(value) >= double.parse(_prixVente.text)) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return "Ce champ est obligatoire";
+                                              }
+                                              if (double.tryParse(value) ==
+                                                  null) {
+                                                return "Valeur numérique invalide";
+                                              }
+                                              if (double.parse(value) <= 0) {
+                                                return "Doit être supérieur à 0";
+                                              }
+                                              if (_prixVente.text.isNotEmpty &&
+                                                  double.tryParse(
+                                                          _prixVente.text) !=
+                                                      null) {
+                                                if (double.parse(value) >=
+                                                    double.parse(
+                                                        _prixVente.text)) {
                                                   return "Doit être inférieur au prix de vente";
                                                 }
                                               }
@@ -556,25 +623,47 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Bouton d'enregistrement
                             SizedBox(
                               height: 50,
-                              child: ElevatedButton(
-                                onPressed: _submitForm,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0066CC),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                              child: Row(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: _submitForm,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0066CC),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "MODIFIER LE PRODUIT",
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  "ENREGISTRER LE PRODUIT",
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600,
+                                  const SizedBox(width: 16,),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                    ),
+                                    child: Text(
+                                      "SUPPRIMER LE PRODUIT",
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    onPressed: () {
+                                      // Action pour supprimer le produit
+                                      _removeArticles(widget.product.id);
+                                    },
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ],
@@ -621,7 +710,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                 return Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: isExpiration ? Colors.red[400]! : Colors.blue[400]!,
+                      primary:
+                          isExpiration ? Colors.red[400]! : Colors.blue[400]!,
                     ),
                   ),
                   child: child!,
@@ -766,10 +856,11 @@ class _AddProduitPageState extends State<AddProduitPage> {
   Widget _buildUrlImageDialog() {
     return AlertDialog(
       title: Text(
-        "Ajouter une image par URL",
+        "Modifier l'image par URL",
         style: GoogleFonts.poppins(),
       ),
       content: TextField(
+        controller: TextEditingController(text: _imageUrl),
         decoration: InputDecoration(
           hintText: "https://example.com/image.jpg",
           border: OutlineInputBorder(
@@ -784,7 +875,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
+          child: Text("Annuler",
+              style:
+                  GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
@@ -794,164 +887,13 @@ class _AddProduitPageState extends State<AddProduitPage> {
               Navigator.pop(context);
             }
           },
-          child: Text("Valider", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+          child: Text("Valider",
+              style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
         ),
       ],
     );
-  }
-
-  Future<void> _importFromExcel(BuildContext context) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text("Importation en cours..."),
-          ],
-        ),
-      ),
-    );
-
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls'],
-      );
-
-      if (result == null) {
-        if (mounted) Navigator.pop(context);
-        return;
-      }
-
-      final filePath = result.files.single.path!;
-      final fileBytes = File(filePath).readAsBytesSync();
-      final decodedExcel = excel.Excel.decodeBytes(fileBytes);
-
-      final firstSheetKey = decodedExcel.tables.keys.first;
-      final sheet = decodedExcel.tables[firstSheetKey];
-      if (sheet == null || sheet.rows.length < 2) {
-        if (mounted) Navigator.pop(context);
-        return;
-      }
-
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final token = authProvider.token;
-      final userId = authProvider.userId;
-
-      int nbProduitsAjoutes = 0;
-      List<String> erreurs = [];
-
-      for (int i = 1; i < sheet.rows.length; i++) {
-        try {
-          final row = sheet.rows[i];
-
-          // ATTENTION : adapte les indices aux colonnes dans ton fichier Excel
-          final photo = row.isNotEmpty ? row[0]?.value.toString().trim() ?? '' : '';
-          final nom = row.length > 1 ? row[1]?.value.toString().trim() ?? '' : '';
-          final categorie = row.length > 2 ? row[2]?.value.toString().trim() ?? '' : '';
-          final description = row.length > 3 ? row[3]?.value.toString().trim() ?? '' : '';
-          final prixAchat = row.length > 4 ? double.tryParse(row[4]?.value.toString() ?? '0') ?? 0 : 0;
-          final prixVente = row.length > 5 ? double.tryParse(row[5]?.value.toString() ?? '0') ?? 0 : 0;
-          final stock = row.length > 6 ? int.tryParse(row[6]?.value.toString() ?? '0') ?? 0 : 0;
-          final seuil = row.length > 7 ? int.tryParse(row[7]?.value.toString() ?? '5') ?? 5 : 5;
-          final unite = row.length > 8 ? row[8]?.value.toString().trim() ?? 'pièce' : 'pièce';
-          final isPromoStr = row.length > 9 ? row[9]?.value.toString().toLowerCase() ?? 'false' : 'false';
-          final prixPromo = row.length > 10 ? double.tryParse(row[10]?.value.toString() ?? '0') ?? 0 : 0;
-          final dateAchatStr = row.length > 11 ? row[11]?.value.toString() ?? '' : '';
-          final dateExpirationStr = row.length > 12 ? row[12]?.value.toString() ?? '' : '';
-
-          if (nom.isEmpty || categorie.isEmpty) continue;
-
-          bool isPromo = (isPromoStr == 'true' || isPromoStr == '1' || isPromoStr == 'oui');
-
-          DateTime? dateAchat;
-          DateTime? dateExpiration;
-
-          try {
-            if (dateAchatStr.isNotEmpty) dateAchat = DateTime.parse(dateAchatStr);
-            if (dateExpirationStr.isNotEmpty) dateExpiration = DateTime.parse(dateExpirationStr);
-          } catch (_) {
-            // Ignorer erreurs de parsing date
-          }
-
-          final data = {
-            "userId": userId,
-            "nom": nom,
-            "image": photo,
-            "categories": categorie,
-            "description": description,
-            "prix_achat": prixAchat.toString(),
-            "prix_vente": prixVente.toString(),
-            "stocks": stock.toString(),
-            "seuil_alerte": seuil.toString(),
-            "unite": unite,
-            "isPromo": isPromo.toString(),
-            "prix_promo": prixPromo.toString(),
-            "date_achat": dateAchat?.toIso8601String() ?? "",
-            "date_expiration": dateExpiration?.toIso8601String() ?? "",
-          };
-
-          final res = await api.postNewProduct(data, token);
-
-          if (res.statusCode == 201 || res.statusCode == 200) {
-            nbProduitsAjoutes++;
-          } else {
-            erreurs.add("Ligne ${i+1}: Erreur ${res.statusCode} - $nom");
-          }
-        } catch (e) {
-          erreurs.add("Ligne ${i+1}: ${e.toString()}");
-        }
-      }
-
-      if (!mounted) return;
-      Navigator.pop(context);
-
-      if (erreurs.isNotEmpty) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Erreurs d'import"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("$nbProduitsAjoutes produit(s) importé(s) avec succès"),
-                  const SizedBox(height: 16),
-                  ...erreurs.take(5).map((e) => Text(e)),
-                  if (erreurs.length > 5) const Text("... et d'autres erreurs"),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("$nbProduitsAjoutes produit(s) ajouté(s) depuis Excel."),
-            backgroundColor: nbProduitsAjoutes > 0 ? Colors.green : Colors.orange,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context);
-      debugPrint("Erreur import Excel : $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Erreur lors de l'importation du fichier Excel"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }

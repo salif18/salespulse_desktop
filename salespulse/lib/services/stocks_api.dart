@@ -27,8 +27,22 @@ class ServicesStocks {
         ));
   }
 
+    //ajouter depense
+  updateProduct(FormData data, String token, String id) async {
+  var uri = "$domaineName/products/single/$id";
+  return await dio.put(
+    uri,
+    data: data,
+    options: Options(
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'multipart/form-data', // Important pour FormData
+      },
+    ),
+  );
+}
   //ajouter depense
-  updateProduct(data, token, id) async {
+  updateStockProduct(data, token, id) async {
     var uri = "$domaineName/products/stocks/$id";
     return await dio.put(uri,
         data: data,

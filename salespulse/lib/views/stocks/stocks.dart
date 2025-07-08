@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async'; // Pour StreamController
 import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -13,6 +15,7 @@ import 'package:salespulse/services/stocks_api.dart';
 import 'package:salespulse/utils/format_prix.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:salespulse/views/stocks/stock_mouvements_screen.dart';
+import 'package:salespulse/views/update_stock/update_stock.dart';
 
 class StocksView extends StatefulWidget {
   const StocksView({super.key});
@@ -297,8 +300,11 @@ class _StocksViewState extends State<StocksView> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                     Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
+                                    Image.asset("assets/images/erreur.png",
+                                        width: 200,
+                                        height: 200,
+                                        fit: BoxFit.cover),
+                                    const SizedBox(height: 20),
                                     Text(
                                       "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
                                       style: GoogleFonts.poppins(fontSize: 14),
@@ -318,16 +324,19 @@ class _StocksViewState extends State<StocksView> {
                   return SliverFillRemaining(
                     child: Center(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                             Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                         const SizedBox(height: 20,),
-                            Text(
-                                                  "Aucune catégorie disponible.",
-                                                  style: GoogleFonts.poppins(fontSize: 14),
-                                                ),
-                          ],
-                        )),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset("assets/images/not_data.png",
+                            width: 200, height: 200, fit: BoxFit.cover),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Text(
+                          "Aucune catégorie disponible.",
+                          style: GoogleFonts.poppins(fontSize: 14),
+                        ),
+                      ],
+                    )),
                   );
                 } else {
                   final articles = snapshot.data!;
@@ -365,8 +374,8 @@ class _StocksViewState extends State<StocksView> {
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: ConstrainedBox(
-                              constraints:
-                                  BoxConstraints(minWidth: constraints.maxWidth),
+                              constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth),
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
@@ -546,7 +555,21 @@ class _StocksViewState extends State<StocksView> {
                                                     icon: const Icon(Icons.edit,
                                                         color: Colors.blue),
                                                     onPressed: () {
-                                                      // Action pour supprimer le produit
+                                                      // Action pour editer
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              EditProduitPage(
+                                                                  product:
+                                                                      article),
+                                                        ),
+                                                      ).then((modified) {
+                                                        if (modified == true) {
+                                                          // Rafraîchir les données si nécessaire
+                                                          _loadProducts();
+                                                        }
+                                                      });
                                                     },
                                                   ),
                                                 ),
@@ -558,7 +581,7 @@ class _StocksViewState extends State<StocksView> {
                                                       color: Color.fromARGB(
                                                           255, 255, 67, 67)),
                                                   onPressed: () {
-                                                    // Action pour éditer le produit
+                                                    // Action pour supprimer le produit
                                                     _showAlertDelete(
                                                         context, article);
                                                   },
@@ -620,18 +643,29 @@ class _StocksViewState extends State<StocksView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Supprimer",style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),),
-          content:
-              Text("Êtes-vous sûr de vouloir supprimer cet article ?",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+          title: Text(
+            "Supprimer",
+            style:
+                GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          content: Text("Êtes-vous sûr de vouloir supprimer cet article ?",
+              style: GoogleFonts.poppins(
+                  fontSize: 14, fontWeight: FontWeight.w400)),
           actions: <Widget>[
             TextButton(
               onPressed: () => _removeArticles(article),
-              child:Text("Supprimer",style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w400)),
+              child: Text("Supprimer",
+                  style: GoogleFonts.poppins(
+                      fontSize: 12, fontWeight: FontWeight.w400)),
             ),
             TextButton(
               style: TextButton.styleFrom(backgroundColor: Colors.redAccent),
               onPressed: () => Navigator.of(context).pop(false),
-              child:Text("Annuler",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
+              child: Text("Annuler",
+                  style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white)),
             ),
           ],
         );

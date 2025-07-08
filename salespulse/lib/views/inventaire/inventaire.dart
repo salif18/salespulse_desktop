@@ -119,7 +119,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
       }
 
 
-      final response = await api.updateProduct(data, token, productId);
+      final response = await api.updateStockProduct(data, token, productId);
 
       if (response.statusCode == 200) {
         debugPrint("✅ Stock mis à jour avec succès");
