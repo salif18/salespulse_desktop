@@ -53,12 +53,19 @@ class _LoginViewState extends State<LoginView> {
           });
         final response = await api.postLoginUser(data);
         final body = jsonDecode(response.body);
-        
         // ignore: use_build_context_synchronously
         Navigator.pop(context); // Fermer le dialog
 
         if (response.statusCode == 200) {
-          providerAuth.loginButton(body['token'], body["userId"].toString(), body["userName"], body["entreprise"], body["userNumber"],body["adminId"],body["role"]);
+          providerAuth.loginButton(
+            body['token'], 
+            body["userId"],  
+            body["adminId"], 
+            body["role"],
+            body["userName"],          
+            body["userNumber"],
+            body["entreprise"],     
+          );
         
           // ignore: use_build_context_synchronously
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Routes()));

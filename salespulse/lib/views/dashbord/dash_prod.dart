@@ -71,6 +71,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
     final res = await api.getStatsGenerales(selectedMonth, token);
     if (res.statusCode == 200) {
       final data = res.data;
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       setState(() {
         totalVentes = data['totalVentesBrutes'] ?? 0;
         montantEncaisse = data['montantEncaisse'] ?? 0;
@@ -150,6 +151,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
             };
           }).toList();
         }
+        if (!mounted) return; // ✅ vérifie que le widget est toujours là
 
         setState(() {
           ventesDuJour = mergedJour;

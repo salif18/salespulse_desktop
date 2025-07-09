@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:salespulse/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -12,9 +11,6 @@ class AuthProvider extends ChangeNotifier {
   late String _adminId;
   late String _role;
 
-
-  UserModel? _user;
-
   String get token => _token;
   String get userId => _userId;
   String get adminId => _adminId;
@@ -22,7 +18,7 @@ class AuthProvider extends ChangeNotifier {
   String get societeName => _societeName;
   String get societeNumber => _societeNumber;
   String get role => _role;
-  UserModel? get user => _user;
+ 
 
   AuthProvider() {
     _token = "";
@@ -45,10 +41,10 @@ class AuthProvider extends ChangeNotifier {
     _adminId = prefs.getString("adminId") ?? "";
 
 
-    final userJson = prefs.getString("userData");
-    if (userJson != null) {
-      _user = UserModel.fromJon(jsonDecode(userJson));
-    }
+    // final userJson = prefs.getString("userData");
+    // if (userJson != null) {
+    //   _user = UserModel.fromJon(jsonDecode(userJson));
+    // }
 
     notifyListeners();
   }
@@ -61,21 +57,30 @@ class AuthProvider extends ChangeNotifier {
 
   // Sauvegarder les données complètes de l’utilisateur
   Future<void> saveUserData(Map<String, dynamic> userData) async {
-    _user = UserModel.fromJon(userData);
+    // _user = UserModel.fromJon(userData);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userData', jsonEncode(userData)); // 👈 convertit en JSON
     notifyListeners();
   }
 
   // Fonction de connexion
-  void loginButton(String userToken, String userUserId, String userName, String entreprise, String number, String adminId, String role) {
+  void loginButton(
+    String userToken, 
+    String userUserId,
+    String adminId, 
+    String role,
+    String userName,  
+    String number,   
+    String entreprise,
+  ) { 
     _token = userToken;
     _userId = userUserId;
-    _userName = userName;
-    _societeName = entreprise;
-    _societeNumber = number;
     _adminId = adminId;
     _role = role;
+    _userName = userName;   
+    _societeNumber = number;
+    _societeName = entreprise;
+    
 
     saveToLocalStorage("token", _token);
     saveToLocalStorage("userId", _userId);
@@ -90,13 +95,14 @@ class AuthProvider extends ChangeNotifier {
   // Déconnexion
   Future<void> logoutButton() async {
     _token = "";
-    _userId = "";
-    _userName = "";
-    _societeName = "";
-    _societeNumber = "";
+    _userId = ""; 
     _adminId ="";
     _role = "";
-    _user = null;
+    _userName = "";    
+    _societeNumber = "";
+    _societeName = "";
+    
+    // _user = null;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Efface toutes les données stockées localement

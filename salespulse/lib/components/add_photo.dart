@@ -35,6 +35,7 @@ class _PikedPhotoState extends State<PikedPhoto> {
     try {
       final res = await api.getProfils(token);
       if (res.statusCode == 200) {
+        if (!mounted) return;
         setState(() {
           profil = ProfilModel.fromJson(res.data["profils"]);
         });

@@ -188,10 +188,10 @@ class _EditProduitPageState extends State<EditProduitPage> {
     }
   }
 
-  Future<void> _removeArticles(article) async {
+  Future<void> _removeArticles(productId) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     try {
-      final res = await api.deleteProduct(article.id, token);
+      final res = await api.deleteProduct(productId, token);
       final body = jsonDecode(res.body);
       if (res.statusCode == 200) {
         // ignore: use_build_context_synchronously

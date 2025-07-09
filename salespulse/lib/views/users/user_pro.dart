@@ -29,6 +29,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     {'value': 'manager', 'label': 'Gestionnaire', 'color': Colors.blueAccent},
     {'value': 'employe', 'label': 'Employé', 'color': Colors.green},
     {'value': 'comptable', 'label': 'Comptable', 'color': Colors.purpleAccent},
+    {'value': 'caissier', 'label': 'Caissier', 'color': Colors.purpleAccent},
   ];
 
   @override
@@ -313,9 +314,11 @@ class _AddUserModalState extends State<AddUserModal> {
 
     try {
       final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
+      final boutique = Provider.of<AuthProvider>(context, listen: false).societeName;
       final data = {
         "adminId": adminId,
         "name": _nameController.text,
+        "boutique_name":boutique,
         "numero": _phoneController.text,
         "email": _emailController.text,
         "role": _selectedRole,
@@ -527,6 +530,7 @@ class _AddUserModalState extends State<AddUserModal> {
         },
         {'value': 'employe', 'label': 'Employé', 'icon': Icons.person},
         {'value': 'comptable', 'label': 'Comptable', 'icon': Icons.calculate},
+         {'value': 'caissier', 'label': 'Caissier', 'icon': Icons.shopping_cart_checkout_outlined},
       ]
           .map<DropdownMenuItem<String>>((role) => DropdownMenuItem<String>(
                 value: role['value'] as String,

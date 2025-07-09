@@ -69,8 +69,16 @@ class _RegistreViewState extends State<RegistreView> {
         Navigator.pop(context); // Fermer le dialog
 
         if (response.statusCode == 201) {
-          provider.loginButton(body['token'], body["userId"].toString(),
-              body["userName"], body["entreprise"],body["userNumber"],body["adminId"],body["role"]);
+           provider.loginButton(
+            body['token'], 
+            body["userId"],  
+            body["adminId"], 
+            body["role"],
+            body["userName"],          
+            body["userNumber"],
+            body["entreprise"], 
+           
+          );
           Navigator.pushReplacement(
               // ignore: use_build_context_synchronously
               context, MaterialPageRoute(builder: (context) => const Routes()));

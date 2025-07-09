@@ -55,7 +55,7 @@ class _RoutesState extends State<Routes> {
   Widget _buildPermanentSidebar() {
   final store = Provider.of<AuthProvider>(context, listen: false).societeName;
   final number = Provider.of<AuthProvider>(context, listen: false).societeNumber;
-
+  final role = Provider.of<AuthProvider>(context, listen: false).role;
   final ScrollController scrollController = ScrollController();
 
   return Container(
@@ -113,6 +113,7 @@ class _RoutesState extends State<Routes> {
 
             // ✅ Section ANALYSE
             _buildSectionHeader('ANALYSE'),
+            if(role == "admin")
             _buildDrawerItem(Icons.stacked_bar_chart_rounded, "Tableau de bord", 0, iconBgColor: Colors.orange),
             _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 1, iconBgColor: Colors.pink),
 
@@ -126,6 +127,7 @@ class _RoutesState extends State<Routes> {
             // ✅ Section STOCKS
             _buildSectionHeader('STOCKS'),
             _buildDrawerItem(Icons.assured_workload_rounded, "Entrepots", 6, iconBgColor: Colors.blue),
+            if(role == "admin")
             _buildDrawerItem(Icons.add, "Ajouter produits", 7, iconBgColor: Colors.blue.shade300),
             _buildDrawerItem(Icons.inventory_2_rounded, "Inventaires", 8, iconBgColor: Colors.deepPurple),
             _buildDrawerItem(Icons.assignment_add, "Mouvement inventaires", 9, iconBgColor: Colors.deepOrange),
@@ -145,6 +147,7 @@ class _RoutesState extends State<Routes> {
 
             // ✅ Section ADMINISTRATION
             _buildSectionHeader('ADMINISTRATION'),
+              if(role == "admin")
             _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.deepOrange),
 
             // ✅ Section COMPTE UTILISATEUR
