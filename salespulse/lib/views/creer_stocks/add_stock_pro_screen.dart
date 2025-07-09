@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:excel/excel.dart' as excel;
@@ -471,7 +473,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                 Expanded(
                                   child: _buildTextField(
                                     controller: _unite,
-                                    label: "Unité*",
+                                    label: "Unité",
                                     hint: "pièce, kg, litre...",
                                     validator: (value) =>
                                         value!.isEmpty ? "Ce champ est obligatoire" : null,
