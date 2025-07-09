@@ -672,124 +672,261 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     return null; // échec du chargement réseau
   }
 
-  Future<void> generateFacturePdf(VenteModel vente) async {
-    final pdf = pw.Document();
-    final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
-    // Charger logo depuis assets
+Future<void> generateFacturePdf(VenteModel vente) async {
+  final pdf = pw.Document();
+  final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
-    ProfilModel? profil;
+  ProfilModel? profil;
+  final token = Provider.of<AuthProvider>(context, listen: false).token;
 
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
-
-    try {
-      final res = await ServicesProfil().getProfils(token);
-      if (res.statusCode == 200) {
-        profil = ProfilModel.fromJson(res.data["profils"]);
-      }
-    } catch (e) {
-      debugPrint("Erreur chargement profil: $e");
+  try {
+    final res = await ServicesProfil().getProfils(token);
+    if (res.statusCode == 200) {
+      profil = ProfilModel.fromJson(res.data["profils"]);
     }
-
-    // Tente de charger le logo depuis le net
-    final pw.MemoryImage? logoNetwork =
-        await tryLoadNetworkImage(profil?.image ?? "");
-
-    // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
-    final pw.ImageProvider logoLocal = pw.MemoryImage(
-      (await rootBundle.load('assets/logos/salespulse.jpg'))
-          .buffer
-          .asUint8List(),
-    );
-    final int reste = (vente.total - vente.montantRecu) > 0
-        ? (vente.total - vente.montantRecu)
-        : 0;
-
-    pdf.addPage(
-      pw.Page(
-        margin: const pw.EdgeInsets.all(24),
-        build: (context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Image(
-                logoNetwork ?? logoLocal,
-                width: 100,
-                height: 100,
-              ), // Logo centré
-              pw.SizedBox(height: 10),
-              pw.Text("FACTURE",
-                  style: pw.TextStyle(
-                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 10),
-              pw.Text("Facture N°: ${vente.id}",
-                  style: const pw.TextStyle(fontSize: 12)),
-              pw.Text("Date : ${dateFormatter.format(vente.date)}",
-                  style: const pw.TextStyle(fontSize: 12)),
-              pw.SizedBox(height: 10),
-              pw.Text("Client : ${vente.clientNom ?? 'Ocasionnel'}",
-                  style: const pw.TextStyle(fontSize: 12)),
-              pw.SizedBox(height: 16),
-              pw.Text("Détail des produits :",
-                  style: pw.TextStyle(
-                      fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 8),
-              pw.Table.fromTextArray(
-                border: null,
-                headers: ["Produit", "Qté", "PU", "Sous-total"],
-                data: vente.produits.map((p) {
-                  return [
-                    p.nom,
-                    "${p.quantite}",
-                    "${p.prixUnitaire} Fcfa",
-                    "${p.sousTotal} Fcfa"
-                  ];
-                }).toList(),
-              ),
-              pw.Divider(),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text("Total : ${vente.total} Fcfa",
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 4),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text("Montant reçu : ${vente.montantRecu} Fcfa",
-                      style: const pw.TextStyle(fontSize: 12)),
-                ],
-              ),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text("Monnaie : ${vente.monnaie} Fcfa",
-                      style: const pw.TextStyle(fontSize: 12)),
-                ],
-              ),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text("Reste à payer : $reste Fcfa",
-                      style: pw.TextStyle(
-                          fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 16),
-              pw.Text("Mode de paiement : ${vente.typePaiement}",
-                  style: const pw.TextStyle(fontSize: 12)),
-              pw.Text("Statut : ${vente.statut}",
-                  style: const pw.TextStyle(fontSize: 12)),
-            ],
-          );
-        },
-      ),
-    );
-
-    await Printing.layoutPdf(onLayout: (format) => pdf.save());
+  } catch (e) {
+    debugPrint("Erreur chargement profil: $e");
   }
+
+  final pw.MemoryImage? logoNetwork =
+      await tryLoadNetworkImage(profil?.image ?? "");
+
+  final pw.ImageProvider logoLocal = pw.MemoryImage(
+    (await rootBundle.load('assets/logos/salespulse.jpg'))
+        .buffer
+        .asUint8List(),
+  );
+
+  final int reste = (vente.total - vente.montantRecu) > 0
+      ? (vente.total - vente.montantRecu)
+      : 0;
+
+  pdf.addPage(
+    pw.Page(
+      margin: const pw.EdgeInsets.all(24),
+      build: (context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Image(logoNetwork ?? logoLocal, width: 100, height: 100),
+            pw.SizedBox(height: 10),
+            pw.Text("FACTURE",
+                style: pw.TextStyle(
+                    fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text("Facture N°: ${vente.id.toString().substring(0, 4)}",
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.Text("Date : ${dateFormatter.format(vente.date)}",
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.SizedBox(height: 10),
+            pw.Text("Client : ${vente.clientNom ?? 'Occasionnel'}",
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.SizedBox(height: 16),
+
+            // Détail produits
+            pw.Text("Détail des produits :",
+                style: pw.TextStyle(
+                    fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            ...vente.produits.map((p) {
+              return pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 8),
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey300),
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text("${p.nom} x${p.quantite}",
+                        style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                    pw.Text("PU : ${p.prixUnitaire} Fcfa"),
+                    if ((p.remise ?? 0) > 0)
+                      pw.Text("Remise : ${p.remise} ${p.remiseType == 'pourcent' ? '%' : 'Fcfa'}"),
+                    if ((p.tva ?? 0) > 0)
+                      pw.Text("TVA : ${p.tva}%"),
+                    pw.Text("Sous-total : ${p.sousTotal} Fcfa",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ],
+                ),
+              );
+            }),
+
+            pw.Divider(),
+            pw.SizedBox(height: 8),
+
+            // Récapitulatif
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if ((vente.remiseGlobale ?? 0) > 0)
+                      pw.Text(
+                          "Remise globale : ${vente.remiseGlobale} ${vente.remiseGlobaleType == 'pourcent' ? '%' : 'Fcfa'}",
+                          style: const pw.TextStyle(fontSize: 12)),
+                    if ((vente.tvaGlobale ?? 0) > 0)
+                      pw.Text("TVA globale : ${vente.tvaGlobale}%",
+                          style: const pw.TextStyle(fontSize: 12)),
+                    if ((vente.livraison ?? 0) > 0)
+                      pw.Text("Livraison : ${vente.livraison} Fcfa",
+                          style: const pw.TextStyle(fontSize: 12)),
+                    if ((vente.emballage ?? 0) > 0)
+                      pw.Text("Emballage : ${vente.emballage} Fcfa",
+                          style: const pw.TextStyle(fontSize: 12)),
+                    pw.SizedBox(height: 4),
+                    pw.Text("Total : ${vente.total} Fcfa",
+                        style: pw.TextStyle(
+                            fontSize: 14,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blue800)),
+                    pw.Text("Reçu : ${vente.montantRecu} Fcfa"),
+                    pw.Text("Monnaie : ${vente.monnaie} Fcfa"),
+                    if (reste > 0)
+                      pw.Text("Reste : $reste Fcfa",
+                          style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.red)),
+                  ],
+                )
+              ],
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text("Mode de paiement : ${vente.typePaiement}",
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.Text("Statut : ${vente.statut}",
+                style: const pw.TextStyle(fontSize: 12)),
+          ],
+        );
+      },
+    ),
+  );
+
+  await Printing.layoutPdf(onLayout: (format) => pdf.save());
+}
+
+  // Future<void> generateFacturePdf(VenteModel vente) async {
+  //   final pdf = pw.Document();
+  //   final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
+  //   // Charger logo depuis assets
+
+  //   ProfilModel? profil;
+
+  //   final token = Provider.of<AuthProvider>(context, listen: false).token;
+
+  //   try {
+  //     final res = await ServicesProfil().getProfils(token);
+  //     if (res.statusCode == 200) {
+  //       profil = ProfilModel.fromJson(res.data["profils"]);
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Erreur chargement profil: $e");
+  //   }
+
+  //   // Tente de charger le logo depuis le net
+  //   final pw.MemoryImage? logoNetwork =
+  //       await tryLoadNetworkImage(profil?.image ?? "");
+
+  //   // Charge image locale (à mettre dans assets et déclarer dans pubspec.yaml)
+  //   final pw.ImageProvider logoLocal = pw.MemoryImage(
+  //     (await rootBundle.load('assets/logos/salespulse.jpg'))
+  //         .buffer
+  //         .asUint8List(),
+  //   );
+  //   final int reste = (vente.total - vente.montantRecu) > 0
+  //       ? (vente.total - vente.montantRecu)
+  //       : 0;
+
+  //   pdf.addPage(
+  //     pw.Page(
+  //       margin: const pw.EdgeInsets.all(24),
+  //       build: (context) {
+  //         return pw.Column(
+  //           crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //           children: [
+  //             pw.Image(
+  //               logoNetwork ?? logoLocal,
+  //               width: 100,
+  //               height: 100,
+  //             ), // Logo centré
+  //             pw.SizedBox(height: 10),
+  //             pw.Text("FACTURE",
+  //                 style: pw.TextStyle(
+  //                     fontSize: 24, fontWeight: pw.FontWeight.bold)),
+  //             pw.SizedBox(height: 10),
+  //             pw.Text("Facture N°: ${vente.id.toString().substring(0, 4)}",
+  //                 style: const pw.TextStyle(fontSize: 12)),
+  //             pw.Text("Date : ${dateFormatter.format(vente.date)}",
+  //                 style: const pw.TextStyle(fontSize: 12)),
+  //             pw.SizedBox(height: 10),
+  //             pw.Text("Client : ${vente.clientNom ?? 'Ocasionnel'}",
+  //                 style: const pw.TextStyle(fontSize: 12)),
+  //             pw.SizedBox(height: 16),
+  //             pw.Text("Détail des produits :",
+  //                 style: pw.TextStyle(
+  //                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+  //             pw.SizedBox(height: 8),
+  //             pw.Table.fromTextArray(
+  //               border: null,
+  //               headers: ["Produit", "Qté", "PU", "Sous-total"],
+  //               data: vente.produits.map((p) {
+  //                 return [
+  //                   p.nom,
+  //                   "${p.quantite}",
+  //                   "${p.prixUnitaire} Fcfa",
+  //                   "${p.sousTotal} Fcfa"
+  //                 ];
+  //               }).toList(),
+  //             ),
+  //             pw.Divider(),
+  //             pw.Row(
+  //               mainAxisAlignment: pw.MainAxisAlignment.end,
+  //               children: [
+  //                 pw.Text("Total : ${vente.total} Fcfa",
+  //                     style: pw.TextStyle(
+  //                         fontSize: 14, fontWeight: pw.FontWeight.bold)),
+  //               ],
+  //             ),
+  //             pw.SizedBox(height: 4),
+  //             pw.Row(
+  //               mainAxisAlignment: pw.MainAxisAlignment.end,
+  //               children: [
+  //                 pw.Text("Montant reçu : ${vente.montantRecu} Fcfa",
+  //                     style: const pw.TextStyle(fontSize: 12)),
+  //               ],
+  //             ),
+  //             pw.Row(
+  //               mainAxisAlignment: pw.MainAxisAlignment.end,
+  //               children: [
+  //                 pw.Text("Monnaie : ${vente.monnaie} Fcfa",
+  //                     style: const pw.TextStyle(fontSize: 12)),
+  //               ],
+  //             ),
+  //             pw.Row(
+  //               mainAxisAlignment: pw.MainAxisAlignment.end,
+  //               children: [
+  //                 pw.Text("Reste à payer : $reste Fcfa",
+  //                     style: pw.TextStyle(
+  //                         fontSize: 12, fontWeight: pw.FontWeight.bold)),
+  //               ],
+  //             ),
+  //             pw.SizedBox(height: 16),
+  //             pw.Text("Mode de paiement : ${vente.typePaiement}",
+  //                 style: const pw.TextStyle(fontSize: 12)),
+  //             pw.Text("Statut : ${vente.statut}",
+  //                 style: const pw.TextStyle(fontSize: 12)),
+  //           ],
+  //         );
+  //       },
+  //     ),
+  //   );
+
+  //   await Printing.layoutPdf(onLayout: (format) => pdf.save());
+  // }
 
   Future<void> generateRapportPdfPro(
       List<VenteModel> ventes, DateTime? dateDebut, DateTime? dateFin) async {
