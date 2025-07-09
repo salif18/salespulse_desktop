@@ -143,13 +143,13 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-          backgroundColor: const Color(0xff001c30),
+          backgroundColor: Colors.white,//const Color(0xff001c30),
           title: Text(
             "Historique des ventes",
             style: GoogleFonts.roboto(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
           )),
       body: Padding(
         padding: const EdgeInsets.all(8.0),

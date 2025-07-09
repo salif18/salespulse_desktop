@@ -129,8 +129,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
     final formData = FormData();
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
-
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     formData.fields
+    ..add(MapEntry("userId", userId))
       ..add(MapEntry("adminId", adminId))
       ..add(MapEntry("nom", _nom.text))
       ..add(MapEntry("categories", _selectedCategorie!))
@@ -842,7 +843,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final token = authProvider.token;
       final userId = authProvider.userId;
-
+      final adminId = authProvider.adminId;
       int nbProduitsAjoutes = 0;
       List<String> erreurs = [];
 
@@ -881,6 +882,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
 
           final data = {
             "userId": userId,
+            "adminId":adminId,
             "nom": nom,
             "image": photo,
             "categories": categorie,

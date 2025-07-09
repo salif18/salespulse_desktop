@@ -152,8 +152,8 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
             style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white)),
-        backgroundColor: const Color(0xff001c30),
+                color: Colors.black)),
+        backgroundColor:Colors.white //const Color(0xff001c30),
       ),
       body: Padding(
           padding: const EdgeInsets.all(12.0),

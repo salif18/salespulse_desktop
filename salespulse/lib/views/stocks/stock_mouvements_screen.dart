@@ -275,14 +275,14 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
             icon: const Icon(
               Icons.arrow_back_ios_outlined,
               size: 18,
-              color: Colors.white,
+              color: Colors.black,
             )),
         title: Text(
           "Historique des mouvements",
           style: GoogleFonts.roboto(
-              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xff001c30),
+        backgroundColor:Colors.white,// const Color(0xff001c30),
         actions: [
           IconButton(
             icon: Icon(

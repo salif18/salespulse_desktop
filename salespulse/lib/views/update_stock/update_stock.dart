@@ -209,7 +209,7 @@ class _EditProduitPageState extends State<EditProduitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -236,6 +236,7 @@ class _EditProduitPageState extends State<EditProduitPage> {
             constraints: const BoxConstraints(maxWidth: 1200),
             child: Card(
               elevation: 2,
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),

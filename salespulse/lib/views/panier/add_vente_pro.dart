@@ -10,9 +10,8 @@ import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/client_api.dart';
 import 'package:salespulse/services/stocks_api.dart';
 import 'package:salespulse/services/vente_api.dart';
+import 'package:salespulse/utils/format_prix.dart';
 import 'package:salespulse/views/panier/recu_screen.dart';
-
-
 
 class AddVenteScreen extends StatefulWidget {
   const AddVenteScreen({super.key});
@@ -22,6 +21,7 @@ class AddVenteScreen extends StatefulWidget {
 }
 
 class _AddVenteScreenState extends State<AddVenteScreen> {
+  FormatPrice formatPrice = FormatPrice();
   ServicesStocks api = ServicesStocks();
   final ServicesClients _clientApi = ServicesClients();
   ServicesVentes venteApi = ServicesVentes();
@@ -91,7 +91,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   // OBTENIR LES CATEGORIES API
   Future<void> _loadClients() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    
+
     try {
       final res = await _clientApi.getClients(token);
       final body = res.data;
@@ -109,77 +109,81 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   }
 
   void _ajouterAuPanier() async {
-  if (selectedProducts.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Veuillez sélectionner au moins un produit",
-          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+    if (selectedProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Veuillez sélectionner au moins un produit",
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
         ),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
+      );
+      return;
+    }
 
-  for (var produit in selectedProducts) {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => _FormulaireProduitDialog(produit: produit),
-    );
-
-    if (result != null) {
-      int qte = result["quantite"];
-      int remise = result["remise"];
-      String remiseType = result["remiseType"];
-      int tva = result["tva"];
-      int fraisLivraison = result["fraisLivraison"];
-      int fraisEmballage = result["fraisEmballage"];
-
-      // Prix unitaire initial
-      int prixInitial = produit.prixVente;
-
-      // ✅ Appliquer la remise correctement
-      int prixRemise = remiseType == 'pourcent'
-          ? (prixInitial - ((prixInitial * remise) / 100).round())
-          : (prixInitial - remise);
-
-      if (prixRemise < 0) prixRemise = 0;
-
-      // ✅ Calcul du sous-total brut avec remise
-      int sousTotalBrut = prixRemise * qte;
-
-      // ✅ Calcul de la TVA
-      double montantTVA = (tva > 0) ? ((sousTotalBrut * tva) / 100) : 0;
-
-      // ✅ Sous-total final
-      int sousTotalFinal = (sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage).round();
-
-      final item = ProductItemModel(
-        productId: produit.id,
-        nom: produit.nom,
-        image: produit.image,
-        prixAchat: produit.prixAchat,
-        prixUnitaire: prixInitial,
-        quantite: qte,
-        sousTotal: sousTotalFinal,
-        stocks: produit.stocks,
-        remise: remise,
-        remiseType: remiseType,
-        tva: tva,
-        fraisLivraison: fraisLivraison,
-        fraisEmballage: fraisEmballage,
+    for (var produit in selectedProducts) {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => _FormulaireProduitDialog(produit: produit),
       );
 
-      setState(() {
-        panier.add(item);
-        total = panier.fold(0, (sum, p) => sum + p.sousTotal);
-      });
-    }
-  }
+      if (result != null) {
+        int qte = result["quantite"];
+        int remise = result["remise"];
+        String remiseType = result["remiseType"];
+        int tva = result["tva"];
+        int fraisLivraison = result["fraisLivraison"];
+        int fraisEmballage = result["fraisEmballage"];
 
-  selectedProducts.clear();
-}
+        // Prix unitaire initial avec promo si disponible
+        int prixInitial = produit.isPromo ? produit.prixPromo : produit.prixVente;
+
+        // ✅ Appliquer la remise correctement
+        int prixRemise = remiseType == 'pourcent'
+            ? (prixInitial - ((prixInitial * remise) / 100).round())
+            : (prixInitial - remise);
+
+        if (prixRemise < 0) prixRemise = 0;
+
+        // ✅ Calcul du sous-total brut avec remise
+        int sousTotalBrut = prixRemise * qte;
+
+        // ✅ Calcul de la TVA
+        double montantTVA = (tva > 0) ? ((sousTotalBrut * tva) / 100) : 0;
+
+        // ✅ Sous-total final
+        int sousTotalFinal =
+            (sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage)
+                .round();
+
+        final item = ProductItemModel(
+          productId: produit.id,
+          nom: produit.nom,
+          image: produit.image,
+          prixAchat: produit.prixAchat,
+          prixUnitaire: prixInitial,
+          quantite: qte,
+          sousTotal: sousTotalFinal,
+          stocks: produit.stocks,
+          remise: remise,
+          remiseType: remiseType,
+          isPromo: produit.isPromo,
+          prixVente: produit.prixVente,
+          tva: tva,
+          fraisLivraison: fraisLivraison,
+          fraisEmballage: fraisEmballage,
+        );
+print(item.isPromo);
+        setState(() {
+          panier.add(item);
+          total = panier.fold(0, (sum, p) => sum + p.sousTotal);
+        });
+      }
+    }
+
+    selectedProducts.clear();
+  }
 
   void _validerVente() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
@@ -202,19 +206,28 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     }
 
     for (var item in panier) {
-  if (item.stocks! < item.quantite) {
-    showDialog(
-
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Stock insuffisant", style: GoogleFonts.poppins(fontSize: 14,color:Colors.black),),
-        content: Text("Le stock de ${item.nom} est insuffisant.",style: GoogleFonts.poppins(fontSize: 14,color:Colors.black)),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text("OK",style: GoogleFonts.poppins(fontSize: 14,color:Colors.black)))],
-      ),
-    );
-    return;
-  }
-}
+      if (item.stocks! < item.quantite) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Stock insuffisant",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
+            ),
+            content: Text("Le stock de ${item.nom} est insuffisant.",
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("OK",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14, color: Colors.black)))
+            ],
+          ),
+        );
+        return;
+      }
+    }
     // Calcul du reste (solde dû)
     int reste = total - montantRecu;
     if (reste < 0) reste = 0;
@@ -223,39 +236,40 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
     String statut;
     int livraison = int.tryParse(_livraisonController.text) ?? 0;
     int emballage = int.tryParse(_emballageController.text) ?? 0;
-    if (montantRecu  >= (total + livraison + emballage)) {
+    if (montantRecu >= (total + livraison + emballage)) {
       statut = "payée";
-    } else if (montantRecu > 0 && montantRecu < (total + livraison + emballage)) {
+    } else if (montantRecu > 0 &&
+        montantRecu < (total + livraison + emballage)) {
       statut = "partiel";
     } else {
       statut = "crédit";
     }
 
     // AVERTISSEMENT : vente à crédit ou partielle sans client
-if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: Text("Client requis", style: GoogleFonts.poppins(fontSize: 16)),
-      content: Text(
-        "Pour une vente à crédit ou un paiement partiel, vous devez sélectionner ou enregistrer le client.",
-        style: GoogleFonts.poppins(fontSize: 14),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text("OK", style: GoogleFonts.poppins()),
-        )
-      ],
-    ),
-  );
-  return;
-}
-
+    if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title:
+              Text("Client requis", style: GoogleFonts.poppins(fontSize: 16)),
+          content: Text(
+            "Pour une vente à crédit ou un paiement partiel, vous devez sélectionner ou enregistrer le client.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("OK", style: GoogleFonts.poppins()),
+            )
+          ],
+        ),
+      );
+      return;
+    }
 
     final venteMap = {
       "userId": userId,
-      "adminId":adminId,
+      "adminId": adminId,
       "clientId": selectedClient?.id,
       "nom": selectedClient?.nom ?? "Anonyme",
       "contactClient": selectedClient?.contact,
@@ -287,46 +301,58 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
       );
       final vente = response.data['vente'];
       showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      title: Text("✅ Vente enregistrée !",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
-      content: Text("Souhaitez-vous voir/imprimer le reçu ?",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // Ferme le dialog
-            // Navigue vers la page de reçu (à créer)
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => RecuVenteScreen(data: vente),
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(
+            "✅ Vente enregistrée !",
+            style:
+                GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),
+          ),
+          content: Text(
+            "Souhaitez-vous voir/imprimer le reçu ?",
+            style:
+                GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Ferme le dialog
+                // Navigue vers la page de reçu (à créer)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => RecuVenteScreen(data: vente),
+                  ),
+                );
+              },
+              child: Text(
+                "Apperçu du reçu",
+                style: GoogleFonts.roboto(
+                    fontSize: 14, fontWeight: FontWeight.w400),
               ),
-            );
-          },
-          child: Text("Apperçu du reçu",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Ferme le dialog
+                setState(() {
+                  panier.clear();
+                  total = 0;
+                  _montantRecuController.clear();
+                  selectedClientId = null;
+                  selectedPaiement = 'cash';
+                  _remiseGlobaleController.clear();
+                  _remiseGlobaleType = 'fcfa';
+                  _tvaGlobaleController.clear();
+                  _livraisonController.clear();
+                  _emballageController.clear();
+                });
+              },
+              child: const Text("Annuler"),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // Ferme le dialog
-            setState(() {
-              panier.clear();
-              total = 0;
-              _montantRecuController.clear();
-              selectedClientId = null;
-              selectedPaiement = 'cash';
-              _remiseGlobaleController.clear();
-              _remiseGlobaleType = 'fcfa';
-              _tvaGlobaleController.clear();
-              _livraisonController.clear();
-              _emballageController.clear();
-            });
-          },
-          child: const Text("Annuler"),
-        ),
-      ],
-    ),
-  );
+      );
       setState(() {
         panier.clear();
         total = 0;
@@ -376,15 +402,19 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
         child: Scaffold(
           backgroundColor: Colors.grey[100],
           appBar: AppBar(
+            leading: const Icon(
+              Icons.shopping_cart_checkout,
+              size: 30,
+            ),
             title: Text(
-              "Nouvelle vente",
+              "Point de vente",
               style: GoogleFonts.poppins(
                 fontSize: 16,
-                color: Colors.white,
+                color: Colors.black,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            backgroundColor: const Color(0xff001c30),
+            backgroundColor: Colors.white, //const Color(0xff001c30),
             elevation: 2,
           ),
           body: Padding(
@@ -485,7 +515,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
                         TextField(
                           controller: _quantiteController,
                           decoration:
-                             const InputDecoration(labelText: "Quantité"),
+                              const InputDecoration(labelText: "Quantité"),
                           keyboardType: TextInputType.number,
                           style: theme.textTheme.bodyMedium,
                         ),
@@ -530,10 +560,34 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
                                                 style:
                                                     theme.textTheme.bodyMedium),
                                             const SizedBox(height: 4),
-                                            Text(
-                                                "Unité: ${item.prixUnitaire} Fcfa",
-                                                style:
-                                                    theme.textTheme.bodySmall),
+                                               Row(
+                      children: [
+                        if (item.isPromo) ...[
+                          Text(
+                            "${item.prixVente} Fcfa",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${item.prixUnitaire} Fcfa",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                        ] else ...[
+                          Text(
+                            "Unité: ${item.prixVente} Fcfa",
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ]
+                      ],
+                    ),
                                             const SizedBox(height: 4),
                                             Text(
                                                 "Sous-total: ${item.sousTotal} Fcfa",
@@ -817,8 +871,39 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
                           },
                           title: Text(product.nom,
                               style: GoogleFonts.poppins(fontSize: 14)),
-                          subtitle: Text("${product.prixVente} Fcfa",
-                              style: GoogleFonts.poppins(fontSize: 12)),
+                          subtitle: Row(
+                            children: [
+                              if (product.isPromo) ...[
+                                Text(
+                                  formatPrice.formatNombre(
+                                      product.prixPromo.toString()),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  formatPrice.formatNombre(
+                                      product.prixVente.toString()),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    decoration: TextDecoration.lineThrough,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ] else
+                                Text(
+                                  formatPrice.formatNombre(
+                                      product.prixVente.toString()),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                            ],
+                          ),
                           secondary: Image.network(
                             product.image ?? '',
                             width: 40,
@@ -947,60 +1032,58 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
   }
 
   void recalculerTotal() {
-  int nouveauTotal = 0;
+    int nouveauTotal = 0;
 
-  for (var item in panier) {
-    int prixUnitaire = item.prixUnitaire;
+    for (var item in panier) {
+      int prixUnitaire = item.prixUnitaire;
 
-    if (item.remiseType == 'fcfa') {
-      prixUnitaire -= item.remise ?? 0;
-    } else if (item.remiseType == 'pourcent') {
-      prixUnitaire -= ((prixUnitaire * (item.remise ?? 0)) / 100).round();
+      if (item.remiseType == 'fcfa') {
+        prixUnitaire -= item.remise ?? 0;
+      } else if (item.remiseType == 'pourcent') {
+        prixUnitaire -= ((prixUnitaire * (item.remise ?? 0)) / 100).round();
+      }
+
+      if (prixUnitaire < 0) prixUnitaire = 0;
+
+      int sousTotalBrut = prixUnitaire * item.quantite;
+
+      double montantTVA = 0;
+      if ((item.tva ?? 0) > 0) {
+        montantTVA = (sousTotalBrut * (item.tva ?? 0)) / 100;
+      }
+
+      int fraisLivraison = item.fraisLivraison ?? 0;
+      int fraisEmballage = item.fraisEmballage ?? 0;
+
+      double sousTotal =
+          sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage;
+
+      nouveauTotal += sousTotal.round();
     }
 
-    if (prixUnitaire < 0) prixUnitaire = 0;
-
-    int sousTotalBrut = prixUnitaire * item.quantite;
-
-    double montantTVA = 0;
-    if ((item.tva ?? 0) > 0) {
-      montantTVA = (sousTotalBrut * (item.tva ?? 0)) / 100;
+    // Remise globale
+    int remise = int.tryParse(_remiseGlobaleController.text) ?? 0;
+    if (_remiseGlobaleType == "pourcent") {
+      nouveauTotal -= ((nouveauTotal * remise) / 100).round();
+    } else {
+      nouveauTotal -= remise;
     }
 
-    int fraisLivraison = item.fraisLivraison ?? 0;
-    int fraisEmballage = item.fraisEmballage ?? 0;
+    // TVA globale
+    int tva = int.tryParse(_tvaGlobaleController.text) ?? 0;
+    if (tva > 0) {
+      nouveauTotal += ((nouveauTotal * tva) / 100).round();
+    }
 
-    double sousTotal = sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage;
+    // Livraison et emballage globaux
+    int livraison = int.tryParse(_livraisonController.text) ?? 0;
+    int emballage = int.tryParse(_emballageController.text) ?? 0;
+    nouveauTotal += livraison + emballage;
 
-    nouveauTotal += sousTotal.round();
+    setState(() {
+      total = nouveauTotal;
+    });
   }
-
-  // Remise globale
-  int remise = int.tryParse(_remiseGlobaleController.text) ?? 0;
-  if (_remiseGlobaleType == "pourcent") {
-    nouveauTotal -= ((nouveauTotal * remise) / 100).round();
-  } else {
-    nouveauTotal -= remise;
-  }
-
-  // TVA globale
-  int tva = int.tryParse(_tvaGlobaleController.text) ?? 0;
-  if (tva > 0) {
-    nouveauTotal += ((nouveauTotal * tva) / 100).round();
-  }
-
-  // Livraison et emballage globaux
-  int livraison = int.tryParse(_livraisonController.text) ?? 0;
-  int emballage = int.tryParse(_emballageController.text) ?? 0;
-  nouveauTotal += livraison + emballage;
-
-  setState(() {
-    total = nouveauTotal;
-  });
-}
-
-
-
 }
 
 class _FormulaireProduitDialog extends StatefulWidget {
@@ -1023,7 +1106,9 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Détails pour ${widget.produit.nom}",),
+      title: Text(
+        "Détails pour ${widget.produit.nom}",
+      ),
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -1046,26 +1131,33 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
             TextField(
                 controller: _tvaCtrl,
                 keyboardType: TextInputType.number,
-                decoration:const InputDecoration(labelText: "TVA (%)")),
+                decoration: const InputDecoration(labelText: "TVA (%)")),
             TextField(
                 controller: _livraisonCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Frais de livraison")),
+                decoration:
+                    const InputDecoration(labelText: "Frais de livraison")),
             TextField(
                 controller: _emballageCtrl,
                 keyboardType: TextInputType.number,
-                decoration:const InputDecoration(labelText: "Frais d'emballage")),
+                decoration:
+                    const InputDecoration(labelText: "Frais d'emballage")),
           ],
         ),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueAccent),)),
+            child: Text(
+              "Annuler",
+              style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent),
+            )),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange.shade700
-          ),
+          style:
+              ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700),
           onPressed: () {
             Navigator.pop(context, {
               "quantite": int.tryParse(_qteCtrl.text) ?? 1,
@@ -1076,76 +1168,13 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
               "fraisEmballage": int.tryParse(_emballageCtrl.text) ?? 0,
             });
           },
-          child: Text("Ajouter", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+          child: Text("Ajouter",
+              style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
         )
       ],
     );
   }
 }
-
-//   void _ajouterAuPanier() async {
-//     if (selectedProducts.isEmpty) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text(
-//             "Veuillez sélectionner au moins un produit",
-//             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-//           ),
-//           backgroundColor: Colors.red,
-//         ),
-//       );
-//       return;
-//     }
-// // pour les produits selectionner
-//     for (var produit in selectedProducts) {
-//       final result = await showDialog<Map<String, dynamic>>(
-//         context: context,
-//         builder: (context) => _FormulaireProduitDialog(produit: produit),
-//       );
-
-//       if (result != null) {
-//         int qte = result["quantite"];
-//         int remise = result["remise"];
-//         String remiseType = result["remiseType"];
-//         int tva = result["tva"];
-//         int fraisLivraison = result["fraisLivraison"];
-//         int fraisEmballage = result["fraisEmballage"];
-
-//         // Calcul du prix final
-//         int prixInitial = produit.prixVente;
-//         int prixRemise = remiseType == 'pourcent'
-//             ? (prixInitial - (prixInitial * remise ~/ 100))
-//             : (prixInitial - remise);
-
-//         if (prixRemise < 0) prixRemise = 0;
-
-//         int sousTotalBase = prixInitial * qte;
-
-//         int sousTotalTva = (sousTotalBase + fraisLivraison + fraisEmballage);
-//         sousTotalTva += (tva > 0) ? (sousTotalBase * tva ~/ 100) : 0;
-
-//         final item = ProductItemModel(
-//           productId: produit.id,
-//           nom: produit.nom,
-//           image: produit.image,
-//           prixAchat: produit.prixAchat,
-//           prixUnitaire: prixInitial,
-//           quantite: qte,
-//           sousTotal: sousTotalTva,
-//           stocks: produit.stocks,
-//           remise: remise,
-//           remiseType: remiseType,
-//           tva: tva,
-//           fraisLivraison: fraisLivraison,
-//           fraisEmballage: fraisEmballage,
-//         );
-
-//         setState(() {
-//           panier.add(item);
-//           total = panier.fold(0, (sum, p) => sum + p.sousTotal);
-//         });
-//       }
-//     }
-
-//     selectedProducts.clear();
-//   }

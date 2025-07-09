@@ -261,8 +261,8 @@ class _DepenseScreenState extends State<DepenseScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Dépenses", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xff001c30),
+        title: Text("Dépenses", style: GoogleFonts.poppins(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white//const Color(0xff001c30),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),

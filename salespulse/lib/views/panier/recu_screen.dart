@@ -18,10 +18,10 @@ class RecuVenteScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: const Color(0xff001c30),
+        backgroundColor:Colors.white,//const Color(0xff001c30),
         title: Text("Reçu de Vente",
             style: GoogleFonts.poppins(
-                color: Colors.white, fontWeight: FontWeight.w600)),
+                color: Colors.black, fontWeight: FontWeight.w600)),
         actions: [
           IconButton(
             icon: const Icon(

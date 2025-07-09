@@ -203,8 +203,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text("Statistiques Générales",
-            style: GoogleFonts.poppins(fontSize: 18, color: Colors.white)),
-        backgroundColor: const Color(0xff001c30),
+            style: GoogleFonts.poppins(fontSize: 18, color: Colors.black)),
+        backgroundColor:Colors.white //const Color(0xff001c30),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchStats,

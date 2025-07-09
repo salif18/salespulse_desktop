@@ -160,7 +160,7 @@ class _StocksViewState extends State<StocksView> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: const Color(0xff001c30),
+              backgroundColor: Colors.white, //const Color(0xff001c30),
               expandedHeight: 40,
               pinned: true,
               floating: true,
@@ -168,7 +168,7 @@ class _StocksViewState extends State<StocksView> {
                 title: AutoSizeText("Les stocks",
                     minFontSize: 16,
                     style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white)),
+                        GoogleFonts.roboto(fontSize: 16, color: Colors.black)),
               ),
             ),
             SliverToBoxAdapter(
@@ -176,7 +176,7 @@ class _StocksViewState extends State<StocksView> {
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
                   // color: const Color.fromARGB(255, 0, 40, 68),
-                  color:Colors.white,
+                  color: Colors.white,
                   height: 80,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -454,6 +454,16 @@ class _StocksViewState extends State<StocksView> {
                                     ),
                                     DataColumn(
                                       label: Text(
+                                        "Statut".toUpperCase(),
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
                                         "Date".toUpperCase(),
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
@@ -523,12 +533,44 @@ class _StocksViewState extends State<StocksView> {
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            formatPrice.formatNombre(
-                                                article.prixVente.toString()),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 12,
-                                            ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (article.isPromo) ...[
+                                                Text(
+                                                  formatPrice.formatNombre(
+                                                      article.prixPromo
+                                                          .toString()),
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.redAccent,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  formatPrice.formatNombre(
+                                                      article.prixVente
+                                                          .toString()),
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 12,
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ] else
+                                                Text(
+                                                  formatPrice.formatNombre(
+                                                      article.prixVente
+                                                          .toString()),
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 12,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                         DataCell(
@@ -537,6 +579,17 @@ class _StocksViewState extends State<StocksView> {
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
                                             ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                            article.statut.toString(),
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                color: article.statut ==
+                                                        "disponible"
+                                                    ? Colors.green
+                                                    : Colors.red),
                                           ),
                                         ),
                                         DataCell(

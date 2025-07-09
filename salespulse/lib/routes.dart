@@ -145,7 +145,7 @@ class _RoutesState extends State<Routes> {
 
             // ✅ Section ADMINISTRATION
             _buildSectionHeader('ADMINISTRATION'),
-            _buildDrawerItem(FontAwesomeIcons.userGroup, "Utilisateurs", 14, iconBgColor: Colors.deepOrange),
+            _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.deepOrange),
 
             // ✅ Section COMPTE UTILISATEUR
             _buildUserActionsSection(),

@@ -8,6 +8,8 @@ class ProductItemModel {
   final int prixAchat;
   final int? remise;
   final String? remiseType;
+  bool isPromo;
+  final int prixVente;
   final int? tva;
   final int? fraisLivraison;
   final int? fraisEmballage;
@@ -23,6 +25,8 @@ class ProductItemModel {
       required this.prixUnitaire,
       required this.remise,
       required this.remiseType,
+      required this.isPromo,
+      required this.prixVente,
       required this.tva,
       required this.fraisLivraison,
       required this.fraisEmballage,
@@ -39,6 +43,8 @@ class ProductItemModel {
         prixUnitaire: json['prix_unitaire'] ?? "",
         remise: json["remise"] ?? 0,
         remiseType: json["remise_type"] ?? "",
+        isPromo: json['isPromo'] == true || json['isPromo'] == 'true',
+        prixVente: json["prix_vente"] ?? 0,
         tva: json["tva"] ?? "",
         fraisLivraison: json["frais_livraison"] ?? "",
         fraisEmballage: json["frais_emballage"] ?? "",
@@ -56,6 +62,8 @@ class ProductItemModel {
       'prix_unitaire': prixUnitaire,
       'remise': remise, // en FCFA ou %
       'remise_type': remiseType,
+      'isPromo':isPromo == true,
+      'prix_vente':prixVente,
       'tva': tva, // % appliqué (ex: 18)
       'frais_livraison': fraisLivraison, // en FCFA
       'frais_emballage': fraisEmballage, //

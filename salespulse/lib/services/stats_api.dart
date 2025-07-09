@@ -25,7 +25,7 @@ class ServicesStats {
   }
 
   Future<Response> getVentesDuJour(String token) async {
-  final uri = "$domaineName/stats/jour";
+  var uri = "$domaineName/stats/jour";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -34,7 +34,7 @@ class ServicesStats {
 }
 
 Future<Response> getVentesHebdomadaires(String token) async {
-  final uri = "$domaineName/stats/semaine";
+  var uri = "$domaineName/stats/semaine";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -43,7 +43,7 @@ Future<Response> getVentesHebdomadaires(String token) async {
 }
 
 Future<Response> getVentesAnnee(String token) async {
-  final uri = "$domaineName/stats/annee";
+  var uri = "$domaineName/stats/annee";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -52,11 +52,21 @@ Future<Response> getVentesAnnee(String token) async {
 }
 
 Future<Response> getClientRetard(String token) async {
-  final uri = "$domaineName/stats/clients-en-retard";
+  var uri = "$domaineName/stats/clients-en-retard";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
       }));
 }
+
+Future<Response> getOperationUser(String token, periode, userId) async {
+  var uri = "$domaineName/stats/operations-utilisateur?periode=$periode&userId=$userId";
+  return await dio.get(uri,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      }));
+}
+
 }

@@ -103,12 +103,13 @@ class _ClientsViewState extends State<ClientsView> {
 Future<void> _sendToserver(BuildContext context) async {
   final token = Provider.of<AuthProvider>(context, listen: false).token;
   final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-
+  final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
   if (_globalKey.currentState!.validate()) {
     try {
       // Construction du FormData
       final formDataMap = {
         "userId": userId,
+        "adminId":adminId,
         "nom": _nom.text,
         "contact": _contact.text,
         "credit_total": int.tryParse(_creditTotal.text) ?? 0,
@@ -172,14 +173,14 @@ Future<void> _sendToserver(BuildContext context) async {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: const Color(0xff001c30),
+            backgroundColor:Colors.white,// const Color(0xff001c30),
             expandedHeight: 50, // Augmentation de la hauteur
             pinned: true,
             floating: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 "Mes clients",
-                style: GoogleFonts.roboto(fontSize: 16, color: Colors.white),
+                style: GoogleFonts.roboto(fontSize: 16, color: Colors.black),
               ),
             ),
           ),

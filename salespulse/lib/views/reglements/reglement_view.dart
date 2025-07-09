@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -41,8 +43,8 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text("Historique des règlements",
-            style: GoogleFonts.roboto(fontSize: 16, color: Colors.white)),
-        backgroundColor: const Color(0xff001c30),
+            style: GoogleFonts.roboto(fontSize: 16, color: Colors.black)),
+        backgroundColor: Colors.white//const Color(0xff001c30),
       ),
       body: reglements.isEmpty
     ? Center(
@@ -83,14 +85,7 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
                       return DataRow(cells: [
                         DataCell(Text(r.nom , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
                         DataCell(Text("${r.montant} Fcfa" , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
-                        DataCell(Text(
-                          r.type,
-                          style: TextStyle(
-                              color: r.type == "règlement"
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontWeight: FontWeight.bold),
-                        )),
+                        DataCell(Text(r.type, style: TextStyle( color: r.type == "règlement" ? Colors.green : Colors.red, fontWeight: FontWeight.bold),)),
                         DataCell(Text(r.mode  , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
                         DataCell(Text(DateFormat('dd/MM/yyyy').format(r.date) , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),
                         DataCell(Text(r.operateur , style: GoogleFonts.poppins(fontSize: 14, color: Colors.black))),

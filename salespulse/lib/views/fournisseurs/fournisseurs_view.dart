@@ -143,14 +143,14 @@ class _FournisseurViewState extends State<FournisseurView> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: const Color(0xff001c30),
+            backgroundColor: Colors.white,//const Color(0xff001c30),
             expandedHeight: 50, // Augmentation de la hauteur
             pinned: true,
             floating: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 "Mes fournisseurs",
-                style: GoogleFonts.roboto(fontSize: 16, color: Colors.white),
+                style: GoogleFonts.roboto(fontSize: 16, color: Colors.black),
               ),
             ),
           ),

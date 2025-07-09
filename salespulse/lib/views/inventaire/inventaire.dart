@@ -99,10 +99,12 @@ class _InventaireProPageState extends State<InventaireProPage> {
   Future<void> updateStockOnServer(
       String productId,String userId,int saisie, String type, String description) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
   
     try {
       Map<String, dynamic> data = {
         "userId":userId,
+        "adminId":adminId,
         "type": type,
         "description": description,
       };
@@ -277,8 +279,8 @@ class _InventaireProPageState extends State<InventaireProPage> {
     return Scaffold(
   backgroundColor: Colors.grey[100],
   appBar: AppBar(
-    title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
-    backgroundColor: const Color(0xff001c30),
+    title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.black)),
+    backgroundColor:Colors.white// const Color(0xff001c30),
   ),
   body: Padding(
     padding: const EdgeInsets.all(12),

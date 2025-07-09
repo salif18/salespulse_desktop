@@ -12,7 +12,7 @@ class ProductModel {
   final int seuilAlerte;
   final String unite;
   final String statut; // "disponible" ou "indisponible"
-  final bool isPromo;
+  bool isPromo;
   final int prixPromo;
   final DateTime dateAchat;
   final DateTime? dateExpiration;
@@ -56,7 +56,7 @@ class ProductModel {
       seuilAlerte: json['seuil_alerte'] ?? 5,
       unite: json['unite'] ?? 'pièce',
       statut: json['statut'] ?? 'disponible',
-      isPromo: json['isPromo'] ?? false,
+      isPromo: json['isPromo'] == true || json['isPromo'] == 'true',
       prixPromo: json['prix_promo'] ?? 0,
       dateAchat: DateTime.parse(json['date_achat'] ?? ""),
       dateExpiration: json['date_expiration'] != null
@@ -81,7 +81,7 @@ class ProductModel {
       "seuil_alerte": seuilAlerte,
       "unite": unite,
       "statut": statut,
-      "isPromo": isPromo,
+      "isPromo": isPromo == true,
       "prix_promo": prixPromo,
       "date_achat": dateAchat.toIso8601String(),
       "date_expiration": dateExpiration?.toIso8601String(),

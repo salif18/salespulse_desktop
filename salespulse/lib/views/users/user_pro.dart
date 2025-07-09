@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:salespulse/models/user_model.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/auth_api.dart';
+import 'package:salespulse/views/operations/user_operations.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -38,7 +39,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Future<void> fetchUsers() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
- 
+
     try {
       final res = await api.getUsers(token);
 
@@ -53,7 +54,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } catch (e) {
       debugPrint("Erreur fetchUsers: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors du chargement des utilisateurs: $e')),
+        SnackBar(
+            content: Text('Erreur lors du chargement des utilisateurs: $e')),
       );
     }
   }
@@ -61,9 +63,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   void _applyFilters() {
     setState(() {
       _filteredUsers = _users.where((user) {
-        final matchesSearch = user.name.toLowerCase().contains(_searchQuery.toLowerCase()) || 
-                            user.email.toLowerCase().contains(_searchQuery.toLowerCase());
-        final matchesRole = _selectedRoleFilter == null || user.role == _selectedRoleFilter;
+        final matchesSearch =
+            user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                user.email.toLowerCase().contains(_searchQuery.toLowerCase());
+        final matchesRole =
+            _selectedRoleFilter == null || user.role == _selectedRoleFilter;
         return matchesSearch && matchesRole;
       }).toList();
     });
@@ -139,8 +143,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: const Color(0xff001c30),
-        title: Text('Gestion des Utilisateurs',style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
+        backgroundColor: Colors.white, //const Color(0xff001c30),
+        title: Text(
+          'Gestion des Utilisateurs',
+          style: GoogleFonts.roboto(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
         centerTitle: true,
         elevation: 0,
       ),
@@ -149,11 +157,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(width:500,child: _buildSearchBar()),
-                 IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-          ),
+              SizedBox(width: 500, child: _buildSearchBar()),
+              IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: _showFilterDialog,
+              ),
             ],
           ),
           Expanded(
@@ -162,7 +170,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 : ListView.builder(
                     padding: const EdgeInsets.only(top: 8),
                     itemCount: _filteredUsers.length,
-                    itemBuilder: (context, index) => _buildUserCard(_filteredUsers[index]),
+                    itemBuilder: (context, index) =>
+                        _buildUserCard(_filteredUsers[index]),
                   ),
           ),
         ],
@@ -202,60 +211,69 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final role = _roles.firstWhere((r) => r['value'] == user.role);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: role['color'].withOpacity(0.2),
-          child: Text(
-            user.name.substring(0, 1),
-            style: TextStyle(
-              color: role['color'],
-              fontWeight: FontWeight.bold,
+    return SizedBox(
+      height: 100,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: role['color'].withOpacity(0.2),
+            child: Text(
+              user.name.substring(0, 1),
+              style: TextStyle(
+                color: role['color'],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        title: Text(
-          user.name,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(user.email),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: role['color'].withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                role['label'],
-                style: TextStyle(
-                  color: role['color'],
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+          title: Text(
+            user.name,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text(user.email),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: role['color'].withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  role['label'],
+                  style: TextStyle(
+                    color: role['color'],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              dateFormat.format(user.createdAt),
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  dateFormat.format(user.createdAt),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          onTap: () {
+            // Navigation vers le détail de l'utilisateur
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => UserOperationsPage(user: user)));
+          },
         ),
-        onTap: () {
-          // Navigation vers le détail de l'utilisateur
-        },
       ),
     );
   }
@@ -497,22 +515,33 @@ class _AddUserModalState extends State<AddUserModal> {
         fillColor: Colors.grey[50],
       ),
       items: <Map<String, dynamic>>[
-        {'value': 'admin', 'label': 'Administrateur', 'icon': Icons.admin_panel_settings},
-        {'value': 'manager', 'label': 'Gestionnaire', 'icon': Icons.manage_accounts},
+        {
+          'value': 'admin',
+          'label': 'Administrateur',
+          'icon': Icons.admin_panel_settings
+        },
+        {
+          'value': 'manager',
+          'label': 'Gestionnaire',
+          'icon': Icons.manage_accounts
+        },
         {'value': 'employe', 'label': 'Employé', 'icon': Icons.person},
         {'value': 'comptable', 'label': 'Comptable', 'icon': Icons.calculate},
-      ].map<DropdownMenuItem<String>>((role) => DropdownMenuItem<String>(
-            value: role['value'] as String,
-            child: Row(
-              children: [
-                Icon(role['icon']),
-                const SizedBox(width: 12),
-                Text(role['label']),
-              ],
-            ),
-          )).toList(),
+      ]
+          .map<DropdownMenuItem<String>>((role) => DropdownMenuItem<String>(
+                value: role['value'] as String,
+                child: Row(
+                  children: [
+                    Icon(role['icon']),
+                    const SizedBox(width: 12),
+                    Text(role['label']),
+                  ],
+                ),
+              ))
+          .toList(),
       onChanged: (value) => setState(() => _selectedRole = value!),
-      validator: (value) => value == null ? 'Veuillez sélectionner un rôle' : null,
+      validator: (value) =>
+          value == null ? 'Veuillez sélectionner un rôle' : null,
     );
   }
 

@@ -80,9 +80,11 @@ class _CategoriesViewState extends State<CategoriesView> {
   Future<void> _sendToserver(BuildContext context) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
     if (_globalKey.currentState!.validate()) {
       final data = {
         "userId": userId,
+        "adminId":adminId,
         "name": _categorieName.text,
       };
       try {
@@ -139,7 +141,8 @@ Widget build(BuildContext context) {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverAppBar(
-              backgroundColor: const Color(0xff001c30),
+              // backgroundColor: const Color(0xff001c30),
+              backgroundColor:Colors.white,
               elevation: 4,
               pinned: true,
               floating: true,
