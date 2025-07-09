@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +10,9 @@ import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/client_api.dart';
 import 'package:salespulse/services/stocks_api.dart';
 import 'package:salespulse/services/vente_api.dart';
+import 'package:salespulse/views/panier/recu_screen.dart';
+
+
 
 class AddVenteScreen extends StatefulWidget {
   const AddVenteScreen({super.key});
@@ -68,8 +71,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   Future<List<ProductModel>> fetchProduits() async {
     try {
       final token = Provider.of<AuthProvider>(context, listen: false).token;
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-      final res = await api.getAllProducts(token, userId);
+      final res = await api.getAllProducts(token);
 
       if (res.statusCode == 200) {
         final body = res.data;
@@ -89,9 +91,9 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   // OBTENIR LES CATEGORIES API
   Future<void> _loadClients() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    
     try {
-      final res = await _clientApi.getClients(userId, token);
+      final res = await _clientApi.getClients(token);
       final body = res.data;
       if (res.statusCode == 200) {
         setState(() {
@@ -107,75 +109,82 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
   }
 
   void _ajouterAuPanier() async {
-    if (selectedProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Veuillez sélectionner au moins un produit",
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
+  if (selectedProducts.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Veuillez sélectionner au moins un produit",
+          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
         ),
-      );
-      return;
-    }
-
-    for (var produit in selectedProducts) {
-      final result = await showDialog<Map<String, dynamic>>(
-        context: context,
-        builder: (context) => _FormulaireProduitDialog(produit: produit),
-      );
-
-      if (result != null) {
-        int qte = result["quantite"];
-        int remise = result["remise"];
-        String remiseType = result["remiseType"];
-        int tva = result["tva"];
-        int fraisLivraison = result["fraisLivraison"];
-        int fraisEmballage = result["fraisEmballage"];
-
-        // Calcul du prix final
-        int prixInitial = produit.prixVente;
-        int prixRemise = remiseType == 'pourcent'
-            ? (prixInitial - (prixInitial * remise ~/ 100))
-            : (prixInitial - remise);
-
-        if (prixRemise < 0) prixRemise = 0;
-
-        int sousTotalBase = prixInitial * qte;
-
-        int sousTotalTva = (sousTotalBase + fraisLivraison + fraisEmballage);
-        sousTotalTva += (tva > 0) ? (sousTotalBase * tva ~/ 100) : 0;
-
-        final item = ProductItemModel(
-          productId: produit.id,
-          nom: produit.nom,
-          image: produit.image,
-          prixAchat: produit.prixAchat,
-          prixUnitaire: prixInitial,
-          quantite: qte,
-          sousTotal: sousTotalTva,
-          stocks: produit.stocks,
-          remise: remise,
-          remiseType: remiseType,
-          tva: tva,
-          fraisLivraison: fraisLivraison,
-          fraisEmballage: fraisEmballage,
-        );
-
-        setState(() {
-          panier.add(item);
-          total = panier.fold(0, (sum, p) => sum + p.sousTotal);
-        });
-      }
-    }
-
-    selectedProducts.clear();
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
   }
+
+  for (var produit in selectedProducts) {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => _FormulaireProduitDialog(produit: produit),
+    );
+
+    if (result != null) {
+      int qte = result["quantite"];
+      int remise = result["remise"];
+      String remiseType = result["remiseType"];
+      int tva = result["tva"];
+      int fraisLivraison = result["fraisLivraison"];
+      int fraisEmballage = result["fraisEmballage"];
+
+      // Prix unitaire initial
+      int prixInitial = produit.prixVente;
+
+      // ✅ Appliquer la remise correctement
+      int prixRemise = remiseType == 'pourcent'
+          ? (prixInitial - ((prixInitial * remise) / 100).round())
+          : (prixInitial - remise);
+
+      if (prixRemise < 0) prixRemise = 0;
+
+      // ✅ Calcul du sous-total brut avec remise
+      int sousTotalBrut = prixRemise * qte;
+
+      // ✅ Calcul de la TVA
+      double montantTVA = (tva > 0) ? ((sousTotalBrut * tva) / 100) : 0;
+
+      // ✅ Sous-total final
+      int sousTotalFinal = (sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage).round();
+
+      final item = ProductItemModel(
+        productId: produit.id,
+        nom: produit.nom,
+        image: produit.image,
+        prixAchat: produit.prixAchat,
+        prixUnitaire: prixInitial,
+        quantite: qte,
+        sousTotal: sousTotalFinal,
+        stocks: produit.stocks,
+        remise: remise,
+        remiseType: remiseType,
+        tva: tva,
+        fraisLivraison: fraisLivraison,
+        fraisEmballage: fraisEmballage,
+      );
+
+      setState(() {
+        panier.add(item);
+        total = panier.fold(0, (sum, p) => sum + p.sousTotal);
+      });
+    }
+  }
+
+  selectedProducts.clear();
+}
 
   void _validerVente() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
     final operateur =
         Provider.of<AuthProvider>(context, listen: false).userName;
     int montantRecu = int.tryParse(_montantRecuController.text) ?? 0;
@@ -246,6 +255,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
 
     final venteMap = {
       "userId": userId,
+      "adminId":adminId,
       "clientId": selectedClient?.id,
       "nom": selectedClient?.nom ?? "Anonyme",
       "contactClient": selectedClient?.contact,
@@ -275,6 +285,48 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
             )),
       );
+      final vente = response.data['vente'];
+      showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: Text("✅ Vente enregistrée !",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
+      content: Text("Souhaitez-vous voir/imprimer le reçu ?",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Ferme le dialog
+            // Navigue vers la page de reçu (à créer)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RecuVenteScreen(data: vente),
+              ),
+            );
+          },
+          child: Text("Apperçu du reçu",style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Ferme le dialog
+            setState(() {
+              panier.clear();
+              total = 0;
+              _montantRecuController.clear();
+              selectedClientId = null;
+              selectedPaiement = 'cash';
+              _remiseGlobaleController.clear();
+              _remiseGlobaleType = 'fcfa';
+              _tvaGlobaleController.clear();
+              _livraisonController.clear();
+              _emballageController.clear();
+            });
+          },
+          child: const Text("Annuler"),
+        ),
+      ],
+    ),
+  );
       setState(() {
         panier.clear();
         total = 0;
@@ -631,6 +683,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
                         // Remise globale
                         const SizedBox(height: 12),
                         TextField(
+                          onChanged: (val) => recalculerTotal(),
                           controller: _remiseGlobaleController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -653,6 +706,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
 // TVA globale
                         const SizedBox(height: 12),
                         TextField(
+                          onChanged: (val) => recalculerTotal(),
                           controller: _tvaGlobaleController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -661,6 +715,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
 // Frais livraison
                         const SizedBox(height: 12),
                         TextField(
+                          onChanged: (val) => recalculerTotal(),
                           controller: _livraisonController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -669,6 +724,7 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
 // Frais emballage
                         const SizedBox(height: 12),
                         TextField(
+                          onChanged: (val) => recalculerTotal(),
                           controller: _emballageController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -889,6 +945,62 @@ if ((statut == "partiel" || statut == "crédit") && selectedClient == null) {
       },
     );
   }
+
+  void recalculerTotal() {
+  int nouveauTotal = 0;
+
+  for (var item in panier) {
+    int prixUnitaire = item.prixUnitaire;
+
+    if (item.remiseType == 'fcfa') {
+      prixUnitaire -= item.remise ?? 0;
+    } else if (item.remiseType == 'pourcent') {
+      prixUnitaire -= ((prixUnitaire * (item.remise ?? 0)) / 100).round();
+    }
+
+    if (prixUnitaire < 0) prixUnitaire = 0;
+
+    int sousTotalBrut = prixUnitaire * item.quantite;
+
+    double montantTVA = 0;
+    if ((item.tva ?? 0) > 0) {
+      montantTVA = (sousTotalBrut * (item.tva ?? 0)) / 100;
+    }
+
+    int fraisLivraison = item.fraisLivraison ?? 0;
+    int fraisEmballage = item.fraisEmballage ?? 0;
+
+    double sousTotal = sousTotalBrut + montantTVA + fraisLivraison + fraisEmballage;
+
+    nouveauTotal += sousTotal.round();
+  }
+
+  // Remise globale
+  int remise = int.tryParse(_remiseGlobaleController.text) ?? 0;
+  if (_remiseGlobaleType == "pourcent") {
+    nouveauTotal -= ((nouveauTotal * remise) / 100).round();
+  } else {
+    nouveauTotal -= remise;
+  }
+
+  // TVA globale
+  int tva = int.tryParse(_tvaGlobaleController.text) ?? 0;
+  if (tva > 0) {
+    nouveauTotal += ((nouveauTotal * tva) / 100).round();
+  }
+
+  // Livraison et emballage globaux
+  int livraison = int.tryParse(_livraisonController.text) ?? 0;
+  int emballage = int.tryParse(_emballageController.text) ?? 0;
+  nouveauTotal += livraison + emballage;
+
+  setState(() {
+    total = nouveauTotal;
+  });
+}
+
+
+
 }
 
 class _FormulaireProduitDialog extends StatefulWidget {
@@ -970,3 +1082,70 @@ class _FormulaireProduitDialogState extends State<_FormulaireProduitDialog> {
     );
   }
 }
+
+//   void _ajouterAuPanier() async {
+//     if (selectedProducts.isEmpty) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text(
+//             "Veuillez sélectionner au moins un produit",
+//             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+//           ),
+//           backgroundColor: Colors.red,
+//         ),
+//       );
+//       return;
+//     }
+// // pour les produits selectionner
+//     for (var produit in selectedProducts) {
+//       final result = await showDialog<Map<String, dynamic>>(
+//         context: context,
+//         builder: (context) => _FormulaireProduitDialog(produit: produit),
+//       );
+
+//       if (result != null) {
+//         int qte = result["quantite"];
+//         int remise = result["remise"];
+//         String remiseType = result["remiseType"];
+//         int tva = result["tva"];
+//         int fraisLivraison = result["fraisLivraison"];
+//         int fraisEmballage = result["fraisEmballage"];
+
+//         // Calcul du prix final
+//         int prixInitial = produit.prixVente;
+//         int prixRemise = remiseType == 'pourcent'
+//             ? (prixInitial - (prixInitial * remise ~/ 100))
+//             : (prixInitial - remise);
+
+//         if (prixRemise < 0) prixRemise = 0;
+
+//         int sousTotalBase = prixInitial * qte;
+
+//         int sousTotalTva = (sousTotalBase + fraisLivraison + fraisEmballage);
+//         sousTotalTva += (tva > 0) ? (sousTotalBase * tva ~/ 100) : 0;
+
+//         final item = ProductItemModel(
+//           productId: produit.id,
+//           nom: produit.nom,
+//           image: produit.image,
+//           prixAchat: produit.prixAchat,
+//           prixUnitaire: prixInitial,
+//           quantite: qte,
+//           sousTotal: sousTotalTva,
+//           stocks: produit.stocks,
+//           remise: remise,
+//           remiseType: remiseType,
+//           tva: tva,
+//           fraisLivraison: fraisLivraison,
+//           fraisEmballage: fraisEmballage,
+//         );
+
+//         setState(() {
+//           panier.add(item);
+//           total = panier.fold(0, (sum, p) => sum + p.sousTotal);
+//         });
+//       }
+//     }
+
+//     selectedProducts.clear();
+//   }

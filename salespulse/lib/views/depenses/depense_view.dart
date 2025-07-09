@@ -41,9 +41,8 @@ class _DepenseScreenState extends State<DepenseScreen> {
 
   Future<void> _fetchDepenses() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final res = await ServicesDepense().getAllDepenses(token, userId);
+      final res = await ServicesDepense().getAllDepenses(token);
       if (res.statusCode == 200) {
         final List data = res.data["depenses"];
         setState(() {
@@ -192,9 +191,11 @@ class _DepenseScreenState extends State<DepenseScreen> {
                   onPressed: () async {
                     final token = Provider.of<AuthProvider>(context, listen: false).token;
                     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-
+                    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
+ 
                     final data = {
                       "userId": userId,
+                      "adminId":adminId,
                       "motifs": _motifController.text,
                       "montants": int.tryParse(_montantController.text) ?? 0,
                       "type": _selectedType,

@@ -27,8 +27,8 @@ class ServicesFournisseurs {
   }
 
   //obtenir categorie pour formulaire
-  getFournisseurs(userId, token) async {
-    var uri = "$domaineName/fournisseurs/$userId";
+  getFournisseurs(token) async {
+    var uri = "$domaineName/fournisseurs";
     return await dio.get(uri,
         options: Options(
           headers: {

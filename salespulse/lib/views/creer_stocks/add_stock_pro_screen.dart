@@ -51,9 +51,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
 
   Future<void> _loadCategories() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final res = await apiCatego.getCategories(userId, token);
+      final res = await apiCatego.getCategories(token);
       if (res.statusCode == 200) {
         setState(() {
           _categoriesList = (res.data["results"] as List)
@@ -127,10 +126,10 @@ class _AddProduitPageState extends State<AddProduitPage> {
 
     final formData = FormData();
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
 
     formData.fields
-      ..add(MapEntry("userId", userId))
+      ..add(MapEntry("adminId", adminId))
       ..add(MapEntry("nom", _nom.text))
       ..add(MapEntry("categories", _selectedCategorie!))
       ..add(MapEntry("description", _description.text))

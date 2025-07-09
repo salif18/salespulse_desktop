@@ -24,9 +24,8 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
 
   Future<void> _fetchReglements() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-    final response = await ServicesReglements().getReglements(userId, token);
+    final response = await ServicesReglements().getReglements(token);
     if (response.statusCode == 200) {
       setState(() {
         reglements = (response.data["reglements"] as List)

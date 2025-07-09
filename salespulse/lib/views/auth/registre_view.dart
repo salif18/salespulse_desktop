@@ -70,8 +70,7 @@ class _RegistreViewState extends State<RegistreView> {
 
         if (response.statusCode == 201) {
           provider.loginButton(body['token'], body["userId"].toString(),
-              body["userName"], body["entreprise"],body["userNumber"]);
-
+              body["userName"], body["entreprise"],body["userNumber"],body["adminId"],body["role"]);
           Navigator.pushReplacement(
               // ignore: use_build_context_synchronously
               context, MaterialPageRoute(builder: (context) => const Routes()));
@@ -109,227 +108,229 @@ class _RegistreViewState extends State<RegistreView> {
             ]),
           ),
           SliverFillRemaining(
-            hasScrollBody: false,
+            hasScrollBody: true,
             child: Container(
-               height: MediaQuery.of(context).size.height -200,
+               height: MediaQuery.of(context).size.height ,
               width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.only(top: 40, left: 10, right: 10),
+              padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
               decoration: const BoxDecoration(
                 color: Color(0xff001c30),
               ),
               child: Form(
                 key: _globalKey,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              "Création de compte",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 20,
+                                  color: Colors.white),
+                            ),
+                            Text(
+                              "Information personnelle",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Colors.white),
+                            )
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 400,
+                          child: TextFormField(
+                            controller: _nom,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Veuillez entrer un nom';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.name,
+                            decoration: InputDecoration(
+                                hintText: "Nom",
+                                hintStyle: GoogleFonts.roboto(
+                                    fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xfff0fcf3),
+                                prefixIcon: const Icon(Icons.person_3_outlined,
+                                    size: 24),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none)),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 400,
+                          child: TextFormField(
+                            controller: _entreprise,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Veuillez entrer votre service';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.name,
+                            decoration: InputDecoration(
+                                hintText: "Votre societé",
+                                hintStyle: GoogleFonts.roboto(
+                                    fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xfff0fcf3),
+                                prefixIcon: const Icon(Icons.home_work_outlined,
+                                    size: 24),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none)),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 400,
+                          child: TextFormField(
+                            controller: _numero,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Veuillez entrer un numero';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                                hintText: "Numero",
+                                hintStyle: GoogleFonts.roboto(
+                                    fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xfff0fcf3),
+                                prefixIcon: const Icon(Icons.phone_android_outlined,
+                                    size: 24),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none)),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 400,
+                          child: TextFormField(
+                            controller: _email,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Veuillez entrer un e-mail';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                                hintText: "Email",
+                                hintStyle: GoogleFonts.roboto(
+                                    fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xfff0fcf3),
+                                prefixIcon: const Icon(Icons.mail_outline,
+                                    size:24),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 400,
+                          child: TextFormField(
+                            controller: _password,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Veuillez entrer un mot de passe';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.visiblePassword,
+                            obscureText: isVisibility,
+                            decoration: InputDecoration(
+                                hintText: "Mot de passe",
+                                hintStyle: GoogleFonts.roboto(
+                                    fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xfff0fcf3),
+                                prefixIcon: const Icon(Icons.lock_outline,
+                                    size: 24),
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isVisibility = !isVisibility;
+                                      });
+                                    },
+                                    icon: Icon(isVisibility
+                                        ? Icons.visibility_off
+                                        : Icons.visibility)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    borderSide: BorderSide.none)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(400, 50),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 255, 123, 0),
+                            ),
+                            onPressed: () {
+                              _sendToserver(context);
+                            },
+                            child: Text("Créer compte",
+                                style: GoogleFonts.roboto(
+                                  color: Colors.white,
+                                    fontSize: 14))),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Création de compte",
+                            "Avez vous un compte?",
                             style: GoogleFonts.roboto(
-                                fontSize: 20,
+                                fontSize: 12,
                                 color: Colors.white),
                           ),
-                          Text(
-                            "Information personnelle",
-                            style: GoogleFonts.roboto(
-                                fontSize: 14,
-                                color: Colors.white),
-                          )
+                          TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginView()));
+                              },
+                              child: Text(
+                                "Se connecter",
+                                style: GoogleFonts.roboto(
+                                  color:const Color.fromARGB(255, 255, 139, 7),
+                                  fontWeight: FontWeight.w600,
+                                    fontSize: 14),
+                              ))
                         ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 400,
-                        child: TextFormField(
-                          controller: _nom,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer un nom';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.name,
-                          decoration: InputDecoration(
-                              hintText: "Nom",
-                              hintStyle: GoogleFonts.roboto(
-                                  fontSize: 14),
-                              filled: true,
-                              fillColor: const Color(0xfff0fcf3),
-                              prefixIcon: const Icon(Icons.person_3_outlined,
-                                  size: 24),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none)),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 400,
-                        child: TextFormField(
-                          controller: _entreprise,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer votre service';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.name,
-                          decoration: InputDecoration(
-                              hintText: "Votre societé",
-                              hintStyle: GoogleFonts.roboto(
-                                  fontSize: 14),
-                              filled: true,
-                              fillColor: const Color(0xfff0fcf3),
-                              prefixIcon: const Icon(Icons.home_work_outlined,
-                                  size: 24),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none)),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 400,
-                        child: TextFormField(
-                          controller: _numero,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer un numero';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                              hintText: "Numero",
-                              hintStyle: GoogleFonts.roboto(
-                                  fontSize: 14),
-                              filled: true,
-                              fillColor: const Color(0xfff0fcf3),
-                              prefixIcon: const Icon(Icons.phone_android_outlined,
-                                  size: 24),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none)),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 400,
-                        child: TextFormField(
-                          controller: _email,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer un e-mail';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                              hintText: "Email",
-                              hintStyle: GoogleFonts.roboto(
-                                  fontSize: 14),
-                              filled: true,
-                              fillColor: const Color(0xfff0fcf3),
-                              prefixIcon: const Icon(Icons.mail_outline,
-                                  size:24),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 400,
-                        child: TextFormField(
-                          controller: _password,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer un mot de passe';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.visiblePassword,
-                          obscureText: isVisibility,
-                          decoration: InputDecoration(
-                              hintText: "Mot de passe",
-                              hintStyle: GoogleFonts.roboto(
-                                  fontSize: 14),
-                              filled: true,
-                              fillColor: const Color(0xfff0fcf3),
-                              prefixIcon: const Icon(Icons.lock_outline,
-                                  size: 24),
-                              suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isVisibility = !isVisibility;
-                                    });
-                                  },
-                                  icon: Icon(isVisibility
-                                      ? Icons.visibility_off
-                                      : Icons.visibility)),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(400, 50),
-                            backgroundColor:
-                                const Color.fromARGB(255, 255, 123, 0),
-                          ),
-                          onPressed: () {
-                            _sendToserver(context);
-                          },
-                          child: Text("Créer compte",
-                              style: GoogleFonts.roboto(
-                                color: Colors.white,
-                                  fontSize: 14))),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Avez vous un compte?",
-                          style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              color: Colors.white),
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const LoginView()));
-                            },
-                            child: Text(
-                              "Se connecter",
-                              style: GoogleFonts.roboto(
-                                color:const Color.fromARGB(255, 255, 139, 7),
-                                fontWeight: FontWeight.w600,
-                                  fontSize: 14),
-                            ))
-                      ],
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -91,9 +91,8 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
   Future<void> fetchVentes() async {
     try {
       final token = Provider.of<AuthProvider>(context, listen: false).token;
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-      final response = await api.getAllVentes(token, userId);
+      final response = await api.getAllVentes(token);
 
       if (response.statusCode == 200) {
         List ventesJson = response.data["ventes"];

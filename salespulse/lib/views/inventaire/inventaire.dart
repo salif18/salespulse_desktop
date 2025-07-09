@@ -46,8 +46,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
   Future<void> _loadProducts() async {
     try {
       final token = Provider.of<AuthProvider>(context, listen: false).token;
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-      final res = await api.getAllProducts(token, userId);
+      final res = await api.getAllProducts(token);
       final body = res.data;
       if (res.statusCode == 200) {
         setState(() {
@@ -64,9 +63,8 @@ class _InventaireProPageState extends State<InventaireProPage> {
   // OBTENIR LES CATEGORIES API
   Future<void> _getCategories() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final res = await apiCatego.getCategories(userId, token);
+      final res = await apiCatego.getCategories(token);
       final body = res.data;
       if (res.statusCode == 200) {
         setState(() {
@@ -83,13 +81,9 @@ class _InventaireProPageState extends State<InventaireProPage> {
   Future<void> _loadVentes() async {
     final ServicesVentes api = ServicesVentes();
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
-      final res = await api.getAllVentes(
-        token,
-        userId,
-      );
+      final res = await api.getAllVentes(token);
       if (res.statusCode == 200) {
         final data = res.data;
         ventesRecentes = (data["ventes"] as List)
@@ -103,11 +97,12 @@ class _InventaireProPageState extends State<InventaireProPage> {
   }
 
   Future<void> updateStockOnServer(
-      String productId, int saisie, String type, String description) async {
+      String productId,String userId,int saisie, String type, String description) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-
+  
     try {
       Map<String, dynamic> data = {
+        "userId":userId,
         "type": type,
         "description": description,
       };
@@ -196,6 +191,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () async {
+                  final userId = Provider.of<AuthProvider>(context, listen: false).userId;
                   final nouvelleQte = int.tryParse(quantiteController.text);
                   if (nouvelleQte == null || nouvelleQte < 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +202,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
 
                   await updateStockOnServer(
                     produit.id,
+                    userId,
                     nouvelleQte,
                     selectedType,
                     descriptionController.text.trim(),

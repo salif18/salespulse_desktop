@@ -7,7 +7,7 @@ class ServicesMouvements {
   var uri = "$domaineName/mouvements";
 
   Future<Map<String, dynamic>> getMouvements({
-    required String userId,
+    required String adminId,
     required String token,
     required String productId,
     String? type,

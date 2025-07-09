@@ -27,8 +27,8 @@ class ServicesProfil {
   }
 
   //obtenir categorie pour formulaire
-  getProfils(userId, token) async {
-    var uri = "$domaineName/profils/$userId";
+  getProfils(token) async {
+    var uri = "$domaineName/profils";
     return await dio.get(uri,
         options: Options(
           headers: {

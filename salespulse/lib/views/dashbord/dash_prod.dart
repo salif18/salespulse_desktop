@@ -67,9 +67,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
 
   Future<void> _fetchStats() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-    final res = await api.getStatsGenerales(userId, selectedMonth, token);
+    final res = await api.getStatsGenerales(selectedMonth, token);
     if (res.statusCode == 200) {
       final data = res.data;
       setState(() {
@@ -80,7 +79,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         nombreVentes = data['nombreVentes'] ?? 0;
         nombreClients = data['nombreClients'] ?? 0;
         produitsEnStock = data['produitsEnStock'] ?? 0;
-        totalPiecesEnStock = data["totalPiecesEnStock"] ?? "" ;
+        totalPiecesEnStock = data["totalPiecesEnStock"] ?? "";
         produitsRupture = data['produitsRupture'] ?? 0;
         totalDepenses = data['totalDepenses'] ?? 0;
         coutAchatTotal = data['coutAchatTotal'] ?? 0;
@@ -97,22 +96,65 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
 
   Future<void> _fetchStatsCharts() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
-      final resJour = await api.getVentesDuJour(userId, token);
-      final resAnnee = await api.getVentesAnnee(userId, token);
-      final resHebdo =
-          await api.getVentesHebdomadaires(userId, token); // Nouvelle méthode
+      final resJour = await api.getVentesDuJour(token);
+      final resAnnee = await api.getVentesAnnee(token);
+      final resHebdo = await api.getVentesHebdomadaires(token);
 
       if (resJour.statusCode == 200 &&
           resAnnee.statusCode == 200 &&
           resHebdo.statusCode == 200) {
+        // Traitement des données du jour
+        final rawJour = resJour.data;
+        List<Map<String, dynamic>> mergedJour = [];
+        if (rawJour is List && rawJour.isNotEmpty) {
+          final firstItem = rawJour[0];
+          final List totalParHeure = firstItem['totalParHeure'] ?? [];
+          final List quantiteParHeure = firstItem['quantiteParHeure'] ?? [];
+
+          final Map<int, int> quantiteMap = {
+            for (var q in quantiteParHeure)
+              (q['_id'] ?? 0) as int: (q['quantite'] ?? 0) as int
+          };
+
+          mergedJour = totalParHeure.map<Map<String, dynamic>>((item) {
+            final heure = (item['_id'] ?? 0) as int;
+            return {
+              '_id': heure,
+              'total': item['total'] ?? 0,
+              'quantite': quantiteMap[heure] ?? 0,
+            };
+          }).toList();
+        }
+
+        // Traitement des données de l'année
+        final rawAnnee = resAnnee.data;
+        List<Map<String, dynamic>> mergedAnnee = [];
+        if (rawAnnee is List && rawAnnee.isNotEmpty) {
+          final firstItem = rawAnnee[0];
+          final List totalParMois = firstItem['totalParMois'] ?? [];
+          final List quantiteParMois = firstItem['quantiteParMois'] ?? [];
+
+          final Map<int, int> quantiteMapAnnee = {
+            for (var q in quantiteParMois)
+              (q['_id'] ?? 0) as int: (q['quantite'] ?? 0) as int
+          };
+
+          mergedAnnee = totalParMois.map<Map<String, dynamic>>((item) {
+            final mois = (item['_id'] ?? 0) as int;
+            return {
+              '_id': mois,
+              'total': item['total'] ?? 0,
+              'quantite': quantiteMapAnnee[mois] ?? 0,
+            };
+          }).toList();
+        }
+
         setState(() {
-          ventesDuJour = List<Map<String, dynamic>>.from(resJour.data);
-          ventesAnnee = List<Map<String, dynamic>>.from(resAnnee.data);
-          ventesHebdo = List<Map<String, dynamic>>.from(
-              resHebdo.data); // Nouvelle variable
+          ventesDuJour = mergedJour;
+          ventesAnnee = mergedAnnee;
+          ventesHebdo = List<Map<String, dynamic>>.from(resHebdo.data);
         });
       }
     } catch (e) {
@@ -228,8 +270,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildCard("📦 Total des produits", "$totalPiecesEnStock", Icons.inventory_rounded,
-                          Colors.blue),
+                      _buildCard("📦 Total des produits", "$totalPiecesEnStock",
+                          Icons.inventory_rounded, Colors.blue),
                       const SizedBox(height: 4),
                       _buildCard("📦 Variétes en stock", "$produitsEnStock",
                           Icons.inventory, Colors.teal),
@@ -266,8 +308,8 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
               crossAxisSpacing: 8,
               childAspectRatio: 6, // Ratio 1/2 comme demandé
               children: [
-                _buildCard("👥 Clients", "$nombreClients", Icons.people,
-                          Colors.blue),
+                _buildCard(
+                    "👥 Clients", "$nombreClients", Icons.people, Colors.blue),
                 _buildCard(
                     "📈 Coût d'achat globale",
                     _formatPrice.formatNombre(coutAchatTotal.toString()),

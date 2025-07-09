@@ -46,11 +46,10 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
     });
 
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
     try {
       final res = await ServicesMouvements().getMouvements(
-        userId: userId,
+        adminId: adminId,
         token: token,
         productId: "", // vide pour global
         type: selectedType != "Tous" ? selectedType : null,

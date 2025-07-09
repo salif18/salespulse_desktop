@@ -1,11 +1,12 @@
 class UserModel {
-  final id;
+  final String id;
   final String  adminId;
   final String  name;
   final String  numero;
   final String  email;
   final String  role;
   final DateTime createdAt;
+
 
   UserModel({ 
     required this.id,
@@ -19,7 +20,7 @@ class UserModel {
 
   factory UserModel.fromJon(Map<String,dynamic> json){
       return UserModel(
-        id:json['_id'],
+        id:json['_id'] ?? "",
         adminId: json["adminId"] ?? "", 
         name: json["name"] ?? "", 
         numero: json["numero"] ?? "", 

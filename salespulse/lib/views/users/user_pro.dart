@@ -38,9 +38,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Future<void> fetchUsers() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+ 
     try {
-      final res = await api.getUsers(userId, token);
+      final res = await api.getUsers(token);
 
       if (res.statusCode == 200) {
         setState(() {
@@ -294,9 +294,9 @@ class _AddUserModalState extends State<AddUserModal> {
     setState(() => _isLoading = true);
 
     try {
-      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+      final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
       final data = {
-        "adminId": userId,
+        "adminId": adminId,
         "name": _nameController.text,
         "numero": _phoneController.text,
         "email": _emailController.text,

@@ -53,11 +53,13 @@ class _LoginViewState extends State<LoginView> {
           });
         final response = await api.postLoginUser(data);
         final body = jsonDecode(response.body);
+        
         // ignore: use_build_context_synchronously
         Navigator.pop(context); // Fermer le dialog
 
         if (response.statusCode == 200) {
-          providerAuth.loginButton(body['token'], body["userId"].toString(), body["userName"], body["entreprise"], body["userNumber"]);
+          providerAuth.loginButton(body['token'], body["userId"].toString(), body["userName"], body["entreprise"], body["userNumber"],body["adminId"],body["role"]);
+        
           // ignore: use_build_context_synchronously
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Routes()));
         } else {
@@ -85,7 +87,7 @@ class _LoginViewState extends State<LoginView> {
               children: [
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  height: 350,
+                  height: 200,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage("assets/logos/logo2.jpg"), 

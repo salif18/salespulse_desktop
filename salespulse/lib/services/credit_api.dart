@@ -25,8 +25,8 @@ class ServicesCredits {
   }
 
   //obtenir categorie pour formulaire
-  getCredits(userId, token) async {
-    var uri = "$domaineName/credits/$userId";
+  getCredits(token) async {
+    var uri = "$domaineName/credits";
     return await dio.get(uri,
         options: Options(
           headers: {

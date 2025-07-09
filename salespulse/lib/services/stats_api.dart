@@ -13,8 +13,8 @@ class ServicesStats {
   );
 
 
-  getStatsGenerales(userId, selectedMonth,token)async{
-    var uri = "$domaineName/stats/$userId?mois=$selectedMonth";
+  getStatsGenerales(selectedMonth,token)async{
+    var uri = "$domaineName/stats?mois=$selectedMonth";
     return await dio.get(uri,
       options: Options(
           headers: {
@@ -24,8 +24,8 @@ class ServicesStats {
         ));
   }
 
-  Future<Response> getVentesDuJour(String userId, String token) async {
-  final uri = "$domaineName/stats/jour/$userId";
+  Future<Response> getVentesDuJour(String token) async {
+  final uri = "$domaineName/stats/jour";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -33,8 +33,8 @@ class ServicesStats {
       }));
 }
 
-Future<Response> getVentesHebdomadaires(String userId, String token) async {
-  final uri = "$domaineName/stats/semaine/$userId";
+Future<Response> getVentesHebdomadaires(String token) async {
+  final uri = "$domaineName/stats/semaine";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -42,8 +42,8 @@ Future<Response> getVentesHebdomadaires(String userId, String token) async {
       }));
 }
 
-Future<Response> getVentesAnnee(String userId, String token) async {
-  final uri = "$domaineName/stats/annee/$userId";
+Future<Response> getVentesAnnee(String token) async {
+  final uri = "$domaineName/stats/annee";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",
@@ -51,8 +51,8 @@ Future<Response> getVentesAnnee(String userId, String token) async {
       }));
 }
 
-Future<Response> getClientRetard(String userId, String token) async {
-  final uri = "$domaineName/stats/clients-en-retard/$userId";
+Future<Response> getClientRetard(String token) async {
+  final uri = "$domaineName/stats/clients-en-retard";
   return await dio.get(uri,
       options: Options(headers: {
         "Content-Type": "application/json",

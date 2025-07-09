@@ -36,7 +36,6 @@ class _UpdatePasswordState extends State<UpdatePassword> {
   Future _sendUpdate() async {
     if (_formKey.currentState!.validate()) {
       final provider = Provider.of<AuthProvider>(context, listen: false);
-      final userId = provider.userId;
       final token = provider.token;
       var data = {
         "current_password": _currentPassword.text,
@@ -51,7 +50,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                 child: CircularProgressIndicator(),
               );
             });
-        final res = await api.postUpdatePassword(data,token, userId);
+        final res = await api.postUpdatePassword(data,token);
         final decodedData = json.decode(res.body);
           Navigator.pop(context); // Fermer le dialog
 

@@ -55,8 +55,8 @@ class ServicesStocks {
   }
 
   //obtenir depenses
-  getAllProducts(token, userId) async {
-    var uri = "$domaineName/products/$userId";
+  getAllProducts(token) async {
+    var uri = "$domaineName/products";
     return await dio.get(uri,
         options: Options(
           headers: {
@@ -93,8 +93,8 @@ saveHistoriqueInventaire(data, String token) async {
 }
 
  //obtenir depenses
-  getHistoriqueInventaire(token, userId) async {
-    var uri = "$domaineName/inventaire-historiques/$userId";
+  getHistoriqueInventaire(token) async {
+    var uri = "$domaineName/inventaire-historiques";
     return await dio.get(uri,
         options: Options(
           headers: {

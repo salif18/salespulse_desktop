@@ -36,7 +36,6 @@ class _UpdateProfilState extends State<UpdateProfil> {
 
   Future _sendUpdate() async {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final userId =  provider.userId;
     final token =  provider.token;
     var data = {
       "name": _name.text,
@@ -54,7 +53,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
             );
           });
           
-      final res = await api.postUpdateUser(data,token, userId);
+      final res = await api.postUpdateUser(data,token);
       final body = json.decode(res.body);
       Navigator.pop(context);
       if (res.statusCode == 200) {

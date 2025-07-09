@@ -40,9 +40,8 @@ class _CategoriesViewState extends State<CategoriesView> {
   // OBTENIR LES CATEGORIES API
   Future<void> _getCategories() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final res = await api.getCategories(userId, token);
+      final res = await api.getCategories(token);
       final body = res.data;
       if (res.statusCode == 200) {
         setState(() {

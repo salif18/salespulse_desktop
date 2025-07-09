@@ -31,10 +31,9 @@ class _PikedPhotoState extends State<PikedPhoto> {
 
   Future<void> _loadProfil() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
-      final res = await api.getProfils(userId, token);
+      final res = await api.getProfils(token);
       if (res.statusCode == 200) {
         setState(() {
           profil = ProfilModel.fromJson(res.data["profils"]);

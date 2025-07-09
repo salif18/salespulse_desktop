@@ -47,9 +47,9 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
 
   Future<void> fetchClients() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+  
     try {
-      final res = await _clientApi.getClients(userId, token);
+      final res = await _clientApi.getClients(token);
 
       if (res.statusCode == 200) {
         setState(() {
@@ -65,12 +65,10 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
 
   Future<void> fetchVentes() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
       final res = await api.getAllVentes(
         token,
-        userId,
         clientId: selectedClientId,
         dateDebut: dateDebut != null
             ? DateFormat('yyyy-MM-dd').format(dateDebut!)
@@ -682,10 +680,9 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     ProfilModel? profil;
 
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
-      final res = await ServicesProfil().getProfils(userId, token);
+      final res = await ServicesProfil().getProfils(token);
       if (res.statusCode == 200) {
         profil = ProfilModel.fromJson(res.data["profils"]);
       }
@@ -802,10 +799,9 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     ProfilModel? profil;
 
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
     try {
-      final res = await ServicesProfil().getProfils(userId, token);
+      final res = await ServicesProfil().getProfils(token);
       if (res.statusCode == 200) {
         profil = ProfilModel.fromJson(res.data["profils"]);
       }
@@ -960,10 +956,11 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                   Provider.of<AuthProvider>(context, listen: false).userId;
               final userName =
                   Provider.of<AuthProvider>(context, listen: false).userName;
-
+              final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
               final reglement = {
                 "venteId": vente.id, // ⇦ ID de la vente concernée
                 "userId": userId, // ⇦ ID du vendeur
+                "adminId":adminId,
                 "clientId": vente.clientId,
                 "nom": vente.clientNom,
                 "montant": montant,

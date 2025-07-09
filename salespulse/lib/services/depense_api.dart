@@ -29,8 +29,8 @@ class ServicesDepense{
   }
 
   //obtenir depenses
-  getAllDepenses(token,userId) async {
-    var uri = "$domaineName/depenses/$userId";
+  getAllDepenses(token) async {
+    var uri = "$domaineName/depenses";
     return await dio.get(
      uri,
      options:Options(headers: {

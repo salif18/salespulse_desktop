@@ -31,13 +31,12 @@ class ServicesVentes {
 
   //obtenir depenses
 getAllVentes(
-  String token,
-  String userId, {
+  String token, {
   String? clientId,
   String? dateDebut,
   String? dateFin,
 }) async {
-  final uri = Uri.parse('$domaineName/ventes/$userId').replace(queryParameters: {
+  final uri = Uri.parse('$domaineName/ventes').replace(queryParameters: {
     if (clientId != null) 'clientId': clientId,
     if (dateDebut != null) 'dateDebut': dateDebut,
     if (dateFin != null) 'dateFin': dateFin,

@@ -48,9 +48,8 @@ class _FournisseurViewState extends State<FournisseurView> {
   // OBTENIR LES CATEGORIES API
   Future<void> _getfournisseurs() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     try {
-      final res = await api.getFournisseurs(userId, token);
+      final res = await api.getFournisseurs(token);
       final body = res.data;
       if (res.statusCode == 200) {
         setState(() {
@@ -89,9 +88,11 @@ class _FournisseurViewState extends State<FournisseurView> {
   Future<void> _sendToserver(BuildContext context) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
     if (_globalKey.currentState!.validate()) {
       final data = {
         "userId": userId,
+        "adminId":adminId,
         "prenom": _prenom.text,
         "nom": _nom.text,
         "numero": _numero.text,

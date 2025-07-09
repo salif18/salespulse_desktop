@@ -57,9 +57,8 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
 
   Future<List<ClientRetard>> _fetchClientsEnRetard() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
 
-    final response = await api.getClientRetard(userId, token);
+    final response = await api.getClientRetard(token);
 
     if (response.statusCode == 200) {
       final List<dynamic> data = response.data['clients'];

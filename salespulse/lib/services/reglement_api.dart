@@ -25,8 +25,8 @@ class ServicesReglements {
   }
 
   //obtenir categorie pour formulaire
-  getReglements(userId, token) async {
-    var uri = "$domaineName/reglements/$userId";
+  getReglements(token) async {
+    var uri = "$domaineName/reglements";
     return await dio.get(uri,
         options: Options(
           headers: {

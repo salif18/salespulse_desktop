@@ -28,8 +28,8 @@ class ServicesClients {
 
 
   //obtenir categorie pour formulaire
-  getClients(userId, token) async {
-    var uri = "$domaineName/clients/$userId";
+  getClients(token) async {
+    var uri = "$domaineName/clients";
     return await dio.get(uri,
         options: Options(
           headers: {

@@ -27,8 +27,8 @@ class ServicesAuth {
   }
 
    //obtenir categorie pour formulaire
-  getUsers(userId, token) async {
-    var uri = "$domaineName/auth/utilisateurs/$userId";
+  getUsers(token) async {
+    var uri = "$domaineName/auth/utilisateurs";
     return await dio.get(uri,
         options: Options(
           headers: {
@@ -48,8 +48,8 @@ class ServicesAuth {
   }
 
 //fontion de modification de passeword
-  postUpdateUser(data, token, userId) async {
-    var uri = "$domaineName/auth/update_user/$userId";
+  postUpdateUser(data, token) async {
+    var uri = "$domaineName/auth/update_user";
     return await http.post(
       Uri.parse(uri),
       body: jsonEncode(data),
@@ -61,8 +61,8 @@ class ServicesAuth {
   }
 
   //fontion de modification de passeword
-  postUpdatePassword(data, token, userId) async {
-    var uri = "$domaineName/auth/update_password/$userId";
+  postUpdatePassword(data, token) async {
+    var uri = "$domaineName/auth/update_password";
     return await http.post(
       Uri.parse(uri),
       body: jsonEncode(data),

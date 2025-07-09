@@ -58,7 +58,7 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
   }
 
   Future<void> fetchMouvements({bool reset = false}) async {
-    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
 
     if (reset) {
       page = 1;
@@ -71,7 +71,7 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
 
     try {
       final result = await api.getMouvements(
-        userId: userId,
+        adminId: adminId,
         token: widget.token,
         productId: widget.productId,
         type: selectedType,
