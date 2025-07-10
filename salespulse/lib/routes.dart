@@ -151,7 +151,7 @@ class _RoutesState extends State<Routes> {
               if(role == "admin")
               _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.blueAccent),
                if(role == "admin")
-              _buildDrawerItem(FontAwesomeIcons.shopLock, "Abonnements", 15, iconBgColor: Colors.deepOrange),
+              _buildDrawerItem(Icons.receipt_long, "Abonnements", 15, iconBgColor: Colors.deepOrange),
 
 
               // Section COMPTE UTILISATEUR

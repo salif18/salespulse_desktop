@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:salespulse/models/abonnement_model.dart';
+import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/abonnement_api.dart';
 import 'package:salespulse/views/abonnement/choix_abonement.dart';
+import 'package:salespulse/views/abonnement/historique_paiement_abonnement.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AbonnementHistoriquePage extends StatefulWidget {
@@ -26,10 +29,7 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
   }
 
   Future<void> chargerHistorique() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-    if (token == null) return;
-
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
     try {
       final api = AbonnementApi();
       final res = await api.getHistoriqueAbonnement(token);
@@ -51,10 +51,18 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
 
   @override
   Widget build(BuildContext context) {
+     final token = Provider.of<AuthProvider>(context, listen: false).token;
     return Scaffold(
       appBar: AppBar(
         title: Text("Historique des abonnements",style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
         backgroundColor: Colors.blueGrey,
+        actions: [
+          ElevatedButton.icon(
+            onPressed:()=> Navigator.push(context, MaterialPageRoute(builder: (context)=> HistoriquePaiementPage(token: token))), 
+            icon:const Icon(Icons.list),
+            label: Text('Mes paiement', style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),),
+            )
+        ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
