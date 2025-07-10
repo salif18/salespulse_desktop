@@ -109,8 +109,8 @@ saveHistoriqueInventaire(data, String token) async {
   void showSnackBarSuccessPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
-      backgroundColor: const Color.fromARGB(255, 10, 6, 20),
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.green,
       duration: const Duration(seconds: 5),
       action: SnackBarAction(
           label: "",
@@ -124,8 +124,8 @@ saveHistoriqueInventaire(data, String token) async {
   void showSnackBarErrorPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
-      backgroundColor: const Color.fromARGB(255, 255, 153, 19),
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.red,
       duration: const Duration(seconds: 5),
       action: SnackBarAction(
         label: "",

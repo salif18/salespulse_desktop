@@ -1,5 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -86,14 +87,22 @@ class _EditProduitPageState extends State<EditProduitPage> {
       } else {
         throw Exception("Erreur ${res.statusCode}");
       }
-    } catch (e) {
-      debugPrint("Erreur chargement catégories: $e");
-      if (mounted) {
+    }on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    debugPrint(e.toString()); 
+    if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur chargement catégories: $e")),
+          SnackBar(content: Text("Erreur chargement catégories: ${e.toString()}")),
         );
       }
-    }
+  }
+    
   }
 
   Future<void> _pickImageFromGallery() async {

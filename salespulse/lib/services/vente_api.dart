@@ -69,8 +69,8 @@ getAllVentes(
   void showSnackBarSuccessPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
-      backgroundColor: const Color.fromARGB(255, 186, 101, 255),
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.green,
       duration: const Duration(seconds: 5),
       action: SnackBarAction(
           label: "",
@@ -84,7 +84,7 @@ getAllVentes(
   void showSnackBarErrorPersonalized(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message,
-          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
       backgroundColor: const Color.fromARGB(255, 255, 35, 19),
       duration: const Duration(seconds: 5),
       action: SnackBarAction(

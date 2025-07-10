@@ -3,6 +3,7 @@
 import 'dart:async'; // Pour StreamController
 import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -104,11 +105,22 @@ class _StocksViewState extends State<StocksView> {
           _streamController.addError("Failed to load products");
         }
       }
-    } catch (e) {
-      if (!_streamController.isClosed) {
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString()); 
+    if (!_streamController.isClosed) {
         _streamController.addError("Error loading products");
       }
-    }
+  }
+   
   }
 
   // OBTENIR LES CATEGORIES API
@@ -124,8 +136,20 @@ class _StocksViewState extends State<StocksView> {
               .toList();
         });
       }
+    } on DioException {
+      api.showSnackBarErrorPersonalized(
+          // ignore: use_build_context_synchronously
+          context,
+          "Problème de connexion : Vérifiez votre Internet.");
+    } on TimeoutException {
+      api.showSnackBarErrorPersonalized(
+          // ignore: use_build_context_synchronously
+          context,
+          "Le serveur ne répond pas. Veuillez réessayer plus tard.");
     } catch (e) {
-      Exception(e); // Ajout d'une impression pour le debug
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
     }
   }
 
@@ -150,7 +174,7 @@ class _StocksViewState extends State<StocksView> {
 
   @override
   Widget build(BuildContext context) {
-     final role = Provider.of<AuthProvider>(context, listen: false).role;
+    final role = Provider.of<AuthProvider>(context, listen: false).role;
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: RefreshIndicator(
@@ -309,7 +333,7 @@ class _StocksViewState extends State<StocksView> {
                                         fit: BoxFit.cover),
                                     const SizedBox(height: 20),
                                     Text(
-                                      "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas !!",
+                                      "Erreur de chargement des données. Verifier votre réseau de connexion et réessayer !!",
                                       style: GoogleFonts.poppins(fontSize: 14),
                                     ),
                                   ],
@@ -605,7 +629,8 @@ class _StocksViewState extends State<StocksView> {
                                         DataCell(
                                           Row(
                                             children: [
-                                              if (article.stocks > 0 && role == "admin")
+                                              if (article.stocks > 0 &&
+                                                  role == "admin")
                                                 Expanded(
                                                   child: IconButton(
                                                     icon: const Icon(Icons.edit,
@@ -629,7 +654,8 @@ class _StocksViewState extends State<StocksView> {
                                                     },
                                                   ),
                                                 ),
-                                              if (article.stocks == 0 && role == "admin")
+                                              if (article.stocks == 0 &&
+                                                  role == "admin")
                                                 IconButton(
                                                   icon: const Icon(
                                                       Icons

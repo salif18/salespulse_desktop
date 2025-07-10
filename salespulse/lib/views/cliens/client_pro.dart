@@ -74,9 +74,18 @@ class _ClientsViewState extends State<ClientsView> {
           _listClients.add(clients);
         });
       }
-    } catch (e) {
-      Exception(e); // Ajout d'une impression pour le debug
-    }
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+  }
   }
 
 //SUPPRIMER CATEGORIE API

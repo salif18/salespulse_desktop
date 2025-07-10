@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/material.dart' as pw;
 import 'package:pdf/widgets.dart' as pw;
@@ -64,12 +67,18 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
         final pagination = res["pagination"];
         totalPages = pagination["totalPages"] ?? 1;
       });
-    } catch (e) {
-      debugPrint("Erreur fetchMouvements: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur chargement mouvements : $e")),
-      );
-    } finally {
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+  } finally {
       setState(() {
         isLoading = false;
       });

@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -82,10 +85,21 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
         debugPrint("Échec du chargement des produits : ${res.statusCode}");
         return [];
       }
-    } catch (e) {
-      debugPrint("Erreur lors du chargement des produits: $e");
-      return [];
-    }
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+        return [];
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+        return [];
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+    return [];
+  }
   }
 
   // OBTENIR LES CATEGORIES API
@@ -103,9 +117,18 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
           allClients.addAll(clients);
         });
       }
-    } catch (e) {
-      Exception(e); // Ajout d'une impression pour le debug
-    }
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+  }
   }
 
   void _ajouterAuPanier() async {
@@ -174,7 +197,6 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
           fraisLivraison: fraisLivraison,
           fraisEmballage: fraisEmballage,
         );
-print(item.isPromo);
         setState(() {
           panier.add(item);
           total = panier.fold(0, (sum, p) => sum + p.sousTotal);

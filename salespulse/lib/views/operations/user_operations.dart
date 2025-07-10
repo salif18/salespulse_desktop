@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages, deprecated_member_use
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -40,8 +43,8 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
 
     try {
-      final res = await api.getOperationUser(
-          token, selectedFilter, widget.user.id);
+      final res =
+          await api.getOperationUser(token, selectedFilter, widget.user.id);
 
       if (res.statusCode == 200) {
         final data = res.data;
@@ -60,10 +63,24 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
           totalDepenses = depenses.fold(
               0, (sum, item) => sum + ((item['montants'] ?? 0) as int));
         });
-        print(mouvements);
+  
       }
+    } on DioException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
     } catch (e) {
-      debugPrint("Erreur lors du chargement des opérations: $e");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
     }
   }
 
@@ -170,7 +187,8 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
     );
   }
 
-  Widget _statCard(String title, int value, String unit, IconData icon, Color color) {
+  Widget _statCard(
+      String title, int value, String unit, IconData icon, Color color) {
     return Container(
       width: 400,
       decoration: BoxDecoration(
@@ -291,7 +309,8 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
     );
   }
 
-  Widget _buildOperationList(List<Map<String, dynamic>> items, String amountKey, String? dateKey) {
+  Widget _buildOperationList(
+      List<Map<String, dynamic>> items, String amountKey, String? dateKey) {
     if (items.isEmpty) {
       return Center(
         child: Text(
@@ -314,7 +333,8 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
             side: BorderSide(color: Colors.grey[200]!),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -384,19 +404,23 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
             side: BorderSide(color: Colors.grey[200]!),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFF2A9D8F).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: product["image"] != null ? Image.network(product["image"],
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => 
-              Image.asset("assets/images/defaultImg.png"),) : 
-               Image.asset("assets/images/defaultImg.png"),
-              ),
+              child: product["image"] != null
+                  ? Image.network(
+                      product["image"],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Image.asset("assets/images/defaultImg.png"),
+                    )
+                  : Image.asset("assets/images/defaultImg.png"),
+            ),
             title: Text(
               product['nom'] ?? 'Produit inconnu',
               style: GoogleFonts.poppins(
@@ -448,26 +472,31 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
             side: BorderSide(color: Colors.grey[200]!),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFFF4A261).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child:movement["productId"]?["image"] != null ? Image.network(movement["productId"]?["image"],
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => 
-              Image.asset("assets/images/defaultImg.png"),) :
-              Image.asset("assets/images/defaultImg.png"),
+              child: movement["productId"]?["image"] != null
+                  ? Image.network(
+                      movement["productId"]?["image"],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Image.asset("assets/images/defaultImg.png"),
+                    )
+                  : Image.asset("assets/images/defaultImg.png"),
             ),
             title: Text(
-              movement['productId']?['nom'] ?? 'Produit inconnu', // Utilisez plutôt le nom du produit',
-             style: GoogleFonts.poppins(
-               fontSize: 13,
-               fontWeight: FontWeight.w500,
-             ),
-                            ),
+              movement['productId']?['nom'] ??
+                  'Produit inconnu', // Utilisez plutôt le nom du produit',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             subtitle: Text(
               "Quantité: ${movement['quantite']} unités",
               style: GoogleFonts.poppins(
@@ -477,7 +506,7 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
             ),
             trailing: Column(
               children: [
-                 Text(
+                Text(
                   movement['type'] ?? 'Mouvement',
                   style: GoogleFonts.poppins(
                     fontSize: 13,

@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -9,13 +12,13 @@ import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/abonnement_api.dart';
 import 'package:salespulse/views/abonnement/choix_abonement.dart';
 import 'package:salespulse/views/abonnement/historique_paiement_abonnement.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AbonnementHistoriquePage extends StatefulWidget {
   const AbonnementHistoriquePage({super.key});
 
   @override
-  State<AbonnementHistoriquePage> createState() => _AbonnementHistoriquePageState();
+  State<AbonnementHistoriquePage> createState() =>
+      _AbonnementHistoriquePageState();
 }
 
 class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
@@ -32,17 +35,23 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     try {
       final api = AbonnementApi();
-      final res = await api.getHistoriqueAbonnement(token);
+      final res = await api.getHistoriqueAbonnement(context,token);
       setState(() {
         historiques = res;
         loading = false;
       });
-    } catch (e) {
-      setState(() => loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur : ${e.toString()}")),
-      );
-    }
+    } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+  }
   }
 
   String formatDate(DateTime date) {
@@ -51,17 +60,31 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
 
   @override
   Widget build(BuildContext context) {
-     final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Historique des abonnements",style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
+        title: Text(
+          "Historique des abonnements",
+          style: GoogleFonts.roboto(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         backgroundColor: Colors.blueGrey,
         actions: [
           ElevatedButton.icon(
-            onPressed:()=> Navigator.push(context, MaterialPageRoute(builder: (context)=> HistoriquePaiementPage(token: token))), 
-            icon:const Icon(Icons.list),
-            label: Text('Mes paiement', style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),),
-            )
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        HistoriquePaiementPage(token: token))),
+            icon: const Icon(Icons.list),
+            label: Text(
+              'Mes paiement',
+              style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          )
         ],
       ),
       body: loading
@@ -74,11 +97,16 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
                     final item = historiques[index];
                     return Card(
                       elevation: 3,
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       child: ListTile(
                         leading: Icon(
-                          item.type == "premium" ? Icons.star : Icons.lock_clock,
-                          color: item.type == "premium" ? Colors.amber : Colors.grey,
+                          item.type == "premium"
+                              ? Icons.star
+                              : Icons.lock_clock,
+                          color: item.type == "premium"
+                              ? Colors.amber
+                              : Colors.grey,
                         ),
                         title: Text("Abonnement ${item.type.toUpperCase()}"),
                         subtitle: Text(
@@ -90,15 +118,18 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
                     );
                   },
                 ),
-                 floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.orange,
-        onPressed: () =>
-           Navigator.push(context, MaterialPageRoute(builder: (context)=> const AbonnementScreen())),
+        onPressed: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AbonnementScreen())),
         tooltip: "Réabonner",
         icon: const Icon(Icons.shopping_cart_checkout, color: Colors.white),
-        label: Text("Réabonnement",style: GoogleFonts.roboto(fontSize: 12, color: Colors.white,fontWeight: FontWeight.bold),),
+        label: Text(
+          "Réabonnement",
+          style: GoogleFonts.roboto(
+              fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
-  
   }
 }

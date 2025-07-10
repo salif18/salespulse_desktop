@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages, deprecated_member_use
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -42,14 +45,12 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
   int nbPromoActifs = 0;
   Map<String, dynamic> impactPromoVentes = {};
 
-
   String selectedMonth = DateFormat('yyyy-MM').format(DateTime.now());
   List<Map<String, dynamic>> moisFiltres = [];
   List<Map<String, dynamic>> ventesDuJour = [];
   List<Map<String, dynamic>> ventesAnnee = [];
   Map<String, dynamic> statsParMois = {};
   List<Map<String, dynamic>> ventesHebdo = [];
-
 
   @override
   void initState() {
@@ -74,33 +75,51 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
 
     final res = await api.getStatsGenerales(selectedMonth, token);
-    if (res.statusCode == 200) {
-      final data = res.data;
-      if (!mounted) return; // ✅ vérifie que le widget est toujours là
-      setState(() {
-        totalVentes = data['totalVentesBrutes'] ?? 0;
-        montantEncaisse = data['montantEncaisse'] ?? 0;
-        resteTotal = data['resteTotal'] ?? 0;
-        montantRembourse = data["montantRembourse"] ?? 0;
-        nombreVentes = data['nombreVentes'] ?? 0;
-        nombreClients = data['nombreClients'] ?? 0;
-        produitsEnStock = data['produitsEnStock'] ?? 0;
-        totalPiecesEnStock = data["totalPiecesEnStock"] ?? "";
-        produitsRupture = data['produitsRupture'] ?? 0;
-        totalDepenses = data['totalDepenses'] ?? 0;
-        coutAchatTotal = data['coutAchatTotal'] ?? 0;
-        etatCaisse = data["etatCaisse"] ?? 0;
-        benefice = data['benefice'] ?? 0;
-        coutAchatPertes = data["coutAchatPertes"] ?? 0;
-        quantitePertes = data["quantitePertes"] ?? 0;
-        totalRemises = data["totalRemises"] ?? 0;
-        totalTVACollectee = data["totalTVACollectee"] ?? 0;
-        statsParMois = data['statsParMois'] ?? {};
-         // Récupération des nouvelles stats promos
-        margeMoyennePromo = (data['margeMoyennePromo'] ?? 0).toDouble();
-        nbPromoActifs = data['nbPromoActifs'] ?? 0;
-        impactPromoVentes = data['impactPromoVentes'] ?? {};
-      });
+    try {
+      if (res.statusCode == 200) {
+        final data = res.data;
+        if (!mounted) return; // ✅ vérifie que le widget est toujours là
+        setState(() {
+          totalVentes = data['totalVentesBrutes'] ?? 0;
+          montantEncaisse = data['montantEncaisse'] ?? 0;
+          resteTotal = data['resteTotal'] ?? 0;
+          montantRembourse = data["montantRembourse"] ?? 0;
+          nombreVentes = data['nombreVentes'] ?? 0;
+          nombreClients = data['nombreClients'] ?? 0;
+          produitsEnStock = data['produitsEnStock'] ?? 0;
+          totalPiecesEnStock = data["totalPiecesEnStock"] ?? "";
+          produitsRupture = data['produitsRupture'] ?? 0;
+          totalDepenses = data['totalDepenses'] ?? 0;
+          coutAchatTotal = data['coutAchatTotal'] ?? 0;
+          etatCaisse = data["etatCaisse"] ?? 0;
+          benefice = data['benefice'] ?? 0;
+          coutAchatPertes = data["coutAchatPertes"] ?? 0;
+          quantitePertes = data["quantitePertes"] ?? 0;
+          totalRemises = data["totalRemises"] ?? 0;
+          totalTVACollectee = data["totalTVACollectee"] ?? 0;
+          statsParMois = data['statsParMois'] ?? {};
+          // Récupération des nouvelles stats promos
+          margeMoyennePromo = (data['margeMoyennePromo'] ?? 0).toDouble();
+          nbPromoActifs = data['nbPromoActifs'] ?? 0;
+          impactPromoVentes = data['impactPromoVentes'] ?? {};
+        });
+      }
+    } on DioException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
     }
   }
 
@@ -168,6 +187,18 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           ventesHebdo = List<Map<String, dynamic>>.from(resHebdo.data);
         });
       }
+    } on DioException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
@@ -213,10 +244,10 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Statistiques Générales",
-            style: GoogleFonts.poppins(fontSize: 18, color: Colors.black)),
-        backgroundColor:Colors.white //const Color(0xff001c30),
-      ),
+          title: Text("Statistiques Générales",
+              style: GoogleFonts.poppins(fontSize: 18, color: Colors.black)),
+          backgroundColor: Colors.white //const Color(0xff001c30),
+          ),
       body: RefreshIndicator(
         onRefresh: _fetchStats,
         child: ListView(
@@ -380,34 +411,30 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                     _formatPrice.formatNombre(etatCaisse.toString()),
                     Icons.account_balance,
                     Colors.pink),
-                
                 _buildCard(
-      "Marge moyenne produits en promotion",
-      _formatPrice.formatNombre(margeMoyennePromo.toString()),
-      Icons.show_chart,
-      Colors.green,
-    ),
-
-    _buildCard(
-      "Nombre de promotions actives",
-      nbPromoActifs.toString(),
-      Icons.local_offer,
-      Colors.orange,
-    ),
- 
-    _buildCard(
-      "Impact promos - avant ventes hors promo",
-      (impactPromoVentes['avant'] ?? 0).toString(),
-      Icons.trending_up,
-      Colors.blue,
-    ),
- 
-    _buildCard(
-      "Impact promos - après ventes hors promo",
-      (impactPromoVentes['apres'] ?? 0).toString(),
-      Icons.trending_down,
-      Colors.red,
-    ),
+                  "Marge moyenne produits en promotion",
+                  _formatPrice.formatNombre(margeMoyennePromo.toString()),
+                  Icons.show_chart,
+                  Colors.green,
+                ),
+                _buildCard(
+                  "Nombre de promotions actives",
+                  nbPromoActifs.toString(),
+                  Icons.local_offer,
+                  Colors.orange,
+                ),
+                _buildCard(
+                  "Impact promos - avant ventes hors promo",
+                  (impactPromoVentes['avant'] ?? 0).toString(),
+                  Icons.trending_up,
+                  Colors.blue,
+                ),
+                _buildCard(
+                  "Impact promos - après ventes hors promo",
+                  (impactPromoVentes['apres'] ?? 0).toString(),
+                  Icons.trending_down,
+                  Colors.red,
+                ),
               ],
             ),
             const SizedBox(height: 20),

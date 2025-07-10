@@ -20,8 +20,6 @@ class PaiementService {
       throw Exception("Erreur lors de la récupération des paiements");
     }
   }
-
-
   
   Future<List<Map<String, dynamic>>> postPaiements(data,String token) async {
     var uri = "$domaineName/paiements";

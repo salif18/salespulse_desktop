@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:salespulse/https/domaine.dart';
 import 'package:salespulse/models/abonnement_model.dart';
 import 'package:salespulse/views/abonnement/choix_abonement.dart';
@@ -104,7 +107,7 @@ verifierAbonnement(BuildContext context, String token) async {
   }
 }
 
-  Future<List<HistoriqueAbonnement>> getHistoriqueAbonnement(String token) async {
+   getHistoriqueAbonnement(BuildContext context, String token) async {
   var uri = "$domaineName/abonnements/historiques";
 
   try {
@@ -119,9 +122,50 @@ verifierAbonnement(BuildContext context, String token) async {
 
     List data = res.data['historiques'];
     return data.map((e) => HistoriqueAbonnement.fromJson(e)).toList();
-  } on DioException catch (e) {
-    throw Exception(e.response?.data['error'] ?? "Erreur réseau");
+  } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
   }
 }
+
+//message en cas de succès!
+  void showSnackBarSuccessPersonalized(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message,
+          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+      backgroundColor: const Color.fromARGB(255, 255, 157, 11),
+      duration: const Duration(seconds: 5),
+      action: SnackBarAction(
+        label: "",
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+    ));
+  }
+
+  //message en cas d'erreur!
+  void showSnackBarErrorPersonalized(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message,
+          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+      backgroundColor: const Color.fromARGB(255, 32, 19, 54),
+      duration: const Duration(seconds: 5),
+      action: SnackBarAction(
+        label: "",
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+    ));
+  }
 
 }

@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:salespulse/https/domaine.dart';
 
 const String domaineName = Domaine.domaineURI;
@@ -69,4 +71,35 @@ Future<Response> getOperationUser(String token, periode, userId) async {
       }));
 }
 
+//message en cas de succès!
+  void showSnackBarSuccessPersonalized(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message,
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 5),
+      action: SnackBarAction(
+        label: "",
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+    ));
+  }
+
+  //message en cas d'erreur!
+  void showSnackBarErrorPersonalized(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message,
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400)),
+      backgroundColor: Colors.redAccent,
+      duration: const Duration(seconds: 5),
+      action: SnackBarAction(
+        label: "",
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+    ));
+  }
 }

@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages, deprecated_member_use
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -55,18 +58,31 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
     _clientsFuture = _fetchClientsEnRetard();
   }
 
-  Future<List<ClientRetard>> _fetchClientsEnRetard() async {
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
+Future<List<ClientRetard>> _fetchClientsEnRetard() async {
+  final token = Provider.of<AuthProvider>(context, listen: false).token;
 
-    final response = await api.getClientRetard(token);
-
+  final response = await api.getClientRetard(token);
+  try {
     if (response.statusCode == 200) {
       final List<dynamic> data = response.data['clients'];
       return data.map((json) => ClientRetard.fromJson(json)).toList();
     } else {
       throw Exception('Erreur lors du chargement des données');
     }
+  } on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
   }
+  throw Exception('Erreur inconnue lors du chargement des clients en retard');
+}
 
   void _generatePdf(List<ClientRetard> clients) async {
     final pdf = pw.Document();
@@ -125,7 +141,24 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("Erreur : ${snapshot.error}"));
+            return Center(child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.6,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset("assets/images/erreur.png",
+                                        width: 200,
+                                        height: 200,
+                                        fit: BoxFit.cover),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      "Erreur de chargement des données. Verifier votre réseau de connexion et réessayer  !!",
+                                      style: GoogleFonts.poppins(fontSize: 14),
+                                    ),
+                                  ],
+                                ))),);
           }
 
           final clients = snapshot.data ?? [];

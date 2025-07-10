@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -26,8 +29,8 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
 
   Future<void> _fetchReglements() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-
-    final response = await ServicesReglements().getReglements(token);
+   try{
+     final response = await ServicesReglements().getReglements(token);
     if (response.statusCode == 200) {
       setState(() {
         reglements = (response.data["reglements"] as List)
@@ -35,6 +38,19 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
             .toList();
       });
     }
+   }on DioException {
+       ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+
+  } on TimeoutException {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+    debugPrint(e.toString());
+  }
+   
   }
 
   @override
