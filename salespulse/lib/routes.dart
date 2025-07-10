@@ -149,7 +149,7 @@ class _RoutesState extends State<Routes> {
               // Section ADMINISTRATION
               _buildSectionHeader('ADMINISTRATION'),
               if(role == "admin")
-              _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.blueAccent),
+              _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis employés", 14, iconBgColor: Colors.blueAccent),
                if(role == "admin")
               _buildDrawerItem(Icons.receipt_long, "Abonnements", 15, iconBgColor: Colors.deepOrange),
 

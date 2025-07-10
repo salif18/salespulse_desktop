@@ -40,18 +40,57 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
         historiques = res;
         loading = false;
       });
-    } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   }
 
   String formatDate(DateTime date) {
@@ -70,21 +109,22 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
         ),
         backgroundColor: Colors.blueGrey,
         actions: [
-          ElevatedButton.icon(
+          ElevatedButton(
             onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
                         HistoriquePaiementPage(token: token))),
-            icon: const Icon(Icons.list),
-            label: Text(
+           
+            child: Text(
               'Mes paiement',
               style: GoogleFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: Colors.black),
             ),
-          )
+          ),
+          const SizedBox(width: 20,)
         ],
       ),
       body: loading

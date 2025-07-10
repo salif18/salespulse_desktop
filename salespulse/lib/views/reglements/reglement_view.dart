@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:salespulse/models/reglement_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/reglement_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class HistoriqueReglementsScreen extends StatefulWidget {
   const HistoriqueReglementsScreen({super.key});
@@ -38,18 +39,57 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
             .toList();
       });
     }
-   }on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+   }on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
    
   }
 
@@ -86,16 +126,16 @@ class _HistoriqueReglementsScreenState extends State<HistoriqueReglementsScreen>
                   child: DataTable(
                     columnSpacing: 20,
                     headingRowHeight: 35,
-                    headingRowColor: WidgetStateProperty.all(Colors.orange.shade700),
+                    headingRowColor: WidgetStateProperty.all(Colors.blueGrey),
                     headingTextStyle: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                     columns: [
-                      DataColumn(label: Expanded(child: Text("Nom".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black)))),
-                      DataColumn(label: Text("Montant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                      DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                      DataColumn(label: Text("Mode".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                      DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
-                      DataColumn(label: Text("Opérateur".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color: Colors.black))),
+                      DataColumn(label: Expanded(child: Text("Nom".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13, color:  Colors.white,)))),
+                      DataColumn(label: Text("Montant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13,  color: Colors.white,))),
+                      DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13,  color: Colors.white,))),
+                      DataColumn(label: Text("Mode".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13,  color: Colors.white,))),
+                      DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13,  color: Colors.white,))),
+                      DataColumn(label: Text("Opérateur".toUpperCase(), style: GoogleFonts.roboto(fontSize: 13,  color: Colors.white,))),
                     ],
                     rows: reglements.map((r) {
                       return DataRow(cells: [

@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:salespulse/models/mouvements_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/mouvement_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class HistoriqueMouvementsScreen extends StatefulWidget {
   const HistoriqueMouvementsScreen({super.key});
@@ -67,18 +68,57 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
         final pagination = res["pagination"];
         totalPages = pagination["totalPages"] ?? 1;
       });
-    } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  } finally {
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -176,7 +216,7 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
       onPressed: _generatePdf,
     ),
           IconButton(
-            icon: const Icon(Icons.refresh, size: 28, color: Colors.deepOrange,),
+            icon: const Icon(Icons.refresh, size: 28, color: Colors.blueGrey,),
             tooltip: "Réinitialiser filtres",
             onPressed: _resetFilters,
           )
@@ -267,17 +307,17 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
                             ),
                             child: DataTable(
                               // ignore: deprecated_member_use
-                              headingRowColor: MaterialStateProperty.all(Colors.orange.shade700),
+                              headingRowColor: MaterialStateProperty.all(Colors.blueGrey),
                               headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                               headingRowHeight: 35,
                               columns:[
-                                DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
-                                DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))),
+                                DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
+                                DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
                               ],
                               rows: mouvements.map((m) {
                                 return DataRow(cells: [

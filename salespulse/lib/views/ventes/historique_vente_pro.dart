@@ -19,6 +19,7 @@ import 'package:salespulse/services/client_api.dart';
 import 'package:salespulse/services/profil_api.dart';
 import 'package:salespulse/services/reglement_api.dart';
 import 'package:salespulse/services/vente_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class HistoriqueVentesScreen extends StatefulWidget {
   const HistoriqueVentesScreen({super.key});
@@ -61,8 +62,56 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
               .toList();
         });
       }
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
+
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
     } catch (e) {
-      debugPrint("Erreur fetchClients: $e");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
     }
   }
 
@@ -87,18 +136,57 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
             .toList();
         applyFilters();
       }
-    } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   }
 
   void applyFilters() {
@@ -188,10 +276,10 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                               hintStyle: GoogleFonts.roboto(
                                 fontSize: 14,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.search,
                                 size: 24,
-                                color: Colors.orange.shade700,
+                                color: Colors.blueGrey,
                               ),
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none,
@@ -259,7 +347,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
+                          backgroundColor: Colors.blueGrey,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
                         ),
@@ -327,8 +415,8 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                         onPressed: _generatePdf,
                       ),
                       IconButton(
-                        icon: Icon(Icons.refresh,
-                            size: 24, color: Colors.orange.shade700),
+                        icon: const Icon(Icons.refresh,
+                            size: 24, color: Colors.blueGrey),
                         onPressed: resetFilters,
                         tooltip: "Réinitialiser les filtres",
                       )
@@ -357,7 +445,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                           columnSpacing: 20,
                           headingRowHeight: 35,
                           headingRowColor:
-                              WidgetStateProperty.all(Colors.orange.shade700),
+                              WidgetStateProperty.all(Colors.blueGrey),
                           headingTextStyle: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                           columns: [
@@ -366,61 +454,61 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Client".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Contact".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Total".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Paiement".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Statut".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Reste".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                        color: Colors.white,))),
                             DataColumn(
                                 label: Text("Monnaie".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Produits".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                        color: Colors.white,))),
                             DataColumn(
                                 label: Text("Règlement de compte".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                           ],
                           rows: filteredVentes.map((vente) {
                             return DataRow(cells: [

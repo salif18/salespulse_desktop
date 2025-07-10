@@ -12,6 +12,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/stats_api.dart';
 import 'package:salespulse/utils/format_prix.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class StatistiquesScreen extends StatefulWidget {
   const StatistiquesScreen({super.key});
@@ -104,12 +105,46 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           impactPromoVentes = data['impactPromoVentes'] ?? {};
         });
       }
-    } on DioException {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
+
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(
-        "Problème de connexion : Vérifiez votre Internet.",
-        style: GoogleFonts.poppins(fontSize: 14),
-      )));
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
     } on TimeoutException {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -187,12 +222,46 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           ventesHebdo = List<Map<String, dynamic>>.from(resHebdo.data);
         });
       }
-    } on DioException {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
+
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(
-        "Problème de connexion : Vérifiez votre Internet.",
-        style: GoogleFonts.poppins(fontSize: 14),
-      )));
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
     } on TimeoutException {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -245,7 +314,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
           title: Text("Statistiques Générales",
-              style: GoogleFonts.poppins(fontSize: 18, color: Colors.black)),
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.black)),
           backgroundColor: Colors.white //const Color(0xff001c30),
           ),
       body: RefreshIndicator(

@@ -15,6 +15,7 @@ import 'package:salespulse/services/categ_api.dart';
 import 'package:salespulse/services/stocks_api.dart';
 import 'package:salespulse/utils/format_prix.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 import 'package:salespulse/views/stocks/stock_mouvements_screen.dart';
 import 'package:salespulse/views/update_stock/update_stock.dart';
 
@@ -106,21 +107,25 @@ class _StocksViewState extends State<StocksView> {
         }
       }
     } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
-
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString()); 
-    if (!_streamController.isClosed) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+      if (!_streamController.isClosed) {
         _streamController.addError("Error loading products");
       }
-  }
-   
+    }
   }
 
   // OBTENIR LES CATEGORIES API
@@ -136,16 +141,52 @@ class _StocksViewState extends State<StocksView> {
               .toList();
         });
       }
-    } on DioException {
-      api.showSnackBarErrorPersonalized(
-          // ignore: use_build_context_synchronously
-          context,
-          "Problème de connexion : Vérifiez votre Internet.");
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
+
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
     } on TimeoutException {
-      api.showSnackBarErrorPersonalized(
-          // ignore: use_build_context_synchronously
-          context,
-          "Le serveur ne répond pas. Veuillez réessayer plus tard.");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
@@ -224,7 +265,7 @@ class _StocksViewState extends State<StocksView> {
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             filled: true,
-                            fillColor: const Color.fromARGB(255, 255, 136, 0),
+                            fillColor: Colors.blueGrey,
                             hintText: "Choisir une catégorie",
                             hintStyle: GoogleFonts.roboto(
                               fontSize: 12,
@@ -412,7 +453,7 @@ class _StocksViewState extends State<StocksView> {
                                   columnSpacing: 20,
                                   headingRowHeight: 35,
                                   headingRowColor:
-                                      WidgetStateProperty.all(Colors.orange),
+                                      WidgetStateProperty.all(Colors.blueGrey),
                                   headingTextStyle: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold),
@@ -423,7 +464,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -433,7 +474,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -443,7 +484,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -453,7 +494,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -463,7 +504,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -473,7 +514,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -483,7 +524,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -493,7 +534,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -503,7 +544,7 @@ class _StocksViewState extends State<StocksView> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),

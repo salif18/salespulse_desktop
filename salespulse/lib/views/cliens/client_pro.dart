@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:salespulse/models/client_model_pro.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/client_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class ClientsView extends StatefulWidget {
   const ClientsView({super.key});
@@ -74,18 +75,57 @@ class _ClientsViewState extends State<ClientsView> {
           _listClients.add(clients);
         });
       }
-    } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   }
 
 //SUPPRIMER CATEGORIE API
@@ -283,7 +323,7 @@ Future<void> _sendToserver(BuildContext context) async {
                                 columnSpacing: 20,
                                 headingRowHeight: 35,
                                 headingRowColor:
-                                    WidgetStateProperty.all(Colors.orange),
+                                    WidgetStateProperty.all(Colors.blueGrey),
                                 headingTextStyle: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold),
@@ -293,32 +333,32 @@ Future<void> _sendToserver(BuildContext context) async {
                                     'PHOTO',
                                     style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: Colors.black,
+                                       color: Colors.white,
                                         fontWeight: FontWeight.bold),
                                   )),
                                   DataColumn(
                                       label: Text('NOM',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: Colors.black,
+                                               color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('TEL',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: Colors.black,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('STATUT',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: Colors.black,
+                                             color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('ACTION',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: Colors.black,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                 ],
                                 rows: snapshot.data!.map((fournisseur) {

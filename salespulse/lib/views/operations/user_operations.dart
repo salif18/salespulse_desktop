@@ -10,6 +10,7 @@ import 'package:salespulse/models/user_model.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/stats_api.dart';
 import 'package:intl/intl.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class UserOperationsPage extends StatefulWidget {
   final UserModel user;
@@ -65,12 +66,46 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
         });
   
       }
-    } on DioException {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
+
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(
-        "Problème de connexion : Vérifiez votre Internet.",
-        style: GoogleFonts.poppins(fontSize: 14),
-      )));
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
     } on TimeoutException {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(

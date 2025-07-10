@@ -11,6 +11,7 @@ import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/stats_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class ClientRetard {
   final String nomClient;
@@ -69,18 +70,56 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
     } else {
       throw Exception('Erreur lors du chargement des données');
     }
-  } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+  } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   throw Exception('Erreur inconnue lors du chargement des clients en retard');
 }
 
@@ -200,7 +239,7 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
                           columnSpacing: 20,
                           headingRowHeight: 35,
                           headingRowColor:
-                              WidgetStateProperty.all(Colors.orange),
+                              WidgetStateProperty.all(Colors.blueGrey),
                           headingTextStyle: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                           columns: [
@@ -210,38 +249,38 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
                               style: GoogleFonts.roboto(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black),
+                                   color: Colors.white,),
                             )),
                             DataColumn(
                                 label: Text("Contact".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                        color: Colors.white,))),
                             DataColumn(
                                 label: Text("Total".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Reçu".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                        color: Colors.white,))),
                             DataColumn(
                                 label: Text("Reste".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                             DataColumn(
                                 label: Text("Date".toUpperCase(),
                                     style: GoogleFonts.roboto(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black))),
+                                         color: Colors.white,))),
                           ],
                           rows: clients.map((c) {
                             return DataRow(cells: [

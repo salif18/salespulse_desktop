@@ -20,6 +20,8 @@ class AbonnementApi {
   Future<void> acheterAbonnement({
     required BuildContext context,
     required String type, // "premium" ou "essai"
+    required int montant,
+    required String mode,
     required String token,
   }) async {
     var uri = "$domaineName/abonnements";
@@ -27,7 +29,7 @@ class AbonnementApi {
     try {
       final response = await dio.post(
         uri,
-        data: {"type": type},
+        data: {"type": type, "montant":montant, "moyen_paiement":mode},
         options: Options(
           headers: {
             "Authorization": "Bearer $token",

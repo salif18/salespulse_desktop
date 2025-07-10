@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/vente_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class ProduitTendance {
   final String productId;
@@ -138,18 +139,57 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
           isLoading = false;
         });
       }
-    } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        final errorMessage = e.response?.data['error'] ?? '';
 
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+        if (errorMessage.toString().contains("abonnement")) {
+          // 👉 Afficher message spécifique abonnement expiré
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Abonnement expiré"),
+              content: const Text(
+                  "Votre abonnement a expiré. Veuillez le renouveler."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AbonnementScreen()),
+                    );
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 🚫 Autres DioException (ex: réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Problème de connexion : Vérifiez votre Internet.",
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+        ),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   }
 
   @override
@@ -205,7 +245,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                   columnSpacing: 20,
                                   headingRowHeight: 35,
                                   headingRowColor:
-                                      WidgetStateProperty.all(Colors.orange),
+                                      WidgetStateProperty.all(Colors.blueGrey),
                                   headingTextStyle: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold),
@@ -216,7 +256,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                       style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black),
+                                           color: Colors.white,),
                                     )),
                                     DataColumn(
                                         label: Text(
@@ -224,7 +264,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                       style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black),
+                                          color: Colors.white,),
                                     )),
                                     DataColumn(
                                         label: Text(
@@ -232,7 +272,7 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                       style: GoogleFonts.roboto(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black),
+                                           color: Colors.white,),
                                     )),
                                   ],
                                   rows: produitsTendance.map((produit) {
