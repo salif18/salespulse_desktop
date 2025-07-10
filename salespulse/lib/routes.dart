@@ -213,44 +213,46 @@ class _RoutesState extends State<Routes> {
     );
   }
 
-  Widget _buildPage() {
-    final pages = [
-      // 0. ANALYSE
-      const StatistiquesScreen(),
-   
-       // 10. ANALYSE (Produits)
-      const StatistiquesProduitsPage(),
-      
-      // 1. VENTES
-      const AddVenteScreen(),
-      const HistoriqueVentesScreen(),
-      const ClientsEnRetardScreen(),
-      const HistoriqueReglementsScreen(),
-      
-      // 2-5. STOCKS
-      const StocksView(),
-      const AddProduitPage(),
-      const InventaireProPage(),
-      const HistoriqueMouvementsScreen(),
-      
-      // 6. CATALOGUE
-      const CategoriesView(),
-      
-      // 12-13. RELATIONS
-      const ClientsView(),
-      const FournisseurView(),
-      
-      // 11. FINANCES
-      const DepenseScreen(),
-      
-     
-      
-      // 14. ADMINISTRATION
-      const UserManagementScreen()
-    ];
+ Widget _buildPage() {
+  final auth = Provider.of<AuthProvider>(context);
+  final role = auth.role;
+
+  final pages = [
+    // 0. Dashboard (admin uniquement)
+    if (role == "admin") const StatistiquesScreen(),
     
-    return pages[_currentIndex];
-  }
+    // 10. Analyse Produits (admin uniquement)
+    if (role == "admin") const StatistiquesProduitsPage(),
+
+    // 1. VENTES
+    const AddVenteScreen(),
+    const HistoriqueVentesScreen(),
+    const ClientsEnRetardScreen(),
+    const HistoriqueReglementsScreen(),
+
+    // 2-5. STOCKS
+    const StocksView(),
+    const AddProduitPage(),
+    const InventaireProPage(),
+    const HistoriqueMouvementsScreen(),
+
+    // 6. CATALOGUE
+    const CategoriesView(),
+
+    // 12-13. RELATIONS
+    const ClientsView(),
+    const FournisseurView(),
+
+    // 11. FINANCES
+    const DepenseScreen(),
+
+    // 14. ADMINISTRATION (admin uniquement)
+    if (role == "admin") const UserManagementScreen(),
+  ];
+
+  return pages[_currentIndex];
+}
+
 
   Widget _buildDrawerItem(
     IconData icon,
