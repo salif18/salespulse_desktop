@@ -38,6 +38,10 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
   int benefice = 0;
   int totalRemises = 0;
   int totalTVACollectee = 0;
+  double margeMoyennePromo = 0;
+  int nbPromoActifs = 0;
+  Map<String, dynamic> impactPromoVentes = {};
+
 
   String selectedMonth = DateFormat('yyyy-MM').format(DateTime.now());
   List<Map<String, dynamic>> moisFiltres = [];
@@ -45,6 +49,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
   List<Map<String, dynamic>> ventesAnnee = [];
   Map<String, dynamic> statsParMois = {};
   List<Map<String, dynamic>> ventesHebdo = [];
+
 
   @override
   void initState() {
@@ -91,6 +96,10 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         totalRemises = data["totalRemises"] ?? 0;
         totalTVACollectee = data["totalTVACollectee"] ?? 0;
         statsParMois = data['statsParMois'] ?? {};
+         // Récupération des nouvelles stats promos
+        margeMoyennePromo = (data['margeMoyennePromo'] ?? 0).toDouble();
+        nbPromoActifs = data['nbPromoActifs'] ?? 0;
+        impactPromoVentes = data['impactPromoVentes'] ?? {};
       });
     }
   }
@@ -371,6 +380,34 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                     _formatPrice.formatNombre(etatCaisse.toString()),
                     Icons.account_balance,
                     Colors.pink),
+                
+                _buildCard(
+      "Marge moyenne produits en promotion",
+      _formatPrice.formatNombre(margeMoyennePromo.toString()),
+      Icons.show_chart,
+      Colors.green,
+    ),
+
+    _buildCard(
+      "Nombre de promotions actives",
+      nbPromoActifs.toString(),
+      Icons.local_offer,
+      Colors.orange,
+    ),
+ 
+    _buildCard(
+      "Impact promos - avant ventes hors promo",
+      (impactPromoVentes['avant'] ?? 0).toString(),
+      Icons.trending_up,
+      Colors.blue,
+    ),
+ 
+    _buildCard(
+      "Impact promos - après ventes hors promo",
+      (impactPromoVentes['apres'] ?? 0).toString(),
+      Icons.trending_down,
+      Colors.red,
+    ),
               ],
             ),
             const SizedBox(height: 20),

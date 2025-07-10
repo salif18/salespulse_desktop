@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, dead_code
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -53,112 +53,111 @@ class _RoutesState extends State<Routes> {
   }
 
   Widget _buildPermanentSidebar() {
-  final store = Provider.of<AuthProvider>(context, listen: false).societeName;
-  final number = Provider.of<AuthProvider>(context, listen: false).societeNumber;
-  final role = Provider.of<AuthProvider>(context, listen: false).role;
-  final ScrollController scrollController = ScrollController();
+    final store = Provider.of<AuthProvider>(context, listen: false).societeName;
+    final number = Provider.of<AuthProvider>(context, listen: false).societeNumber;
+    final role = Provider.of<AuthProvider>(context, listen: false).role;
+    final ScrollController scrollController = ScrollController();
 
-  return Container(
-    width: 250,
-    color: const Color(0xff001c30),
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        scrollbarTheme: ScrollbarThemeData(
-          thumbColor: MaterialStateProperty.all(Colors.white10),
-          trackColor: MaterialStateProperty.all(Colors.white10),
-          thickness: MaterialStateProperty.all(6),
-          radius: const Radius.circular(8),
+    return Container(
+      width: 250,
+      color: const Color(0xff001c30),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          scrollbarTheme: ScrollbarThemeData(
+            thumbColor: MaterialStateProperty.all(Colors.white10),
+            trackColor: MaterialStateProperty.all(Colors.white10),
+            thickness: MaterialStateProperty.all(6),
+            radius: const Radius.circular(8),
+          ),
         ),
-      ),
-      child: Scrollbar(
-        controller: scrollController,
-        thumbVisibility: false, // 👈 S'affiche uniquement au survol (hover)
-        trackVisibility: false,
-        interactive: true,
-        child: ListView(
+        child: Scrollbar(
           controller: scrollController,
-          children: [
-            // ✅ En-tête du magasin
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xff001c30),
-                border: Border(bottom: BorderSide(width: 2, color: Colors.orange)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const PikedPhoto(),
-                  const SizedBox(height: 10),
-                  Text(
-                    store,
-                    style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.orange,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      number,
+          thumbVisibility: false,
+          trackVisibility: false,
+          interactive: true,
+          child: ListView(
+            controller: scrollController,
+            children: [
+              // En-tête du magasin
+              DrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Color(0xff001c30),
+                  border: Border(bottom: BorderSide(width: 2, color: Colors.orange)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const PikedPhoto(),
+                    const SizedBox(height: 10),
+                    Text(
+                      store,
                       style: GoogleFonts.roboto(
                         fontSize: 14,
-                        color: const Color.fromARGB(255, 231, 231, 231),
+                        fontWeight: FontWeight.w800,
+                        color: Colors.orange,
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: Text(
+                        number,
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color.fromARGB(255, 231, 231, 231),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // ✅ Section ANALYSE
-            _buildSectionHeader('ANALYSE'),
-            if(role == "admin")
-            _buildDrawerItem(Icons.stacked_bar_chart_rounded, "Tableau de bord", 0, iconBgColor: Colors.orange),
-            _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 1, iconBgColor: Colors.pink),
-
-            // ✅ Section VENTES
-            _buildSectionHeader('VENTES'),
-            _buildDrawerItem(Icons.shopping_cart_outlined, "Point de vente", 2, iconBgColor: Colors.teal),
-            _buildDrawerItem(Icons.library_books_sharp, "Historique de ventes", 3, iconBgColor: Colors.cyan),
-            _buildDrawerItem(Icons.credit_card_off, "Clients impayés", 4, iconBgColor: Colors.orangeAccent),
-            _buildDrawerItem(FontAwesomeIcons.handshake, "Historique règlements", 5, iconBgColor: Colors.deepOrange),
-
-            // ✅ Section STOCKS
-            _buildSectionHeader('STOCKS'),
-            _buildDrawerItem(Icons.assured_workload_rounded, "Entrepots", 6, iconBgColor: Colors.blue),
-            if(role == "admin")
-            _buildDrawerItem(Icons.add, "Ajouter produits", 7, iconBgColor: Colors.blue.shade300),
-            _buildDrawerItem(Icons.inventory_2_rounded, "Inventaires", 8, iconBgColor: Colors.deepPurple),
-            _buildDrawerItem(Icons.assignment_add, "Mouvement inventaires", 9, iconBgColor: Colors.deepOrange),
-
-            // ✅ Section CATALOGUE
-            _buildSectionHeader('CATALOGUE'),
-            _buildDrawerItem(Icons.category, "Catégories", 10, iconBgColor: Colors.green),
-
-            // ✅ Section RELATIONS
-            _buildSectionHeader('RELATIONS'),
-            _buildDrawerItem(Icons.people_alt, "Mes clients", 11, iconBgColor: Colors.teal),
-            _buildDrawerItem(Icons.contact_phone_rounded, "Fournisseurs", 12, iconBgColor: Colors.grey),
-
-            // ✅ Section FINANCES
-            _buildSectionHeader('FINANCES'),
-            _buildDrawerItem(Icons.balance_sharp, "Dépenses", 13, iconBgColor: Colors.redAccent),
-
-            // ✅ Section ADMINISTRATION
-            _buildSectionHeader('ADMINISTRATION'),
+              // Section ANALYSE
+              _buildSectionHeader('ANALYSE'),
               if(role == "admin")
-            _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.deepOrange),
+              _buildDrawerItem(Icons.stacked_bar_chart_rounded, "Tableau de bord", 0, iconBgColor: Colors.orange),
+              _buildDrawerItem(Icons.workspace_premium, "Tendance des produits", 1, iconBgColor: Colors.pink),
 
-            // ✅ Section COMPTE UTILISATEUR
-            _buildUserActionsSection(),
-          ],
+              // Section VENTES
+              _buildSectionHeader('VENTES'),
+              _buildDrawerItem(Icons.shopping_cart_outlined, "Point de vente", 2, iconBgColor: Colors.teal),
+              _buildDrawerItem(Icons.library_books_sharp, "Historique de ventes", 3, iconBgColor: Colors.cyan),
+              _buildDrawerItem(Icons.credit_card_off, "Clients impayés", 4, iconBgColor: Colors.orangeAccent),
+              _buildDrawerItem(FontAwesomeIcons.handshake, "Historique règlements", 5, iconBgColor: Colors.deepOrange),
+
+              // Section STOCKS
+              _buildSectionHeader('STOCKS'),
+              _buildDrawerItem(Icons.assured_workload_rounded, "Entrepots", 6, iconBgColor: Colors.blue),
+              if(role == "admin")
+              _buildDrawerItem(Icons.add, "Ajouter produits", 7, iconBgColor: Colors.blue.shade300),
+              _buildDrawerItem(Icons.inventory_2_rounded, "Inventaires", 8, iconBgColor: Colors.deepPurple),
+              _buildDrawerItem(Icons.assignment_add, "Mouvement inventaires", 9, iconBgColor: Colors.deepOrange),
+
+              // Section CATALOGUE
+              _buildSectionHeader('CATALOGUE'),
+              _buildDrawerItem(Icons.category, "Catégories", 10, iconBgColor: Colors.green),
+
+              // Section RELATIONS
+              _buildSectionHeader('RELATIONS'),
+              _buildDrawerItem(Icons.people_alt, "Mes clients", 11, iconBgColor: Colors.teal),
+              _buildDrawerItem(Icons.contact_phone_rounded, "Fournisseurs", 12, iconBgColor: Colors.grey),
+
+              // Section FINANCES
+              _buildSectionHeader('FINANCES'),
+              _buildDrawerItem(Icons.balance_sharp, "Dépenses", 13, iconBgColor: Colors.redAccent),
+
+              // Section ADMINISTRATION
+              _buildSectionHeader('ADMINISTRATION'),
+              if(role == "admin")
+              _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.deepOrange),
+
+              // Section COMPTE UTILISATEUR
+              _buildUserActionsSection(),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -186,7 +185,7 @@ class _RoutesState extends State<Routes> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const UpdateProfil()),
-        )),
+          )),
         _customSidebarAction(
           icon: LineIcons.edit,
           label: "Modifier password",
@@ -194,7 +193,7 @@ class _RoutesState extends State<Routes> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const UpdatePassword()),
-        )),
+          )),
         _customSidebarAction(
           icon: LineIcons.removeUser,
           label: "Supprimer compte",
@@ -213,46 +212,63 @@ class _RoutesState extends State<Routes> {
     );
   }
 
- Widget _buildPage() {
-  final auth = Provider.of<AuthProvider>(context);
-  final role = auth.role;
+  Widget _buildPage() {
+    final auth = Provider.of<AuthProvider>(context);
+    final role = auth.role;
 
-  final pages = [
-    // 0. Dashboard (admin uniquement)
-    if (role == "admin") const StatistiquesScreen(),
-    
-    // 10. Analyse Produits (admin uniquement)
-    if (role == "admin") const StatistiquesProduitsPage(),
+    // Liste complète de toutes les pages avec des index fixes
+    final allPages = [
+      // 0. Dashboard (admin uniquement)
+      const StatistiquesScreen(),
+      
+      // 1. Tendance des produits
+      const StatistiquesProduitsPage(),
 
-    // 1. VENTES
-    const AddVenteScreen(),
-    const HistoriqueVentesScreen(),
-    const ClientsEnRetardScreen(),
-    const HistoriqueReglementsScreen(),
+      // 2-5. VENTES
+      const AddVenteScreen(),
+      const HistoriqueVentesScreen(),
+      const ClientsEnRetardScreen(),
+      const HistoriqueReglementsScreen(),
 
-    // 2-5. STOCKS
-    const StocksView(),
-    const AddProduitPage(),
-    const InventaireProPage(),
-    const HistoriqueMouvementsScreen(),
+      // 6-9. STOCKS
+      const StocksView(),
+      const AddProduitPage(),
+      const InventaireProPage(),
+      const HistoriqueMouvementsScreen(),
 
-    // 6. CATALOGUE
-    const CategoriesView(),
+      // 10. CATALOGUE
+      const CategoriesView(),
 
-    // 12-13. RELATIONS
-    const ClientsView(),
-    const FournisseurView(),
+      // 11-12. RELATIONS
+      const ClientsView(),
+      const FournisseurView(),
 
-    // 11. FINANCES
-    const DepenseScreen(),
+      // 13. FINANCES
+      const DepenseScreen(),
 
-    // 14. ADMINISTRATION (admin uniquement)
-    if (role == "admin") const UserManagementScreen(),
-  ];
+      // 14. ADMINISTRATION (admin uniquement)
+      const UserManagementScreen(),
+    ];
 
-  return pages[_currentIndex];
-}
+    // Liste des index autorisés selon le rôle
+    final allowedIndexes = [
+      1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, // Pour tous les utilisateurs
+      if (role == "admin") ...[0, 7, 14] // Pages supplémentaires pour admin
+    ];
 
+    // Vérification si l'index actuel est autorisé
+    if (!allowedIndexes.contains(_currentIndex)) {
+      // Redirection vers le premier index autorisé
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _currentIndex = allowedIndexes.first;
+        });
+      });
+      return allPages[allowedIndexes.first];
+    }
+
+    return allPages[_currentIndex];
+  }
 
   Widget _buildDrawerItem(
     IconData icon,
@@ -279,7 +295,6 @@ class _RoutesState extends State<Routes> {
                 color: isSelected
                     ? Colors.white24
                     : isHovered
-                        // ignore: dead_code
                         ? Colors.white10
                         : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
