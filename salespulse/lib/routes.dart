@@ -7,6 +7,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/components/add_photo.dart';
 import 'package:salespulse/providers/auth_provider.dart';
+import 'package:salespulse/views/abonnement/abonement_historiques.dart';
 import 'package:salespulse/views/auth/login_view.dart';
 import 'package:salespulse/views/auth/update_password.dart';
 import 'package:salespulse/views/categories/categories_view.dart';
@@ -148,7 +149,10 @@ class _RoutesState extends State<Routes> {
               // Section ADMINISTRATION
               _buildSectionHeader('ADMINISTRATION'),
               if(role == "admin")
-              _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.deepOrange),
+              _buildDrawerItem(FontAwesomeIcons.userGroup, "Suivis utilisateurs", 14, iconBgColor: Colors.blueAccent),
+               if(role == "admin")
+              _buildDrawerItem(FontAwesomeIcons.shopLock, "Abonnements", 15, iconBgColor: Colors.deepOrange),
+
 
               // Section COMPTE UTILISATEUR
               _buildUserActionsSection(),
@@ -248,12 +252,13 @@ class _RoutesState extends State<Routes> {
 
       // 14. ADMINISTRATION (admin uniquement)
       const UserManagementScreen(),
+      const AbonnementHistoriquePage()
     ];
 
     // Liste des index autorisés selon le rôle
     final allowedIndexes = [
       1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, // Pour tous les utilisateurs
-      if (role == "admin") ...[0, 7, 14] // Pages supplémentaires pour admin
+      if (role == "admin") ...[0, 7, 14,15] // Pages supplémentaires pour admin
     ];
 
     // Vérification si l'index actuel est autorisé

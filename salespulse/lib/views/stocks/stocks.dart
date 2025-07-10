@@ -150,6 +150,7 @@ class _StocksViewState extends State<StocksView> {
 
   @override
   Widget build(BuildContext context) {
+     final role = Provider.of<AuthProvider>(context, listen: false).role;
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: RefreshIndicator(
@@ -604,7 +605,7 @@ class _StocksViewState extends State<StocksView> {
                                         DataCell(
                                           Row(
                                             children: [
-                                              if (article.stocks > 0)
+                                              if (article.stocks > 0 && role == "admin")
                                                 Expanded(
                                                   child: IconButton(
                                                     icon: const Icon(Icons.edit,
@@ -628,7 +629,7 @@ class _StocksViewState extends State<StocksView> {
                                                     },
                                                   ),
                                                 ),
-                                              if (article.stocks == 0)
+                                              if (article.stocks == 0 && role == "admin")
                                                 IconButton(
                                                   icon: const Icon(
                                                       Icons

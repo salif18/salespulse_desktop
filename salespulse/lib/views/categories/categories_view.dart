@@ -270,7 +270,14 @@ Widget build(BuildContext context) {
                                   categorie.name,
                                   style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
                                 ),
-                                trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                                trailing: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.chevron_left_rounded, color: Colors.grey),
+                                    Text("Glisser",style: GoogleFonts.poppins(fontSize: 12),)
+                                  ],
+                                ),
                                 onTap: () {
                                   // Tu peux ouvrir une page de détails ici
                                 },
