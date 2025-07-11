@@ -14,6 +14,8 @@ class ProductModel {
   final String statut; // "disponible" ou "indisponible"
   bool isPromo;
   final int prixPromo;
+  final DateTime? dateDebutPromo;
+  final DateTime? dateFinPromo;
   final DateTime dateAchat;
   final DateTime? dateExpiration;
   final DateTime createdAt;
@@ -34,6 +36,8 @@ class ProductModel {
     required this.unite,
     required this.statut,
     required this.isPromo,
+    required this.dateDebutPromo,
+    required this.dateFinPromo,
     required this.prixPromo,
     required this.dateAchat,
     this.dateExpiration,
@@ -58,6 +62,12 @@ class ProductModel {
       statut: json['statut'] ?? 'disponible',
       isPromo: json['isPromo'] == true || json['isPromo'] == 'true',
       prixPromo: json['prix_promo'] ?? 0,
+      dateDebutPromo:json['date_debut_promo'] != null
+          ? DateTime.tryParse(json['date_debut_promo'])
+          : null,
+      dateFinPromo :json['date_fin_promo'] != null
+          ? DateTime.tryParse(json['date_fin_promo'])
+          : null,
       dateAchat: DateTime.parse(json['date_achat'] ?? ""),
       dateExpiration: json['date_expiration'] != null
           ? DateTime.tryParse(json['date_expiration'])
@@ -82,6 +92,8 @@ class ProductModel {
       "unite": unite,
       "statut": statut,
       "isPromo": isPromo == true,
+      "date_debut_promo":dateDebutPromo?.toIso8601String(),
+      "date_fin_promo":dateFinPromo?.toIso8601String(),
       "prix_promo": prixPromo,
       "date_achat": dateAchat.toIso8601String(),
       "date_expiration": dateExpiration?.toIso8601String(),

@@ -56,6 +56,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
       final res = await _clientApi.getClients(token);
 
       if (res.statusCode == 200) {
+        if(!mounted) return ;
         setState(() {
           clients = (res.data["clients"] as List)
               .map((e) => ClientModel.fromJson(e))
@@ -63,6 +64,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
         });
       }
     } on DioException catch (e) {
+       if(!mounted) return ;
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -92,7 +94,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
           return;
         }
       }
-
+ if(!mounted) return ;
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -103,12 +105,14 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
         ),
       );
     } on TimeoutException {
+       if(!mounted) return ;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
+       if(!mounted) return ;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());

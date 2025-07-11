@@ -43,11 +43,14 @@ class _EditProduitPageState extends State<EditProduitPage> {
   late TextEditingController _seuil;
   late TextEditingController _unite;
   late TextEditingController _prixPromo;
+  
   String? _selectedCategorie;
 
   DateTime? _dateAchat;
   DateTime? _dateExpiration;
   bool _isPromo = false;
+  DateTime? _dateDebutPromo;  // Nouveau champ
+  DateTime? _dateFinPromo; 
 
   @override
   void initState() {
@@ -70,6 +73,8 @@ class _EditProduitPageState extends State<EditProduitPage> {
     _selectedCategorie = product.categories;
 
     _isPromo = product.isPromo;
+    _dateDebutPromo = product.dateDebutPromo;
+    _dateFinPromo = product.dateFinPromo;
     _dateAchat = product.dateAchat;
     _dateExpiration = product.dateExpiration;
     _imageUrl = product.image;
@@ -190,6 +195,13 @@ class _EditProduitPageState extends State<EditProduitPage> {
     addField('unite', _unite.text);
     addField('isPromo', _isPromo);
     addField('prix_promo', _prixPromo.text.isNotEmpty ? _prixPromo.text : '0');
+     if (_dateDebutPromo != null) {
+    addField('date_debut_promo', _dateDebutPromo!.toIso8601String());
+  }
+  
+  if (_dateFinPromo != null) {
+    addField('date_fin_promo', _dateFinPromo!.toIso8601String());
+  }
 
     if (_dateAchat != null) {
       formData.fields
@@ -258,12 +270,12 @@ class _EditProduitPageState extends State<EditProduitPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
         title: Text(
           "Modifier le produit",
           style: GoogleFonts.poppins(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -595,79 +607,99 @@ class _EditProduitPageState extends State<EditProduitPage> {
                             const SizedBox(height: 16),
 
                             // Promotion
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _isPromo
-                                    ? Colors.orange[50]
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _isPromo
-                                      ? Colors.orange[100]!
-                                      : Colors.grey[200]!,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SwitchListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    title: Text(
-                                      "Activer la promotion",
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    value: _isPromo,
-                                    onChanged: (value) {
-                                      setState(() => _isPromo = value);
-                                    },
-                                  ),
-                                  if (_isPromo) ...[
-                                    const SizedBox(height: 8),
-                                    _buildTextField(
-                                      controller: _prixPromo,
-                                      label: "Prix promotionnel*",
-                                      hint: "0.00",
-                                      keyboardType: TextInputType.number,
-                                      prefix: Text(
-                                        "FCFA",
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      validator: _isPromo
-                                          ? (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return "Ce champ est obligatoire";
-                                              }
-                                              if (double.tryParse(value) ==
-                                                  null) {
-                                                return "Valeur numérique invalide";
-                                              }
-                                              if (double.parse(value) <= 0) {
-                                                return "Doit être supérieur à 0";
-                                              }
-                                              if (_prixVente.text.isNotEmpty &&
-                                                  double.tryParse(
-                                                          _prixVente.text) !=
-                                                      null) {
-                                                if (double.parse(value) >=
-                                                    double.parse(
-                                                        _prixVente.text)) {
-                                                  return "Doit être inférieur au prix de vente";
-                                                }
-                                              }
-                                              return null;
-                                            }
-                                          : null,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
+                            // Promotion
+Container(
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: _isPromo ? Colors.orange[50] : Colors.transparent,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(
+      color: _isPromo ? Colors.orange[100]! : Colors.grey[200]!,
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          "Activer la promotion",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        value: _isPromo,
+        onChanged: (value) {
+          setState(() => _isPromo = value);
+        },
+      ),
+      if (_isPromo) ...[
+        const SizedBox(height: 8),
+        _buildTextField(
+          controller: _prixPromo,
+          label: "Prix promotionnel*",
+          hint: "0.00",
+          keyboardType: TextInputType.number,
+          prefix: Text(
+            "FCFA",
+            style: GoogleFonts.poppins(
+              color: Colors.grey[600],
+            ),
+          ),
+          validator: _isPromo
+              ? (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Ce champ est obligatoire";
+                  }
+                  if (double.tryParse(value) == null) {
+                    return "Valeur numérique invalide";
+                  }
+                  if (double.parse(value) <= 0) {
+                    return "Doit être supérieur à 0";
+                  }
+                  if (_prixVente.text.isNotEmpty &&
+                      double.tryParse(_prixVente.text) != null) {
+                    if (double.parse(value) >=
+                        double.parse(_prixVente.text)) {
+                      return "Doit être inférieur au prix de vente";
+                    }
+                  }
+                  return null;
+                }
+              : null,
+        ),
+        const SizedBox(height: 16),
+        // Nouveaux champs date début/fin promo
+        Row(
+          children: [
+            Expanded(
+              child: _buildDateField(
+                context,
+                label: "Début promo",
+                date: _dateDebutPromo,
+                onDateSelected: (date) {
+                  setState(() => _dateDebutPromo = date);
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildDateField(
+                context,
+                label: "Fin promo",
+                date: _dateFinPromo,
+                onDateSelected: (date) {
+                  setState(() => _dateFinPromo = date);
+                },
+                isExpiration: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ],
+  ),
+),
                             const SizedBox(height: 24),
 
                             // Bouton d'enregistrement

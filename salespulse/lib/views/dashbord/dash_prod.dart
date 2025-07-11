@@ -106,7 +106,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         });
       }
     } on DioException catch (e) {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -136,7 +136,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           return;
         }
       }
- if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -147,14 +147,14 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         ),
       );
     } on TimeoutException {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());
@@ -226,7 +226,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         });
       }
     } on DioException catch (e) {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -256,7 +256,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           return;
         }
       }
- if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -267,14 +267,14 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         ),
       );
     } on TimeoutException {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
-       if (!mounted) return; // ✅ vérifie que le widget est toujours là
+      if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());
@@ -300,12 +300,16 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: GoogleFonts.poppins(
-                        fontSize: 13, color: Colors.grey[600])),
-                Text(value,
-                    style: GoogleFonts.poppins(
-                        fontSize: 15, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(label,
+                      style: GoogleFonts.poppins(
+                          fontSize: 13, color: Colors.grey[600])),
+                ),
+                Expanded(
+                  child: Text(value,
+                      style: GoogleFonts.poppins(
+                          fontSize: 15, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
           )
@@ -498,15 +502,18 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
                   Icons.local_offer,
                   Colors.orange,
                 ),
+                // Carte pour les ventes HORS PROMO avant la promotion
                 _buildCard(
-                  "Impact promos - avant ventes hors promo",
-                  (impactPromoVentes['avant'] ?? 0).toString(),
+                  "Ventes régulières des produits avant promotion",
+                  "${impactPromoVentes['avant']?['quantite'] ?? 0} unités",
                   Icons.trending_up,
                   Colors.blue,
                 ),
+
+                // Carte pour les ventes EN PROMO après le début de la promotion
                 _buildCard(
-                  "Impact promos - après ventes hors promo",
-                  (impactPromoVentes['apres'] ?? 0).toString(),
+                  "Ventes de tous les produits en promotion ",
+                  "${impactPromoVentes['apres']?['quantite'] ?? 0} unités",
                   Icons.trending_down,
                   Colors.red,
                 ),
