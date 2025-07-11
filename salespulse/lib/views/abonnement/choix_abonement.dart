@@ -16,145 +16,207 @@ class AbonnementScreen extends StatefulWidget {
 }
 
 class _AbonnementScreenState extends State<AbonnementScreen> {
-  bool loading = false;
-  final api = AbonnementApi();
+  bool _isLoading = false;
+  final AbonnementApi _abonnementApi = AbonnementApi();
 
-  Future<void> souscrire(String type) async {
-    setState(() => loading = true);
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
+  Future<void> _souscrireAbonnement(String type) async {
+    setState(() => _isLoading = true);
+    
+    // Afficher l'indicateur de chargement
+    ScaffoldMessenger.of(context).showSnackBar(
+      _buildLoadingSnackBar(),
+    );
+
     try {
-      await api.acheterAbonnement(
+      final token = Provider.of<AuthProvider>(context, listen: false).token;
+      final response = await _abonnementApi.acheterAbonnement(
         context: context,
         type: type,
-        montant: type == "essai" ? 0 : 10000,
+        montant: type == "essai" ? 0 : 25000,
         mode: "",
         token: token,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          backgroundColor: Colors.green,
-          content: Text(
-            "Abonnement ${type == "essai" ? "d'essai" : "Pro"} activé avec succès !",
-            style: GoogleFonts.poppins(color: Colors.white),
-          ),
-        ),
-      );
+      // Fermer le loader
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-      Navigator.pop(context, true);
+      if (response.statusCode == 201) {
+        _showSuccessMessage(response.data['message']);
+        Navigator.pop(context, true);
+      }
     } on DioException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-          content: Text(
-            "Erreur : ${e.response?.data['error'] ?? 'Échec de la souscription'}",
+      _handleSubscriptionError(e);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  SnackBar _buildLoadingSnackBar() {
+    return SnackBar(
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      backgroundColor: Colors.blue[800],
+      content: Row(
+        children: [
+          const CircularProgressIndicator(color: Colors.white),
+          const SizedBox(width: 15),
+          Text(
+            "Traitement en cours...",
             style: GoogleFonts.poppins(color: Colors.white),
           ),
+        ],
+      ),
+      duration: const Duration(minutes: 1),
+    );
+  }
+
+  void _showSuccessMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-      );
-    } finally {
-      setState(() => loading = false);
-    }
+        backgroundColor: Colors.green,
+        content: Text(
+          "✅ $message",
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _handleSubscriptionError(DioException e) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    
+    final errorMessage = e.response?.data['error'] ?? 'Échec de la souscription';
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
+        content: Text(
+          "Erreur : $errorMessage",
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          "Nos Offres d'Abonnement",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // En-tête
-            Text(
-              "Choisissez la formule qui correspond à vos besoins",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 30),
+      appBar: _buildAppBar(),
+      body: _buildBody(),
+    );
+  }
 
-            // Carte Essai Gratuit
-            _buildPlanCard(
-              title: "Essai Gratuit",
-              price: "0 FCFA",
-              duration: "7 jours",
-              color: const Color(0xFF4CAF50),
-              features: const [
-                "Accès à toutes les fonctionnalités",
-                "Jusqu'à 50 produits",
-                "1 utilisateur",
-                "Support de base",
-              ],
-              isPopular: false,
-              onPressed: () => souscrire("essai"),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Carte Pro
-            _buildPlanCard(
-              title: "Professionnel",
-              price: "25 000 FCFA",
-              duration: "3 mois",
-              color: const Color(0xFFFF9800),
-              features: const [
-                "Toutes les fonctionnalités Premium",
-                "Produits illimités",
-                "Jusqu'à 5 utilisateurs",
-                "Support prioritaire",
-                "Sauvegarde automatique",
-                "Statistiques avancées",
-              ],
-              isPopular: true,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PaymentAbonnementScreen(),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Mentions légales
-            Text(
-              "Résiliation possible à tout moment. Aucun remboursement après paiement.",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
-            ),
-
-            if (loading)
-              const Padding(
-                padding: EdgeInsets.only(top: 30),
-                child: CircularProgressIndicator(),
-              ),
-          ],
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text(
+        "Nos offres d'abonnement",
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
         ),
       ),
+      centerTitle: true,
+      elevation: 0,
+      backgroundColor: Colors.white,
+      iconTheme: const IconThemeData(color: Colors.black),
+    );
+  }
+
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          _buildHeaderText(),
+          const SizedBox(height: 30),
+          _buildFreeTrialCard(),
+          const SizedBox(height: 25),
+          _buildProCard(),
+          const SizedBox(height: 20),
+          _buildLegalNotice(),
+          if (_isLoading) _buildLoadingIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderText() {
+    return Text(
+      "Choisissez la formule qui correspond à vos besoins",
+      textAlign: TextAlign.center,
+      style: GoogleFonts.poppins(
+        fontSize: 16,
+        color: Colors.grey[600],
+      ),
+    );
+  }
+
+  Widget _buildFreeTrialCard() {
+    return _buildPlanCard(
+      title: "Essai Gratuit",
+      price: "0 FCFA",
+      duration: "7 jours",
+      color: const Color(0xFF4CAF50),
+      features: const [
+        "Accès à toutes les fonctionnalités",
+        "Jusqu'à 50 produits",
+        "1 utilisateur",
+        "Support de base",
+      ],
+      isPopular: false,
+      onPressed: () => _souscrireAbonnement("essai"),
+    );
+  }
+
+  Widget _buildProCard() {
+    return _buildPlanCard(
+      title: "Professionnel",
+      price: "25 000 FCFA",
+      duration: "3 mois",
+      color: const Color(0xFFFF9800),
+      features: const [
+        "Toutes les fonctionnalités Premium",
+        "Produits illimités",
+        "Jusqu'à 5 utilisateurs",
+        "Support prioritaire",
+        "Sauvegarde automatique",
+        "Statistiques avancées",
+      ],
+      isPopular: true,
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PaymentAbonnementScreen(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegalNotice() {
+    return Text(
+      "Résiliation possible à tout moment. Aucun remboursement après paiement.",
+      textAlign: TextAlign.center,
+      style: GoogleFonts.poppins(
+        fontSize: 12,
+        color: Colors.grey[500],
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Padding(
+      padding: EdgeInsets.only(top: 30),
+      child: CircularProgressIndicator(),
     );
   }
 
@@ -180,137 +242,160 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
       ),
       child: Column(
         children: [
-          if (isPopular)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Text(
-                "LE PLUS POPULAIRE",
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+          if (isPopular) _buildPopularBadge(color),
           Container(
             padding: const EdgeInsets.all(25),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius:BorderRadius.only(
-                bottomLeft: const Radius.circular(16),
-                bottomRight:const Radius.circular(16),
-                topLeft: Radius.circular(isPopular ? 0 : 16),
-                topRight: Radius.circular(isPopular ? 0 : 16),
-              ),
+              borderRadius: _buildCardBorderRadius(isPopular),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        duration,
-                        style: GoogleFonts.poppins(
-                          color: color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  price,
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  title == "Essai Gratuit"
-                      ? "Sans engagement"
-                      : "Soit 10 000 FCFA/mois",
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                  ),
-                ),
+                _buildCardHeader(title, duration, color),
+                _buildPriceSection(price, title, color),
                 const SizedBox(height: 20),
                 const Divider(height: 1),
                 const SizedBox(height: 20),
-                ...features.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: color,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              feature,
-                              style: GoogleFonts.poppins(
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+                ..._buildFeatureList(features, color),
                 const SizedBox(height: 25),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: color,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: onPressed,
-                    child: Text(
-                      title == "Essai Gratuit"
-                          ? "Commencer l'essai"
-                          : "Choisir cette offre",
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+                _buildSubscriptionButton(title, color, onPressed),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPopularBadge(Color color) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: Text(
+        "LE PLUS POPULAIRE",
+        style: GoogleFonts.poppins(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  BorderRadius _buildCardBorderRadius(bool isPopular) {
+    return BorderRadius.only(
+      bottomLeft: const Radius.circular(16),
+      bottomRight: const Radius.circular(16),
+      topLeft: Radius.circular(isPopular ? 0 : 16),
+      topRight: Radius.circular(isPopular ? 0 : 16),
+    );
+  }
+
+  Widget _buildCardHeader(String title, String duration, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            duration,
+            style: GoogleFonts.poppins(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceSection(String price, String title, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 15),
+        Text(
+          price,
+          style: GoogleFonts.poppins(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          title == "Essai Gratuit" 
+              ? "Sans engagement" 
+              : "Soit 10 000 FCFA/mois",
+          style: GoogleFonts.poppins(
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildFeatureList(List<String> features, Color color) {
+    return features.map((feature) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_circle, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              feature,
+              style: GoogleFonts.poppins(
+                color: Colors.grey[800],
+              ),
+            ),
+          ),
+        ],
+      ),
+    )).toList();
+  }
+
+  Widget _buildSubscriptionButton(String title, Color color, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Text(
+          title == "Essai Gratuit" 
+              ? "Commencer l'essai" 
+              : "Choisir cette offre",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

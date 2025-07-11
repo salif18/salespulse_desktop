@@ -106,6 +106,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         });
       }
     } on DioException catch (e) {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -135,7 +136,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           return;
         }
       }
-
+ if (!mounted) return; // ✅ vérifie que le widget est toujours là
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -146,12 +147,14 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         ),
       );
     } on TimeoutException {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());
@@ -223,6 +226,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         });
       }
     } on DioException catch (e) {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -252,7 +256,7 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
           return;
         }
       }
-
+ if (!mounted) return; // ✅ vérifie que le widget est toujours là
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -263,12 +267,14 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
         ),
       );
     } on TimeoutException {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
+       if (!mounted) return; // ✅ vérifie que le widget est toujours là
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());

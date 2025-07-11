@@ -1,10 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/abonnement_api.dart';
+import 'package:salespulse/views/abonnement/choix_abonement.dart';
 
 class PaymentAbonnementScreen extends StatelessWidget {
   const PaymentAbonnementScreen({super.key});
@@ -160,7 +162,9 @@ class PaymentAbonnementScreen extends StatelessWidget {
               
               Center(
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> const AbonnementScreen()));
+                  },
                   child: Text("Essai gratuit de 7 jours",
                       style: GoogleFonts.poppins(
                           color: Colors.blue[800],
@@ -225,7 +229,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                       fontWeight: FontWeight.w600)),
               const SizedBox(height: 15),
               Text(
-                  "Vous êtes sur le point de souscrire à l'abonnement Pro pour 9 900 FCFA.",
+                  "Vous êtes sur le point de souscrire à l'abonnement Pro pour 25 000 FCFA.",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                       color: Colors.grey[600])),
@@ -268,93 +272,116 @@ class PaymentAbonnementScreen extends StatelessWidget {
     );
   }
 
-  void _acheterAbonnement(BuildContext context) async {
-    final api = AbonnementApi();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        backgroundColor: Colors.blue[800],
-        content: Row(
-          children: [
-            const CircularProgressIndicator(color: Colors.white),
-            const SizedBox(width: 15),
-            Text("Traitement de votre abonnement...",
-                style: GoogleFonts.poppins(color: Colors.white)),
-          ],
-        ),
-      ),
-    );
+ void _acheterAbonnement(BuildContext context) async {
+  final api = AbonnementApi();
+  final token = Provider.of<AuthProvider>(context, listen: false).token;
 
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
-    await api.acheterAbonnement(
+  // Afficher l'indicateur de chargement
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      backgroundColor: Colors.blue[800],
+      content: Row(
+        children: [
+          const CircularProgressIndicator(color: Colors.white),
+          const SizedBox(width: 15),
+          Text("Traitement de votre abonnement...",
+              style: GoogleFonts.poppins(color: Colors.white)),
+        ],
+      ),
+    ),
+  );
+
+  try {
+    final response = await api.acheterAbonnement(
       context: context,
-      type: "pro",
+      type: "premium",
       montant: 10000,
       mode: "",
       token: token,
     );
 
+    // Cacher le SnackBar de chargement
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    
-    // Après paiement réussi
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+
+    if (response.statusCode == 201) {
+      // Afficher confirmation succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("✅ ${response.data['message']}"),
+          backgroundColor: Colors.green,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(25),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check_rounded,
-                    color: Colors.green, size: 40),
-              ),
-              const SizedBox(height: 20),
-              Text("Abonnement activé!",
-                  style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600)),
-              const SizedBox(height: 10),
-              Text(
-                  "Votre compte est maintenant passé en version Pro. Profitez de toutes les fonctionnalités!",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                      color: Colors.grey[600])),
-              const SizedBox(height: 25),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+      );
+
+      // Afficher la boîte de dialogue de succès
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(25),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Optionnel: naviguer vers l'écran d'accueil
-                  },
-                  child: Text("Explorer les fonctionnalités",
-                      style: GoogleFonts.poppins(
-                          color: Colors.white)),
+                  child: const Icon(Icons.check_rounded,
+                      color: Colors.green, size: 40),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Text("Abonnement activé!",
+                    style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 10),
+                Text(
+                    "Votre compte est maintenant passé en version Pro. Profitez de toutes les fonctionnalités!",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                        color: Colors.grey[600])),
+                const SizedBox(height: 25),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[800],
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("Explorer les fonctionnalités",
+                        style: GoogleFonts.poppins(
+                            color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      );
+    }
+  } on DioException catch (e) {
+    // Cacher le SnackBar de chargement en cas d'erreur
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    
+    final msg = e.response?.data['error'] ?? "Erreur lors de l'abonnement";
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.red,
       ),
     );
   }
+}
 }

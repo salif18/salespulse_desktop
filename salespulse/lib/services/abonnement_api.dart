@@ -17,7 +17,7 @@ class AbonnementApi {
   );
 
   // ✅ Appel pour acheter un abonnement
-  Future<void> acheterAbonnement({
+  acheterAbonnement({
     required BuildContext context,
     required String type, // "premium" ou "essai"
     required int montant,
@@ -26,8 +26,7 @@ class AbonnementApi {
   }) async {
     var uri = "$domaineName/abonnements";
 
-    try {
-      final response = await dio.post(
+     return await dio.post(
         uri,
         data: {"type": type, "montant":montant, "moyen_paiement":mode},
         options: Options(
@@ -37,23 +36,6 @@ class AbonnementApi {
           },
         ),
       );
-
-      // ✅ Succès
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("✅ ${response.data['message']}"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } on DioException catch (e) {
-      final msg = e.response?.data['error'] ?? "Erreur lors de l’abonnement";
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
-    }
   }
 
 // ✅ verifier abonnement actif 
