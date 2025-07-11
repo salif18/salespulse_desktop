@@ -1,8 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
@@ -16,54 +17,67 @@ class UpdateProfil extends StatefulWidget {
 }
 
 class _UpdateProfilState extends State<UpdateProfil> {
-  ServicesAuth api = ServicesAuth();
-  // CLE KEY POUR LE FORMULAIRE
-  final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
-
-  final _name = TextEditingController();
-  final _numero = TextEditingController();
-  final _email = TextEditingController();
-  final _entreprise = TextEditingController();
+  final ServicesAuth _authService = ServicesAuth();
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _companyController = TextEditingController();
+  bool _isLoading = false;
+  final _debouncer = _Debouncer(milliseconds: 500);
 
   @override
   void dispose() {
-    _name.dispose();
-    _numero.dispose();
-    _email.dispose();
-    _entreprise.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _companyController.dispose();
+    _debouncer.cancel();
     super.dispose();
   }
 
-  Future _sendUpdate() async {
-    final provider = Provider.of<AuthProvider>(context, listen: false);
-    final token = provider.token;
-    var data = {
-      "name": _name.text,
-      "boutique_name": _entreprise.text,
-      "numero": _numero.text,
-      "email": _email.text,
-    };
-    try {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          });
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      final res = await api.postUpdateUser(data, token);
-      final body = json.decode(res.body);
-      Navigator.pop(context);
-      if (res.statusCode == 200) {
-        api.showSnackBarSuccessPersonalized(context, body['message']);
+    setState(() => _isLoading = true);
+    
+    try {
+      final provider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await _authService.postUpdateUser({
+        "name": _nameController.text.trim(),
+        "boutique_name": _companyController.text.trim(),
+        "numero": _phoneController.text.trim(),
+        "email": _emailController.text.trim(),
+      }, provider.token);
+
+      if (!mounted) return;
+
+      final body = json.decode(response.body);
+      if (response.statusCode == 200) {
+        _authService.showSnackBarSuccessPersonalized(context, body['message']);
         Navigator.pop(context);
       } else {
-        api.showSnackBarErrorPersonalized(context, body["message"]);
+        _authService.showSnackBarErrorPersonalized(context, body["message"]);
       }
     } catch (err) {
-      api.showSnackBarErrorPersonalized(context,
-          "Erreur lors de l'envoi des données , veuillez réessayer. $err");
+      if (mounted) {
+        _authService.showSnackBarErrorPersonalized(
+          context,
+          "Erreur lors de la mise à jour: ${err.toString()}"
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.logoutButton();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -71,55 +85,129 @@ class _UpdateProfilState extends State<UpdateProfil> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
 
-    // Vérification automatique de l'authentification
+    // Vérification initiale de l'authentification
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!await authProvider.checkAuth()) {
-        Navigator.pushReplacementNamed(context, '/login');
+      if (!authProvider.isAuthenticated && mounted) {
+        await _handleLogout(context);
       }
     });
 
     if (authProvider.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        toolbarHeight: 50,
+        elevation: 0,
         leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 20, color: Colors.black)),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, 
+            size: 20, 
+            color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
-          "Modification de compte",
+          "Modifier le profil",
           style: GoogleFonts.roboto(
-              fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
         ),
       ),
-      body: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Container(
-            width: 400,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(20)),
-            child: Center(
-              child: Form(
-                key: _globalKey,
-                child: Column(
-                  children: [
-                    _text(context),
-                    _textFieldName(
-                      context,
-                    ),
-                    _textFieldEntreprise(context),
-                    _textFieldNumber(context),
-                    _textFieldMail(context),
-                    const SizedBox(height: 100),
-                    _buttonSend(context),
-                  ],
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Container(
+              width: 400,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.person_outline,
+                        size: 48,
+                        color: Color(0xFF003366)),
+                      const SizedBox(height: 16),
+                      Text("Mettre à jour votre profil",
+                        style: GoogleFonts.roboto(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        )),
+                      const SizedBox(height: 8),
+                      Text("Modifiez les informations que vous souhaitez changer",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.roboto(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        )),
+                      const SizedBox(height: 24),
+                      _buildNameField(),
+                      const SizedBox(height: 16),
+                      _buildCompanyField(),
+                      const SizedBox(height: 16),
+                      _buildPhoneField(),
+                      const SizedBox(height: 16),
+                      _buildEmailField(),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF003366),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: _isLoading 
+                              ? null 
+                              : () => _debouncer.run(_submitForm),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.edit, size: 20, color: Colors.white,),
+                                    const SizedBox(width: 8),
+                                    Text("METTRE À JOUR",
+                                      style: GoogleFonts.roboto(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        letterSpacing: 1,
+                                      )),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -129,134 +217,117 @@ class _UpdateProfilState extends State<UpdateProfil> {
     );
   }
 
-  Widget _text(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Changer le profil ",
-              style:
-                  GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Vous pouvez apporter des modifications à votre profil",
-              style:
-                  GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w400),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _textFieldName(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextFormField(
-        controller: _name,
-        keyboardType: TextInputType.name,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[100],
-          hintText: "Name",
-          hintStyle:
-              GoogleFonts.aBeeZee(fontSize: 14, fontWeight: FontWeight.w400),
-          prefixIcon: const Icon(Icons.person_2_outlined, size: 20),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none),
+  Widget _buildNameField() {
+    return TextFormField(
+      controller: _nameController,
+      validator: (value) => 
+          value?.isEmpty ?? true ? 'Nom complet requis' : null,
+      decoration: InputDecoration(
+        labelText: "Nom complet",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.person_outline, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
         ),
       ),
     );
   }
 
-  Widget _textFieldEntreprise(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextFormField(
-        controller: _entreprise,
-        keyboardType: TextInputType.name,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[100],
-          hintText: "Services bussiness",
-          hintStyle:
-              GoogleFonts.aBeeZee(fontSize: 14, fontWeight: FontWeight.w400),
-          prefixIcon: const Icon(Icons.person_2_outlined, size: 20),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none),
+  Widget _buildCompanyField() {
+    return TextFormField(
+      controller: _companyController,
+      validator: (value) => 
+          value?.isEmpty ?? true ? 'Nom de l\'entreprise requis' : null,
+      decoration: InputDecoration(
+        labelText: "Entreprise",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.business_outlined, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
         ),
       ),
     );
   }
 
-  Widget _textFieldNumber(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextFormField(
-        controller: _numero,
-        keyboardType: TextInputType.phone,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[100],
-          hintText: "Numero",
-          hintStyle:
-              GoogleFonts.aBeeZee(fontSize: 14, fontWeight: FontWeight.w400),
-          prefixIcon: const Icon(Icons.phone_android, size: 20),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none),
+  Widget _buildPhoneField() {
+    return TextFormField(
+      controller: _phoneController,
+      keyboardType: TextInputType.phone,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      validator: (value) => 
+          value?.isEmpty ?? true ? 'Numéro de téléphone requis' : null,
+      decoration: InputDecoration(
+        labelText: "Numéro de téléphone",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.phone_iphone, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
         ),
       ),
     );
   }
 
-  Widget _textFieldMail(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextFormField(
-        controller: _email,
-        keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[100],
-          hintText: "Email",
-          hintStyle:
-              GoogleFonts.aBeeZee(fontSize: 14, fontWeight: FontWeight.w400),
-          prefixIcon: const Icon(Icons.mail_outline, size: 20),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none),
+  Widget _buildEmailField() {
+    return TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Email requis';
+        if (!value!.contains('@')) return 'Email invalide';
+        return null;
+      },
+      decoration: InputDecoration(
+        labelText: "Adresse email",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
         ),
       ),
     );
   }
+}
 
-  Widget _buttonSend(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: ElevatedButton.icon(
-          onPressed: () {
-            _sendUpdate();
-          },
-          style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 115, 0),
-              elevation: 5,
-              fixedSize: const Size(320, 50)),
-          icon: Icon(Icons.edit, size: 20, color: Colors.grey[100]),
-          label: Text("Modifier le profil",
-              style: GoogleFonts.roboto(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[100]))),
-    );
+class _Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  _Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void cancel() {
+    _timer?.cancel();
   }
 }

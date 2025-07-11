@@ -97,21 +97,31 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
     return DateFormat.yMMMMd('fr_FR').format(date);
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.logoutButton();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
     final authProvider = context.watch<AuthProvider>();
 
-    // Vérification automatique de l'authentification
+    // Vérification initiale de l'authentification
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!await authProvider.checkAuth()) {
-        Navigator.pushReplacementNamed(context, '/login');
+      if (!authProvider.isAuthenticated && mounted) {
+        await _handleLogout(context);
       }
     });
 
     if (authProvider.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
     return Scaffold(
       appBar: AppBar(
         title: Text(

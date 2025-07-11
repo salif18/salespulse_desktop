@@ -1,8 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
@@ -17,83 +18,182 @@ class UpdatePassword extends StatefulWidget {
 }
 
 class _UpdatePasswordState extends State<UpdatePassword> {
-    ServicesAuth api = ServicesAuth();
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _currentPassword = TextEditingController();
-  final TextEditingController _newPassword = TextEditingController();
-  final TextEditingController _passwordConfirmation = TextEditingController();
+  final ServicesAuth _authService = ServicesAuth();
+  final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  final _debouncer = _Debouncer(milliseconds: 500);
 
   @override
   void dispose() {
-    _currentPassword.dispose();
-    _newPassword.dispose();
-    _passwordConfirmation.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    _debouncer.cancel();
     super.dispose();
   }
 
-  Future _sendUpdate() async {
-    if (_formKey.currentState!.validate()) {
-      final provider = Provider.of<AuthProvider>(context, listen: false);
-      final token = provider.token;
-      var data = {
-        "current_password": _currentPassword.text,
-        "new_password": _newPassword.text,
-        "confirm_password": _passwordConfirmation.text
-      };
-      try {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            });
-        final res = await api.postUpdatePassword(data,token);
-        final decodedData = json.decode(res.body);
-          Navigator.pop(context); // Fermer le dialog
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
 
-        if (res.statusCode == 200) {
-          api.showSnackBarSuccessPersonalized(
-              context, decodedData['message'].toString());
-         Navigator.pop(context);
-        } else {
-          api.showSnackBarErrorPersonalized(
-              context, decodedData["message"].toString());
-        }
-      } catch (err) {
-        api.showSnackBarErrorPersonalized(context,
-            "Erreur lors de l'envoi des données , veuillez réessayer. $err");
+    setState(() => _isLoading = true);
+    
+    try {
+      final provider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await _authService.postUpdatePassword({
+        "current_password": _currentPasswordController.text.trim(),
+        "new_password": _newPasswordController.text.trim(),
+        "confirm_password": _confirmPasswordController.text.trim()
+      }, provider.token);
+
+      if (!mounted) return;
+
+      final decodedData = json.decode(response.body);
+      if (response.statusCode == 200) {
+        _authService.showSnackBarSuccessPersonalized(
+          context, 
+          decodedData['message'].toString()
+        );
+        Navigator.pop(context);
+      } else {
+        _authService.showSnackBarErrorPersonalized(
+          context, 
+          decodedData["message"].toString()
+        );
+      }
+    } catch (err) {
+      if (mounted) {
+        _authService.showSnackBarErrorPersonalized(
+          context,
+          "Erreur lors de la mise à jour: ${err.toString()}"
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_rounded, size: 18, color: Colors.black,)),
+          icon: const Icon(Icons.arrow_back_ios_rounded, 
+            size: 20, 
+            color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        alignment: Alignment.center,
-        child: SingleChildScrollView(
-          child: Container(
-            width: 400,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Center(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [_formulaires(context)],
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Container(
+              width: 400,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_reset,
+                        size: 48,
+                        color: Color(0xFF003366)),
+                      const SizedBox(height: 16),
+                      Text("Changer le mot de passe",
+                        style: GoogleFonts.roboto(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        )),
+                      const SizedBox(height: 8),
+                      Text("Votre mot de passe doit contenir au moins 6 caractères",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.roboto(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        )),
+                      const SizedBox(height: 24),
+                      _buildCurrentPasswordField(),
+                      const SizedBox(height: 16),
+                      _buildNewPasswordField(),
+                      const SizedBox(height: 16),
+                      _buildConfirmPasswordField(),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ResetToken(),
+                              ),
+                            );
+                          },
+                          child: Text("Mot de passe oublié ?",
+                            style: GoogleFonts.roboto(
+                              color: const Color(0xFF003366),
+                              fontSize: 14,
+                            )),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF003366),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: _isLoading 
+                              ? null 
+                              : () => _debouncer.run(_submitForm),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                                  ),
+                                )
+                              : Text("METTRE À JOUR",
+                                  style: GoogleFonts.roboto(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: 1,
+                                  )),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -103,155 +203,129 @@ class _UpdatePasswordState extends State<UpdatePassword> {
     );
   }
 
-  Widget _formulaires(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Changer de mot de passe",
-                  style: GoogleFonts.roboto(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Votre mot de passe doit contenir au moins 6 caractères",
-                  style: GoogleFonts.roboto(
-                      fontSize: 14, fontWeight: FontWeight.w400),
-                ),
-              )
-            ],
+  Widget _buildCurrentPasswordField() {
+    return TextFormField(
+      controller: _currentPasswordController,
+      obscureText: _obscureCurrentPassword,
+      validator: (value) => 
+          value?.isEmpty ?? true ? 'Mot de passe actuel requis' : null,
+      decoration: InputDecoration(
+        labelText: "Mot de passe actuel",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureCurrentPassword 
+                ? Icons.visibility_off 
+                : Icons.visibility,
+            color: Colors.grey,
           ),
+          onPressed: () => setState(() => 
+              _obscureCurrentPassword = !_obscureCurrentPassword),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: SizedBox(
-            width: 400,
-            child: TextFormField(
-               controller: _currentPassword,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Veuillez entrer un mot de passe actuel';
-                }
-                return null;
-              },
-              keyboardType: TextInputType.visiblePassword,
-              obscureText: false,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                hintText: "Mot de passe actuel",
-                hintStyle: GoogleFonts.aBeeZee(
-                    fontSize: 14, fontWeight: FontWeight.w400),
-                // prefixIcon: const Icon(Icons.lock_outline_rounded, size: 33),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: SizedBox(
-            width: 400,
-            child: TextFormField(
-              controller: _newPassword,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Veuillez rentrer un nouveau mot de passe';
-                }
-                return null;
-              },
-              keyboardType: TextInputType.visiblePassword,
-              obscureText: false,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                hintText: "Nouveau mot de passe",
-                hintStyle: GoogleFonts.aBeeZee(
-                    fontSize: 14, fontWeight: FontWeight.w400),
-                // prefixIcon: const Icon(Icons.lock_outline_rounded, size: 33),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: SizedBox(
-            width: 400,
-            child: TextFormField(
-               controller: _passwordConfirmation,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Veuillez retaper le meme mot de passe';
-                }
-                return null;
-              },
-              keyboardType: TextInputType.visiblePassword,
-              obscureText: false,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                hintText: "Retapez le nouveau mot de passe",
-                hintStyle: GoogleFonts.aBeeZee(
-                    fontSize:14, fontWeight: FontWeight.w400),
-                // prefixIcon: const Icon(Icons.lock_outline_rounded, size: 33),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(children: [
-            TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ResetToken()));
-                },
-                child: Text("Mot de passe oublié ?",
-                    style: GoogleFonts.roboto(fontSize: 14)))
-          ]),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(5),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 115, 0),
-              elevation: 5,
-              fixedSize: const Size(400, 50),
-            ),
-            onPressed: () {
-              _sendUpdate();
-            },
-            child: Text(
-              "Changer le mot de passe",
-              style: GoogleFonts.roboto(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[100],
-              ),
-            ),
-          ),
-        )
-      ],
+      ),
     );
+  }
+
+  Widget _buildNewPasswordField() {
+    return TextFormField(
+      controller: _newPasswordController,
+      obscureText: _obscureNewPassword,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Nouveau mot de passe requis';
+        if (value!.length < 6) return 'Minimum 6 caractères';
+        return null;
+      },
+      decoration: InputDecoration(
+        labelText: "Nouveau mot de passe",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.lock_reset, color: Colors.grey),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureNewPassword 
+                ? Icons.visibility_off 
+                : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: () => setState(() => 
+              _obscureNewPassword = !_obscureNewPassword),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return TextFormField(
+      controller: _confirmPasswordController,
+      obscureText: _obscureConfirmPassword,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Confirmation requise';
+        if (value != _newPasswordController.text) {
+          return 'Les mots de passe ne correspondent pas';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        labelText: "Confirmer le mot de passe",
+        labelStyle: GoogleFonts.roboto(color: Colors.grey[600]),
+        prefixIcon: const Icon(Icons.verified_user_outlined, color: Colors.grey),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureConfirmPassword 
+                ? Icons.visibility_off 
+                : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: () => setState(() => 
+              _obscureConfirmPassword = !_obscureConfirmPassword),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF003366)),
+        ),
+      ),
+    );
+  }
+}
+
+class _Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  _Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void cancel() {
+    _timer?.cancel();
   }
 }

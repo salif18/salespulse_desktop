@@ -359,19 +359,29 @@ class _DepenseScreenState extends State<DepenseScreen> {
     return _filtered.fold(0.0, (sum, e) => sum + e.montants);
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.logoutButton();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
 
-    // Vérification automatique de l'authentification
+    // Vérification initiale de l'authentification
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!await authProvider.checkAuth()) {
-        Navigator.pushReplacementNamed(context, '/login');
+      if (!authProvider.isAuthenticated && mounted) {
+        await _handleLogout(context);
       }
     });
 
     if (authProvider.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
     return Scaffold(
       backgroundColor: Colors.grey[100],
