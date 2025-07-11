@@ -300,16 +300,12 @@ class _StatistiquesScreenState extends State<StatistiquesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(label,
-                      style: GoogleFonts.poppins(
-                          fontSize: 13, color: Colors.grey[600])),
-                ),
-                Expanded(
-                  child: Text(value,
-                      style: GoogleFonts.poppins(
-                          fontSize: 15, fontWeight: FontWeight.bold)),
-                ),
+                Text(label,
+                    style: GoogleFonts.poppins(
+                        fontSize: 13, color: Colors.grey[600])),
+                Text(value,
+                    style: GoogleFonts.poppins(
+                        fontSize: 15, fontWeight: FontWeight.bold)),
               ],
             ),
           )
