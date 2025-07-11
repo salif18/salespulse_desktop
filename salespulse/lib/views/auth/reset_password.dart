@@ -72,11 +72,11 @@ void dispose(){
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: const Color(0xff001c30),
+        toolbarHeight: 50,
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 24, color: Colors.white,)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.black,)),
       ),
       body: Container(
          alignment: Alignment.center,

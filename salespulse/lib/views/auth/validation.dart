@@ -74,12 +74,12 @@ class _ValidationResetState extends State<ValidationReset> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 50,
         elevation: 0,
-        backgroundColor: const Color(0xff001c30),
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 24, color: Colors.white,)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.black,)),
       ),
       body: Container(
         padding: const EdgeInsets.all(10),

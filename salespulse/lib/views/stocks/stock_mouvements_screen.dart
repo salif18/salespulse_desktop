@@ -335,17 +335,17 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
                              columnSpacing: 20,
                              headingRowHeight: 35,
                                   headingRowColor:
-                                      WidgetStateProperty.all(Colors.orange),
+                                      WidgetStateProperty.all(Colors.blueGrey),
                                   headingTextStyle: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold),
                             columns: [
-                               DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black),)),
-                               DataColumn(label: Text("Quantité".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
-                               DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
-                               DataColumn(label: Text("Description".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
-                               DataColumn(label: Text("Avant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
-                               DataColumn(label: Text("Après".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.black))),
+                               DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white),)),
+                               DataColumn(label: Text("Quantité".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
+                               DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
+                               DataColumn(label: Text("Description".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
+                               DataColumn(label: Text("Avant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
+                               DataColumn(label: Text("Après".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
                             ],
                             rows: mouvements.map((mouv) {
                               final color = _colorForType(mouv.type);

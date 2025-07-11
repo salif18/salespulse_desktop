@@ -203,7 +203,7 @@ class _CategoriesViewState extends State<CategoriesView> {
             slivers: [
               SliverAppBar(
                 // backgroundColor: const Color(0xff001c30),
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.blueGrey,
                 elevation: 4,
                 pinned: true,
                 floating: true,
@@ -213,7 +213,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                   title: Text(
                     "Gestion des catégories",
                     style: GoogleFonts.poppins(
-                        fontSize: 16, fontWeight: FontWeight.w600),
+                        fontSize: 16, fontWeight: FontWeight.w600,color: Colors.white),
                   ),
                 ),
               ),

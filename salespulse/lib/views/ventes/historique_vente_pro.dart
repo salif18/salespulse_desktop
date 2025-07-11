@@ -245,11 +245,11 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-          backgroundColor: Colors.white,//const Color(0xff001c30),
+          backgroundColor: Colors.blueGrey,//const Color(0xff001c30),
           title: Text(
             "Historique des ventes",
             style: GoogleFonts.roboto(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           )),
       body: Padding(
         padding: const EdgeInsets.all(8.0),

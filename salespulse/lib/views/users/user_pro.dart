@@ -191,11 +191,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white, //const Color(0xff001c30),
+        backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
         title: Text(
           'Gestion des Utilisateurs',
           style: GoogleFonts.roboto(
-              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
         elevation: 0,

@@ -6,7 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/abonnement_api.dart';
-import 'package:salespulse/views/abonnement/paiement_abonement.dart';
+import 'package:salespulse/views/abonnement/paiement_mensuel_abonnement.dart';
+import 'package:salespulse/views/abonnement/paiement_pro_abonement.dart';
 
 class AbonnementScreen extends StatefulWidget {
   const AbonnementScreen({super.key});
@@ -32,7 +33,7 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
       final response = await _abonnementApi.acheterAbonnement(
         context: context,
         type: type,
-        montant: type == "essai" ? 0 : 25000,
+        montant: type == "essai" ? 0 : (type == "mensuel" ? 10000 : 25000),
         mode: "",
         token: token,
       );
@@ -141,6 +142,8 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
           const SizedBox(height: 30),
           _buildFreeTrialCard(),
           const SizedBox(height: 25),
+          _buildMonthlyCard(),
+          const SizedBox(height: 25),
           _buildProCard(),
           const SizedBox(height: 20),
           _buildLegalNotice(),
@@ -178,6 +181,31 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
     );
   }
 
+  Widget _buildMonthlyCard() {
+    return _buildPlanCard(
+      title: "Mensuel",
+      price: "10 000 FCFA",
+      duration: "1 mois",
+      color: const Color(0xFF2196F3),
+      features: const [
+        "Toutes les fonctionnalités Premium",
+        "Produits illimités",
+        "Jusqu'à 3 utilisateurs",
+        "Support prioritaire",
+        "Sauvegarde automatique",
+      ],
+      isPopular: false,
+      onPressed:() => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PaymentAbonnementMensuelScreen(),
+        ),
+      ),
+      
+      //  () => _souscrireAbonnement("mensuel"),
+    );
+  }
+
   Widget _buildProCard() {
     return _buildPlanCard(
       title: "Professionnel",
@@ -196,7 +224,7 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
       onPressed: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const PaymentAbonnementScreen(),
+          builder: (context) => const PaymentAbonnementProScreen(),
         ),
       ),
     );
@@ -345,7 +373,9 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
         Text(
           title == "Essai Gratuit" 
               ? "Sans engagement" 
-              : "Soit 10 000 FCFA/mois",
+              : title == "Mensuel"
+                ? "Renouvellement mensuel"
+                : "Soit 8 333 FCFA/mois",
           style: GoogleFonts.poppins(
             color: Colors.grey[600],
           ),

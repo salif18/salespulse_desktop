@@ -200,8 +200,8 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Historique des mouvements", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
-        backgroundColor:Colors.white, //const Color(0xff001c30),
+        title: Text("Historique des mouvements", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor:Colors.blueGrey, //const Color(0xff001c30),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

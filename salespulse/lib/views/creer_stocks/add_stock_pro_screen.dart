@@ -229,12 +229,12 @@ class _AddProduitPageState extends State<AddProduitPage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
         title: Text(
           "Ajouter un produit",
           style: GoogleFonts.poppins(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),

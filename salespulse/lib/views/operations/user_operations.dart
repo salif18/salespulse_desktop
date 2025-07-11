@@ -124,18 +124,22 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blueGrey,
         elevation: 1,
+        leading: IconButton(onPressed: ()=> 
+        Navigator.pop(context),
+         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white,)),
         title: Text(
           "Opérations de ${widget.user.name}",
           style: GoogleFonts.poppins(
-              color: Colors.black87, fontWeight: FontWeight.w600),
+            fontSize: 16,
+              color: Colors.white, fontWeight: FontWeight.w600),
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
         actions: [
           IconButton(
             onPressed: fetchUserOperations,
-            icon: const Icon(Icons.refresh, color: Colors.black87),
+            icon: const Icon(Icons.refresh, color: Colors.blue),
           )
         ],
       ),

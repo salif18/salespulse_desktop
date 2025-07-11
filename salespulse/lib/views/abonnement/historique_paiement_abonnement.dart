@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:salespulse/services/paiement_historique_api.dart';
 // 🔁 importe ton service API
@@ -32,7 +33,7 @@ class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Historique des paiements"),
+        title: Text("Historique des paiements",style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold),),
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
       ),

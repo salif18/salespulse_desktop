@@ -503,19 +503,15 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
         child: Scaffold(
           backgroundColor: Colors.grey[100],
           appBar: AppBar(
-            leading: const Icon(
-              Icons.shopping_cart_checkout,
-              size: 30,
-            ),
             title: Text(
               "Point de vente",
               style: GoogleFonts.poppins(
                 fontSize: 16,
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            backgroundColor: Colors.white, //const Color(0xff001c30),
+            backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
             elevation: 2,
           ),
           body: Padding(

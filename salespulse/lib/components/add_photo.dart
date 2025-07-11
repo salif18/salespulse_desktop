@@ -56,10 +56,12 @@ class _PikedPhotoState extends State<PikedPhoto> {
 
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+     final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
 
     try {
       final formData = FormData.fromMap({
         "userId": userId,
+        "adminId":adminId,
         "image": await MultipartFile.fromFile(imageFile.path,
             filename: imageFile.path.split('/').last),
       });

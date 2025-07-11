@@ -226,7 +226,7 @@ class _StocksViewState extends State<StocksView> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Colors.white, //const Color(0xff001c30),
+              backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
               expandedHeight: 40,
               pinned: true,
               floating: true,
@@ -234,7 +234,7 @@ class _StocksViewState extends State<StocksView> {
                 title: AutoSizeText("Les stocks",
                     minFontSize: 16,
                     style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.black)),
+                        GoogleFonts.roboto(fontSize: 16, color: Colors.white)),
               ),
             ),
             SliverToBoxAdapter(

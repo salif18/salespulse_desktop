@@ -5,13 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/abonnement_api.dart';
-// import 'package:salespulse/services/mobile_money.dart';
-
 import 'package:salespulse/views/abonnement/choix_abonement.dart';
-// import 'package:url_launcher/url_launcher.dart';
 
-class PaymentAbonnementScreen extends StatelessWidget {
-  const PaymentAbonnementScreen({super.key});
+class PaymentAbonnementMensuelScreen extends StatelessWidget {
+  const PaymentAbonnementMensuelScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +18,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "Abonnement Professionnel",
+          "Abonnement Mensuel",
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontWeight: FontWeight.w600,
@@ -51,7 +48,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // En-tête avec badge Pro
+              // En-tête avec badge Mensuel
               Row(
                 children: [
                   Container(
@@ -60,11 +57,11 @@ class PaymentAbonnementScreen extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue[800],
+                      color: Colors.blue[400],
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      "PRO",
+                      "MENSUEL",
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -74,7 +71,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    "3 mois",
+                    "1 mois",
                     style: GoogleFonts.poppins(
                       color: Colors.grey[600],
                       fontSize: 14,
@@ -86,7 +83,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
 
               // Titre principal
               Text(
-                "Optimisez votre business",
+                "Solution flexible pour votre business",
                 style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -95,7 +92,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                "Accédez à toutes les fonctionnalités avancées",
+                "Accédez aux fonctionnalités essentielles",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -107,16 +104,16 @@ class PaymentAbonnementScreen extends StatelessWidget {
               const SizedBox(height: 25),
 
               // Liste des avantages
-              _buildFeatureItem("📈 Analytics complets",
-                  "Suivez toutes vos performances commerciales"),
+              _buildFeatureItem("📊 Statistiques de base",
+                  "Suivez vos performances commerciales principales"),
               _buildFeatureItem(
-                  "🛒 Stock illimité", "Gérez un nombre illimité de produits"),
+                  "🛒 Stock étendu", "Gérez jusqu'à 500 produits"),
               _buildFeatureItem(
-                  "📁 Backup cloud", "Sauvegarde automatique et sécurisée"),
+                  "📁 Backup cloud", "Sauvegarde automatique quotidienne"),
               _buildFeatureItem(
-                  "👥 Équipe complète", "Jusqu'à 5 utilisateurs simultanés"),
+                  "👥 Travail d'équipe", "Jusqu'à 3 utilisateurs simultanés"),
               _buildFeatureItem(
-                  "🔐 Sécurité renforcée", "Protection des données premium"),
+                  "🔐 Sécurité standard", "Protection des données de base"),
 
               const SizedBox(height: 30),
 
@@ -128,8 +125,8 @@ class PaymentAbonnementScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.blue[800]!,
-                      Colors.blue[600]!,
+                      Colors.blue[400]!,
+                      Colors.blue[300]!,
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -145,7 +142,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      "25 000 FCFA",
+                      "10 000 FCFA",
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         color: Colors.white,
@@ -154,7 +151,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "soit seulement 10 000 FCFA/mois",
+                      "renouvellement mensuel",
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.white.withOpacity(0.9),
@@ -238,7 +235,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue[800],
+          backgroundColor: Colors.blue[400],
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -252,7 +249,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
             const Icon(Icons.rocket_launch, color: Colors.white, size: 20),
             const SizedBox(width: 10),
             Text(
-              "PASSER EN VERSION PRO",
+              "SOUSCRIRE À L'ABONNEMENT",
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
@@ -292,7 +289,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
               ),
               const SizedBox(height: 15),
               Text(
-                "Vous êtes sur le point de souscrire à l'abonnement Pro pour 25 000 FCFA.",
+                "Vous êtes sur le point de souscrire à l'abonnement Mensuel pour 10 000 FCFA.",
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   color: Colors.grey[600],
@@ -318,7 +315,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[800],
+                        backgroundColor: Colors.blue[400],
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () {
@@ -385,7 +382,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Liste des méthodes - Version corrigée
+                  // Liste des méthodes
                   ...paymentOptions.map((method) {
                     return GestureDetector(
                       onTap: () {
@@ -402,7 +399,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: selectedMethod == method['id']
-                                ? Colors.blue[800]!
+                                ? Colors.blue[400]!
                                 : Colors.grey[300]!,
                           ),
                         ),
@@ -416,7 +413,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                           trailing: Radio<String>(
                             value: method['id'] as String,
                             groupValue: selectedMethod,
-                            activeColor: Colors.blue[800],
+                            activeColor: Colors.blue[400],
                             onChanged: (value) {
                               setModalState(() {
                                 selectedMethod = value;
@@ -430,13 +427,13 @@ class PaymentAbonnementScreen extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Bouton de paiement - Version améliorée
+                  // Bouton de paiement
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedMethod != null
-                            ? Colors.blue[800]
+                            ? Colors.blue[400]
                             : Colors.grey[400],
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -452,7 +449,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                               )
                           : null,
                       child: Text(
-                        'Payer 25 000 FCFA',
+                        'Payer 10 000 FCFA',
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -488,7 +485,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          backgroundColor: Colors.blue[800],
+          backgroundColor: Colors.blue[400],
           content: Row(
             children: [
               const CircularProgressIndicator(color: Colors.white),
@@ -513,7 +510,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
       // // 3. Initier le paiement
       // final orderId = 'ABO-${DateTime.now().millisecondsSinceEpoch}';
       // final paymentUrl = await paymentService.initierPaiement(
-      //   amount: 25000,
+      //   amount: 10000,
       //   orderId: orderId,
       // );
 
@@ -530,8 +527,8 @@ class PaymentAbonnementScreen extends StatelessWidget {
       // 5. Enregistrer la transaction (simplifié)
       await api.acheterAbonnement(
         context: context,
-        type: "premium",
-        montant: 25000,
+        type: "mensuel",
+        montant: 10000,
         mode: method,
         token: token,
       );
@@ -589,7 +586,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                "Votre abonnement Pro a été activé avec succès.",
+                "Votre abonnement Mensuel a été activé avec succès.",
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   color: Colors.grey[600],
@@ -600,7 +597,7 @@ class PaymentAbonnementScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
+                    backgroundColor: Colors.blue[400],
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
                   onPressed: () {

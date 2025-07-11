@@ -73,10 +73,10 @@ class _UpdatePasswordState extends State<UpdatePassword> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1D1A30),
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_rounded, size: 24, color: Colors.white,)),
+            icon: const Icon(Icons.arrow_back_ios_rounded, size: 18, color: Colors.black,)),
       ),
       body: Container(
         padding: const EdgeInsets.all(20),
