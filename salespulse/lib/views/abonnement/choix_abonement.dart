@@ -22,7 +22,7 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
 
   Future<void> _souscrireAbonnement(String type) async {
     setState(() => _isLoading = true);
-    
+
     // Afficher l'indicateur de chargement
     ScaffoldMessenger.of(context).showSnackBar(
       _buildLoadingSnackBar(),
@@ -92,9 +92,10 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
 
   void _handleSubscriptionError(DioException e) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    
-    final errorMessage = e.response?.data['error'] ?? 'Échec de la souscription';
-    
+
+    final errorMessage =
+        e.response?.data['error'] ?? 'Échec de la souscription';
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -110,6 +111,18 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
@@ -195,13 +208,13 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
         "Sauvegarde automatique",
       ],
       isPopular: false,
-      onPressed:() => Navigator.push(
+      onPressed: () => Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const PaymentAbonnementMensuelScreen(),
         ),
       ),
-      
+
       //  () => _souscrireAbonnement("mensuel"),
     );
   }
@@ -371,11 +384,11 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
         ),
         const SizedBox(height: 5),
         Text(
-          title == "Essai Gratuit" 
-              ? "Sans engagement" 
+          title == "Essai Gratuit"
+              ? "Sans engagement"
               : title == "Mensuel"
-                ? "Renouvellement mensuel"
-                : "Soit 8 333 FCFA/mois",
+                  ? "Renouvellement mensuel"
+                  : "Soit 8 333 FCFA/mois",
           style: GoogleFonts.poppins(
             color: Colors.grey[600],
           ),
@@ -385,27 +398,30 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
   }
 
   List<Widget> _buildFeatureList(List<String> features, Color color) {
-    return features.map((feature) => Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.check_circle, color: color, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              feature,
-              style: GoogleFonts.poppins(
-                color: Colors.grey[800],
+    return features
+        .map((feature) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.check_circle, color: color, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
-      ),
-    )).toList();
+            ))
+        .toList();
   }
 
-  Widget _buildSubscriptionButton(String title, Color color, VoidCallback onPressed) {
+  Widget _buildSubscriptionButton(
+      String title, Color color, VoidCallback onPressed) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -418,8 +434,8 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
         ),
         onPressed: onPressed,
         child: Text(
-          title == "Essai Gratuit" 
-              ? "Commencer l'essai" 
+          title == "Essai Gratuit"
+              ? "Commencer l'essai"
               : "Choisir cette offre",
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,

@@ -21,10 +21,12 @@ class HistoriqueMouvementsScreen extends StatefulWidget {
   const HistoriqueMouvementsScreen({super.key});
 
   @override
-  State<HistoriqueMouvementsScreen> createState() => _HistoriqueMouvementsScreenState();
+  State<HistoriqueMouvementsScreen> createState() =>
+      _HistoriqueMouvementsScreenState();
 }
 
-class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen> {
+class _HistoriqueMouvementsScreenState
+    extends State<HistoriqueMouvementsScreen> {
   List<MouvementModel> mouvements = [];
   int currentPage = 1;
   int totalPages = 1;
@@ -36,7 +38,13 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
 
   bool isLoading = false;
 
-  final List<String> types = ["Tous", "vente", "ajout", "correction", "suppression"];
+  final List<String> types = [
+    "Tous",
+    "vente",
+    "ajout",
+    "correction",
+    "suppression"
+  ];
 
   @override
   void initState() {
@@ -197,11 +205,27 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Historique des mouvements", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor:Colors.blueGrey, //const Color(0xff001c30),
+        title: Text("Historique des mouvements",
+            style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
+        backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -210,16 +234,23 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                    IconButton(
-      icon: const Icon(Icons.print, color: Colors.blue,),
-      tooltip: "Imprimer le rapport",
-      onPressed: _generatePdf,
-    ),
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 28, color: Colors.blueGrey,),
-            tooltip: "Réinitialiser filtres",
-            onPressed: _resetFilters,
-          )
+                IconButton(
+                  icon: const Icon(
+                    Icons.print,
+                    color: Colors.blue,
+                  ),
+                  tooltip: "Imprimer le rapport",
+                  onPressed: _generatePdf,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.refresh,
+                    size: 28,
+                    color: Colors.blueGrey,
+                  ),
+                  tooltip: "Réinitialiser filtres",
+                  onPressed: _resetFilters,
+                )
               ],
             ),
             // Filtres
@@ -230,7 +261,8 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       labelText: "Type",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
                       filled: true,
                       fillColor: Colors.white,
                     ),
@@ -252,12 +284,15 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: "Date début",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                         filled: true,
                         fillColor: Colors.white,
                       ),
                       child: Text(
-                        dateDebut != null ? DateFormat('dd/MM/yyyy').format(dateDebut!) : "Sélectionner...",
+                        dateDebut != null
+                            ? DateFormat('dd/MM/yyyy').format(dateDebut!)
+                            : "Sélectionner...",
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -271,12 +306,15 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: "Date fin",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                         filled: true,
                         fillColor: Colors.white,
                       ),
                       child: Text(
-                        dateFin != null ? DateFormat('dd/MM/yyyy').format(dateFin!) : "Sélectionner...",
+                        dateFin != null
+                            ? DateFormat('dd/MM/yyyy').format(dateFin!)
+                            : "Sélectionner...",
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -288,66 +326,145 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
 
             // Table & Loading
             Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                    child: LayoutBuilder(builder: (context, constraints) {
-                            return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                            constraints:
-                                  BoxConstraints(minWidth: constraints.maxWidth),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: const [
-                                BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
-                              ],
-                            ),
-                            child: DataTable(
-                              // ignore: deprecated_member_use
-                              headingRowColor: MaterialStateProperty.all(Colors.blueGrey),
-                              headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                              headingRowHeight: 35,
-                              columns:[
-                                DataColumn(label: Text("Date".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Type".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Produit".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Quantité".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Ancien stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Nouveau stock".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                                DataColumn(label: Text("Description".toUpperCase(),style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold,  color: Colors.white,))),
-                              ],
-                              rows: mouvements.map((m) {
-                                return DataRow(cells: [
-                                  DataCell(Text(DateFormat('dd/MM/yyyy HH:mm').format(m.date),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(Text(m.type[0].toUpperCase() + m.type.substring(1),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(Text(m.productNom,style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(Text(m.quantite.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(Text(m.ancienStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(Text(m.nouveauStock.toString(),style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black))),
-                                  DataCell(
-                                    Tooltip(
-                                      message: m.description,
-                                      child: SizedBox(
-                                        width: 200,
-                                        child: Text(
-                                          m.description,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black)
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 8,
+                                        offset: Offset(0, 3)),
+                                  ],
+                                ),
+                                child: DataTable(
+                                  // ignore: deprecated_member_use
+                                  headingRowColor: MaterialStateProperty.all(
+                                      Colors.blueGrey),
+                                  headingTextStyle: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                  headingRowHeight: 35,
+                                  columns: [
+                                    DataColumn(
+                                        label: Text("Date".toUpperCase(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ))),
+                                    DataColumn(
+                                        label: Text("Type".toUpperCase(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ))),
+                                    DataColumn(
+                                        label: Text("Produit".toUpperCase(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ))),
+                                    DataColumn(
+                                        label: Text("Quantité".toUpperCase(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ))),
+                                    DataColumn(
+                                        label:
+                                            Text("Ancien stock".toUpperCase(),
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ))),
+                                    DataColumn(
+                                        label:
+                                            Text("Nouveau stock".toUpperCase(),
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ))),
+                                    DataColumn(
+                                        label: Text("Description".toUpperCase(),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ))),
+                                  ],
+                                  rows: mouvements.map((m) {
+                                    return DataRow(cells: [
+                                      DataCell(Text(
+                                          DateFormat('dd/MM/yyyy HH:mm')
+                                              .format(m.date),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(Text(
+                                          m.type[0].toUpperCase() +
+                                              m.type.substring(1),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(Text(m.productNom,
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(Text(m.quantite.toString(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(Text(m.ancienStock.toString(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(Text(m.nouveauStock.toString(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))),
+                                      DataCell(
+                                        Tooltip(
+                                          message: m.description,
+                                          child: SizedBox(
+                                            width: 200,
+                                            child: Text(m.description,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.poppins(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black)),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ]);
-                              }).toList(),
+                                    ]);
+                                  }).toList(),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      );}),
-                  )
-            ),
+                          );
+                        }),
+                      )),
 
             // Pagination
             Padding(
@@ -355,7 +472,11 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text("Page $currentPage / $totalPages",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black)),
+                  Text("Page $currentPage / $totalPages",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black)),
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios),
                     onPressed: currentPage > 1 ? _previousPage : null,
@@ -374,51 +495,54 @@ class _HistoriqueMouvementsScreenState extends State<HistoriqueMouvementsScreen>
   }
 
   void _generatePdf() async {
-  final pdf = pw.Document();
+    final pdf = pw.Document();
 
-  pdf.addPage(
-    pw.Page(
-      // pageFormat: PdfPageFormat.a4.landscape,
-      build: (context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text("Historique des mouvements", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 16),
-            // ignore: deprecated_member_use
-            pw.Table.fromTextArray(
-              headers: [
-                "Date",
-                "Type",
-                "Produit",
-                "Quantité",
-                "Ancien stock",
-                "Nouveau stock",
-                "Description"
-              ],
-              data: mouvements.map((m) {
-                return [
-                  DateFormat('dd/MM/yyyy HH:mm').format(m.date),
-                  m.type[0].toUpperCase() + m.type.substring(1),
-                  m.productNom,
-                  m.quantite.toString(),
-                  m.ancienStock.toString(),
-                  m.nouveauStock.toString(),
-                  m.description,
-                ];
-              }).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.blue800),
-              cellAlignment: pw.Alignment.centerLeft,
-              cellPadding: const pw.EdgeInsets.all(5),
-            ),
-          ],
-        );
-      },
-    ),
-  );
+    pdf.addPage(
+      pw.Page(
+        // pageFormat: PdfPageFormat.a4.landscape,
+        build: (context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("Historique des mouvements",
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 16),
+              // ignore: deprecated_member_use
+              pw.Table.fromTextArray(
+                headers: [
+                  "Date",
+                  "Type",
+                  "Produit",
+                  "Quantité",
+                  "Ancien stock",
+                  "Nouveau stock",
+                  "Description"
+                ],
+                data: mouvements.map((m) {
+                  return [
+                    DateFormat('dd/MM/yyyy HH:mm').format(m.date),
+                    m.type[0].toUpperCase() + m.type.substring(1),
+                    m.productNom,
+                    m.quantite.toString(),
+                    m.ancienStock.toString(),
+                    m.nouveauStock.toString(),
+                    m.description,
+                  ];
+                }).toList(),
+                headerStyle: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.blue800),
+                cellAlignment: pw.Alignment.centerLeft,
+                cellPadding: const pw.EdgeInsets.all(5),
+              ),
+            ],
+          );
+        },
+      ),
+    );
 
-  await Printing.layoutPdf(onLayout: (format) => pdf.save());
-}
-
+    await Printing.layoutPdf(onLayout: (format) => pdf.save());
+  }
 }

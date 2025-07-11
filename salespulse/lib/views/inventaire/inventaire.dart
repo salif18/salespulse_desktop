@@ -27,9 +27,9 @@ class InventaireProPage extends StatefulWidget {
 
 class _InventaireProPageState extends State<InventaireProPage> {
   ServicesStocks api = ServicesStocks();
-   ServicesCategories apiCatego = ServicesCategories();
+  ServicesCategories apiCatego = ServicesCategories();
   List<ProductModel> produits = [];
-   List<CategoriesModel> _listCategories = [];
+  List<CategoriesModel> _listCategories = [];
   List<VenteModel> ventesRecentes = [];
 
   String filtreCategorie = "Tout";
@@ -124,7 +124,7 @@ class _InventaireProPageState extends State<InventaireProPage> {
               .toList();
         });
       }
-    }on DioException catch (e) {
+    } on DioException catch (e) {
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -243,15 +243,15 @@ class _InventaireProPageState extends State<InventaireProPage> {
     }
   }
 
-  Future<void> updateStockOnServer(
-      String productId,String userId,int saisie, String type, String description) async {
+  Future<void> updateStockOnServer(String productId, String userId, int saisie,
+      String type, String description) async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
-  
+
     try {
       Map<String, dynamic> data = {
-        "userId":userId,
-        "adminId":adminId,
+        "userId": userId,
+        "adminId": adminId,
         "type": type,
         "description": description,
       };
@@ -262,7 +262,6 @@ class _InventaireProPageState extends State<InventaireProPage> {
         data["stocks"] = saisie; // quantité à ajouter ou retirer
       }
 
-
       final response = await api.updateStockProduct(data, token, productId);
 
       if (response.statusCode == 200) {
@@ -271,17 +270,22 @@ class _InventaireProPageState extends State<InventaireProPage> {
         debugPrint("❌ Erreur de mise à jour : ${response.data}");
       }
     } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
-
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    }
   }
 
   void _modifierStock(ProductModel produit) {
@@ -296,7 +300,8 @@ class _InventaireProPageState extends State<InventaireProPage> {
         builder: (context, setStateDialog) {
           return AlertDialog(
             title: Text('Modifier stock - ${produit.nom}',
-                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
+                style: GoogleFonts.poppins(
+                    fontSize: 14, fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -304,22 +309,47 @@ class _InventaireProPageState extends State<InventaireProPage> {
                   TextField(
                     controller: quantiteController,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        InputDecoration(labelText: 'Quantité en stock',labelStyle: GoogleFonts.poppins(fontSize: 14)),
+                    decoration: InputDecoration(
+                        labelText: 'Quantité en stock',
+                        labelStyle: GoogleFonts.poppins(fontSize: 14)),
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: selectedType,
-                    decoration:
-                        InputDecoration(labelText: 'Type de mouvement',labelStyle: GoogleFonts.poppins(fontSize: 14)),
+                    decoration: InputDecoration(
+                        labelText: 'Type de mouvement',
+                        labelStyle: GoogleFonts.poppins(fontSize: 14)),
                     items: [
-                      DropdownMenuItem(value: 'ajout', child: Text('Ajout',style: GoogleFonts.roboto(fontSize: 14),)),
-                      DropdownMenuItem(value: 'vente', child: Text('Vente',style: GoogleFonts.roboto(fontSize: 14),)),
                       DropdownMenuItem(
-                          value: 'retrait', child: Text('Retrait',style: GoogleFonts.roboto(fontSize: 14),)),
-                      DropdownMenuItem(value: 'perte', child: Text('Perte',style: GoogleFonts.roboto(fontSize: 14),)),
+                          value: 'ajout',
+                          child: Text(
+                            'Ajout',
+                            style: GoogleFonts.roboto(fontSize: 14),
+                          )),
                       DropdownMenuItem(
-                          value: 'modification', child: Text('Modification',style: GoogleFonts.roboto(fontSize: 14),)),
+                          value: 'vente',
+                          child: Text(
+                            'Vente',
+                            style: GoogleFonts.roboto(fontSize: 14),
+                          )),
+                      DropdownMenuItem(
+                          value: 'retrait',
+                          child: Text(
+                            'Retrait',
+                            style: GoogleFonts.roboto(fontSize: 14),
+                          )),
+                      DropdownMenuItem(
+                          value: 'perte',
+                          child: Text(
+                            'Perte',
+                            style: GoogleFonts.roboto(fontSize: 14),
+                          )),
+                      DropdownMenuItem(
+                          value: 'modification',
+                          child: Text(
+                            'Modification',
+                            style: GoogleFonts.roboto(fontSize: 14),
+                          )),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -333,9 +363,8 @@ class _InventaireProPageState extends State<InventaireProPage> {
                   TextField(
                     controller: descriptionController,
                     decoration: InputDecoration(
-                      labelText: 'Description (optionnel)',
-                      labelStyle: GoogleFonts.poppins(fontSize: 14)
-                    ),
+                        labelText: 'Description (optionnel)',
+                        labelStyle: GoogleFonts.poppins(fontSize: 14)),
                     maxLines: 2,
                   ),
                 ],
@@ -344,12 +373,15 @@ class _InventaireProPageState extends State<InventaireProPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: Text('Annuler', style: GoogleFonts.poppins(fontSize: 14, color: Colors.blueGrey)),
+                child: Text('Annuler',
+                    style: GoogleFonts.poppins(
+                        fontSize: 14, color: Colors.blueGrey)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () async {
-                  final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+                  final userId =
+                      Provider.of<AuthProvider>(context, listen: false).userId;
                   final nouvelleQte = int.tryParse(quantiteController.text);
                   if (nouvelleQte == null || nouvelleQte < 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -371,7 +403,9 @@ class _InventaireProPageState extends State<InventaireProPage> {
                   });
                   Navigator.of(ctx).pop();
                 },
-                child: Text('Enregistrer', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+                child: Text('Enregistrer',
+                    style:
+                        GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
               ),
             ],
           );
@@ -424,6 +458,19 @@ class _InventaireProPageState extends State<InventaireProPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final filteredProduits = produits.where((p) {
       final matchCategorie =
           filtreCategorie == "Tout" || p.categories == filtreCategorie;
@@ -433,188 +480,200 @@ class _InventaireProPageState extends State<InventaireProPage> {
     }).toList();
 
     return Scaffold(
-  backgroundColor: Colors.grey[100],
-  appBar: AppBar(
-    title: Text('Inventaire Pro', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
-    backgroundColor:Colors.blueGrey// const Color(0xff001c30),
-  ),
-  body: Padding(
-    padding: const EdgeInsets.all(12),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ==== COLONNE GAUCHE : Ventes récentes ====
-        SizedBox(
-          width: 380,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.deepPurple.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Ventes récentes",
-                    style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold, fontSize: 18)),
-                const Divider(),
-                Expanded(
-                  child: ventesRecentes.isEmpty
-                      ? Center(
-                          child: Text("Aucune vente", style: GoogleFonts.poppins()))
-                      : ListView.builder(
-                          itemCount: ventesRecentes.length,
-                          itemBuilder: (context, index) {
-                            final v = ventesRecentes[index];
-                            return ListTile(
-                              leading: const Icon(Icons.receipt_long, color: Colors.orange),
-                              title: Text(v.clientNom ?? "Occasionnel", style: GoogleFonts.poppins()),
-                              subtitle: Text(DateFormat('dd MMM yyyy').format(v.date),
-                                  style: GoogleFonts.poppins()),
-                              trailing: Text(
-                                NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa')
-                                    .format(v.total),
-                                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                              ),
-                            );
-                          },
-                        ),
-                )
-              ],
-            ),
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+          title: Text('Inventaire Pro',
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
+          backgroundColor: Colors.blueGrey // const Color(0xff001c30),
           ),
-        ),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ==== COLONNE GAUCHE : Ventes récentes ====
+            SizedBox(
+              width: 380,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Ventes récentes",
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
+                    const Divider(),
+                    Expanded(
+                      child: ventesRecentes.isEmpty
+                          ? Center(
+                              child: Text("Aucune vente",
+                                  style: GoogleFonts.poppins()))
+                          : ListView.builder(
+                              itemCount: ventesRecentes.length,
+                              itemBuilder: (context, index) {
+                                final v = ventesRecentes[index];
+                                return ListTile(
+                                  leading: const Icon(Icons.receipt_long,
+                                      color: Colors.orange),
+                                  title: Text(v.clientNom ?? "Occasionnel",
+                                      style: GoogleFonts.poppins()),
+                                  subtitle: Text(
+                                      DateFormat('dd MMM yyyy').format(v.date),
+                                      style: GoogleFonts.poppins()),
+                                  trailing: Text(
+                                    NumberFormat.currency(
+                                            locale: 'fr_FR', symbol: 'Fcfa')
+                                        .format(v.total),
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                );
+                              },
+                            ),
+                    )
+                  ],
+                ),
+              ),
+            ),
 
-        const SizedBox(width: 20),
+            const SizedBox(width: 20),
 
-        // ==== COLONNE DROITE : Filtres + produits ====
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Filtres
-              Row(
+            // ==== COLONNE DROITE : Filtres + produits ====
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      value: filtreCategorie,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.deepPurple.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      items: [
-                        const DropdownMenuItem(value: "Tout", child: Text("Tout")),
-                        ..._listCategories
-                            .map((c) => DropdownMenuItem(
+                  // Filtres
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          value: filtreCategorie,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.deepPurple.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          items: [
+                            const DropdownMenuItem(
+                                value: "Tout", child: Text("Tout")),
+                            ..._listCategories.map((c) => DropdownMenuItem(
                                   value: c.name,
                                   child: Text(c.name),
                                 ))
-                        
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          filtreCategorie = value!;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 3,
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.deepPurple.shade50,
-                        prefixIcon: const Icon(Icons.search),
-                        hintText: "Rechercher un produit",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              filtreCategorie = value!;
+                            });
+                          },
                         ),
                       ),
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.deepPurple.shade50,
+                            prefixIcon: const Icon(Icons.search),
+                            hintText: "Rechercher un produit",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: "Exporter en PDF",
+                        onPressed: _exportInventairePdf,
+                        icon: const Icon(Icons.print,
+                            size: 28, color: Colors.deepOrange),
+                      )
+                    ],
                   ),
-                   IconButton(
-        tooltip: "Exporter en PDF",
-        onPressed: _exportInventairePdf,
-        icon: const Icon(Icons.print, size: 28, color: Colors.deepOrange),
-      )
+                  const SizedBox(height: 16),
+                  // Liste des produits
+                  Expanded(
+                    child: filteredProduits.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/not_data.png",
+                                    width: 200, height: 200, fit: BoxFit.cover),
+                                const SizedBox(height: 20),
+                                Text("Aucun produit trouvé",
+                                    style: GoogleFonts.poppins(fontSize: 14)),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: filteredProduits.length,
+                            itemBuilder: (context, index) {
+                              final p = filteredProduits[index];
+                              final isLowStock = p.stocks <= p.seuilAlerte;
+                              return Card(
+                                elevation: 1,
+                                color: Colors.white,
+                                shadowColor: Colors.grey[200],
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(p.image ?? ""),
+                                    radius: 28,
+                                  ),
+                                  title: Text(p.nom,
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600)),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Catégorie : ${p.categories}",
+                                          style: GoogleFonts.poppins()),
+                                      Text("Stock : ${p.stocks} ${p.unite}",
+                                          style: GoogleFonts.poppins(
+                                              color: isLowStock
+                                                  ? Colors.red
+                                                  : Colors.green,
+                                              fontWeight: FontWeight.bold)),
+                                      Text(
+                                          "Prix vente : ${NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa').format(p.prixVente)}",
+                                          style: GoogleFonts.poppins()),
+                                    ],
+                                  ),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.orange),
+                                    onPressed: () => _modifierStock(p),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // Liste des produits
-              Expanded(
-                child: filteredProduits.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset("assets/images/not_data.png",
-                                width: 200, height: 200, fit: BoxFit.cover),
-                            const SizedBox(height: 20),
-                            Text("Aucun produit trouvé",
-                                style: GoogleFonts.poppins(fontSize: 14)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: filteredProduits.length,
-                        itemBuilder: (context, index) {
-                          final p = filteredProduits[index];
-                          final isLowStock = p.stocks <= p.seuilAlerte;
-                          return Card(
-                            elevation: 1,
-                            color: Colors.white,
-                            shadowColor: Colors.grey[200],
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: NetworkImage(p.image ?? ""),
-                                radius: 28,
-                              ),
-                              title: Text(p.nom,
-                                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Catégorie : ${p.categories}",
-                                      style: GoogleFonts.poppins()),
-                                  Text("Stock : ${p.stocks} ${p.unite}",
-                                      style: GoogleFonts.poppins(
-                                          color: isLowStock ? Colors.red : Colors.green,
-                                          fontWeight: FontWeight.bold)),
-                                  Text(
-                                      "Prix vente : ${NumberFormat.currency(locale: 'fr_FR', symbol: 'Fcfa').format(p.prixVente)}",
-                                      style: GoogleFonts.poppins()),
-                                ],
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange),
-                                onPressed: () => _modifierStock(p),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
-    ),
-  ),
-);
-
+      ),
+    );
   }
 }

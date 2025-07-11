@@ -149,64 +149,63 @@ class _ClientsViewState extends State<ClientsView> {
   }
 
 //AJOUTER CATEGORIE API
-Future<void> _sendToserver(BuildContext context) async {
-  final token = Provider.of<AuthProvider>(context, listen: false).token;
-  final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-  final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
-  if (_globalKey.currentState!.validate()) {
-    try {
-      // Construction du FormData
-      final formDataMap = {
-        "userId": userId,
-        "adminId":adminId,
-        "nom": _nom.text,
-        "contact": _contact.text,
-        "credit_total": int.tryParse(_creditTotal.text) ?? 0,
-        "montant_paye": int.tryParse(_montantPaye.text) ?? 0,
-        "reste": int.tryParse(_reste.text) ?? 0,
-        "monnaie": int.tryParse(_monnaie.text) ?? 0,
-        "recommandation": _recommandation.text,
-        "statut": _statut,
-        "date": DateTime.now().toIso8601String(),
-      };
+  Future<void> _sendToserver(BuildContext context) async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
+    if (_globalKey.currentState!.validate()) {
+      try {
+        // Construction du FormData
+        final formDataMap = {
+          "userId": userId,
+          "adminId": adminId,
+          "nom": _nom.text,
+          "contact": _contact.text,
+          "credit_total": int.tryParse(_creditTotal.text) ?? 0,
+          "montant_paye": int.tryParse(_montantPaye.text) ?? 0,
+          "reste": int.tryParse(_reste.text) ?? 0,
+          "monnaie": int.tryParse(_monnaie.text) ?? 0,
+          "recommandation": _recommandation.text,
+          "statut": _statut,
+          "date": DateTime.now().toIso8601String(),
+        };
 
-      // Ajoute le fichier seulement s’il est sélectionné
-      if (documentFile != null) {
-        formDataMap["image"] = await MultipartFile.fromFile(
-          documentFile!.path,
-          filename: documentFile!.path.split('/').last,
+        // Ajoute le fichier seulement s’il est sélectionné
+        if (documentFile != null) {
+          formDataMap["image"] = await MultipartFile.fromFile(
+            documentFile!.path,
+            filename: documentFile!.path.split('/').last,
+          );
+        }
+
+        final formData = FormData.fromMap(formDataMap);
+
+        showDialog(
+          context: context,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
         );
-      }
 
-      final formData = FormData.fromMap(formDataMap);
+        final res = await api.postClients(formData, token);
 
-      showDialog(
-        context: context,
-        builder: (context) =>
-            const Center(child: CircularProgressIndicator()),
-      );
+        if (!context.mounted) return; // <-- sécurité si le widget est démonté
+        Navigator.pop(context); // Ferme le loader
+        Navigator.pop(context); // Ferme le dialog
 
-      final res = await api.postClients(formData, token);
-
-      if (!context.mounted) return; // <-- sécurité si le widget est démonté
-      Navigator.pop(context); // Ferme le loader
-       Navigator.pop(context); // Ferme le dialog
-
-      if (res.statusCode == 201) {
-        api.showSnackBarSuccessPersonalized(context, res.data["message"]);
-        _getClients();
-      } else {
-        api.showSnackBarErrorPersonalized(context, res.data["message"]);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context);
-        api.showSnackBarErrorPersonalized(context, e.toString());
+        if (res.statusCode == 201) {
+          api.showSnackBarSuccessPersonalized(context, res.data["message"]);
+          _getClients();
+        } else {
+          api.showSnackBarErrorPersonalized(context, res.data["message"]);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          api.showSnackBarErrorPersonalized(context, e.toString());
+        }
       }
     }
   }
-}
-
 
   Future<void> _refresh() async {
     await Future.delayed(const Duration(seconds: 3));
@@ -217,12 +216,24 @@ Future<void> _sendToserver(BuildContext context) async {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor:Colors.white,// const Color(0xff001c30),
+            backgroundColor: Colors.white, // const Color(0xff001c30),
             expandedHeight: 50, // Augmentation de la hauteur
             pinned: true,
             floating: true,
@@ -333,14 +344,14 @@ Future<void> _sendToserver(BuildContext context) async {
                                     'PHOTO',
                                     style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                       color: Colors.white,
+                                        color: Colors.white,
                                         fontWeight: FontWeight.bold),
                                   )),
                                   DataColumn(
                                       label: Text('NOM',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                               color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('TEL',
@@ -352,7 +363,7 @@ Future<void> _sendToserver(BuildContext context) async {
                                       label: Text('STATUT',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                             color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('ACTION',
@@ -411,49 +422,50 @@ Future<void> _sendToserver(BuildContext context) async {
                                         Row(
                                           children: [
                                             IconButton(
-                                              icon: Icon(Icons
-                                                  .badge, color:Colors.grey[500]),
-                                                  tooltip: "Pièce d'identitée",
+                                              icon: Icon(Icons.badge,
+                                                  color: Colors.grey[500]),
+                                              tooltip: "Pièce d'identitée",
                                               onPressed: () {
                                                 showDialog(
                                                   context: context,
                                                   builder: (_) => AlertDialog(
-                                                    title: Text(
-                                                        "Pièce du client",
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                                color: Colors
-                                                                    .black)),
-                                                    content: fournisseur
-                                                            .image.isNotEmpty
-                                                        ? Image.network(
-                                                            fournisseur.image,
-                                                            width: 500,
-                                                            height: 300,
-                                                            fit: BoxFit.cover,
-                                                            errorBuilder:
-                                                                (context,
-                                                                    error,
-                                                                    stackTrace) {
-                                                              return  Image.asset(
-                                                                      "assets/images/defaultImg.png",
-                                                                      width: 500,
-                                                                      height: 300,
-                                                                      fit: BoxFit.cover,
-                                                                   );
-                                                            },
-                                                          )
-                                                        : Image.asset(
-                                                                      "assets/images/defaultImg.png",
-                                                                      width: 500,
-                                                                      height: 300,
-                                                                      fit: BoxFit.cover,
-                                                                   )
-                                                  ),
+                                                      title: Text(
+                                                          "Pièce du client",
+                                                          style: GoogleFonts
+                                                              .roboto(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  color: Colors
+                                                                      .black)),
+                                                      content: fournisseur
+                                                              .image.isNotEmpty
+                                                          ? Image.network(
+                                                              fournisseur.image,
+                                                              width: 500,
+                                                              height: 300,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (context,
+                                                                      error,
+                                                                      stackTrace) {
+                                                                return Image
+                                                                    .asset(
+                                                                  "assets/images/defaultImg.png",
+                                                                  width: 500,
+                                                                  height: 300,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                );
+                                                              },
+                                                            )
+                                                          : Image.asset(
+                                                              "assets/images/defaultImg.png",
+                                                              width: 500,
+                                                              height: 300,
+                                                              fit: BoxFit.cover,
+                                                            )),
                                                 );
                                               },
                                             ),
@@ -461,7 +473,7 @@ Future<void> _sendToserver(BuildContext context) async {
                                               icon: const Icon(
                                                   Icons.person_remove_alt_1,
                                                   color: Colors.red),
-                                                  tooltip: "Supprimer le client",
+                                              tooltip: "Supprimer le client",
                                               onPressed: () async {
                                                 final confirm =
                                                     await showRemoveClient(
@@ -703,22 +715,27 @@ Future<void> _sendToserver(BuildContext context) async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirmer" ,style:GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
-          content: Text(
-              "Êtes-vous sûr de vouloir supprimer cette catégorie ?",style:GoogleFonts.poppins(fontSize: 14)),
+          title: Text("Confirmer",
+              style: GoogleFonts.poppins(
+                  fontSize: 16, fontWeight: FontWeight.bold)),
+          content: Text("Êtes-vous sûr de vouloir supprimer cette catégorie ?",
+              style: GoogleFonts.poppins(fontSize: 14)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14,color: Colors.blueAccent)),
+              child: Text("Annuler",
+                  style: GoogleFonts.roboto(
+                      fontSize: 14, color: Colors.blueAccent)),
             ),
             TextButton(
-               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
+              child: Text("Supprimer",
+                  style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
             ),
           ],
         );

@@ -192,6 +192,18 @@ class _CategoriesViewState extends State<CategoriesView> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: RefreshIndicator(
@@ -213,7 +225,9 @@ class _CategoriesViewState extends State<CategoriesView> {
                   title: Text(
                     "Gestion des catégories",
                     style: GoogleFonts.poppins(
-                        fontSize: 16, fontWeight: FontWeight.w600,color: Colors.white),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
                   ),
                 ),
               ),
@@ -377,8 +391,16 @@ class _CategoriesViewState extends State<CategoriesView> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xfff57c00),
         onPressed: () => _addCateShow(context),
-        icon: const Icon(Icons.add, size: 20, color: Colors.white,),
-        label:Text("Ajouter",style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),),
+        icon: const Icon(
+          Icons.add,
+          size: 20,
+          color: Colors.white,
+        ),
+        label: Text(
+          "Ajouter",
+          style: GoogleFonts.poppins(
+              fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
     );
   }

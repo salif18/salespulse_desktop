@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+import 'package:salespulse/providers/auth_provider.dart';
 
 class RecuVenteScreen extends StatelessWidget {
   final Map data;
@@ -13,12 +15,24 @@ class RecuVenteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final produits = List<Map<String, dynamic>>.from(data["produits"]);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor:Colors.white,//const Color(0xff001c30),
+        backgroundColor: Colors.white, //const Color(0xff001c30),
         title: Text("Reçu de Vente",
             style: GoogleFonts.poppins(
                 color: Colors.black, fontWeight: FontWeight.w600)),
@@ -196,138 +210,147 @@ class RecuVenteScreen extends StatelessWidget {
   }
 
   Future<void> generateInvoicePdf({
-  required Map<String, dynamic> data,
-  required List<Map<String, dynamic>> produits,
-}) async {
-  final pdf = pw.Document();
+    required Map<String, dynamic> data,
+    required List<Map<String, dynamic>> produits,
+  }) async {
+    final pdf = pw.Document();
 
-  final total = data['total'] ?? 0;
-  final montantRecu = data['montant_recu'] ?? 0;
-  final reste = data['reste'] ?? 0;
-  final monnaie = data['monnaie'] ?? 0;
-  DateTime.parse(data['date']);
-  final sousTotalBrut = _calculeSousTotalBrut(produits);
+    final total = data['total'] ?? 0;
+    final montantRecu = data['montant_recu'] ?? 0;
+    final reste = data['reste'] ?? 0;
+    final monnaie = data['monnaie'] ?? 0;
+    DateTime.parse(data['date']);
+    final sousTotalBrut = _calculeSousTotalBrut(produits);
 
-  final remiseGlobale = data['remiseGlobale'] ?? 0;
-  final remiseGlobaleType =
-      data['remiseGlobaleType'] == 'pourcent' ? '%' : 'F';
+    final remiseGlobale = data['remiseGlobale'] ?? 0;
+    final remiseGlobaleType =
+        data['remiseGlobaleType'] == 'pourcent' ? '%' : 'F';
 
-  final tvaGlobale = data['tvaGlobale'] ?? 0;
-  final livraison = data['livraison'] ?? 0;
-  final emballage = data['emballage'] ?? 0;
-  final modePaiement = data['type_paiement'] ?? '-';
+    final tvaGlobale = data['tvaGlobale'] ?? 0;
+    final livraison = data['livraison'] ?? 0;
+    final emballage = data['emballage'] ?? 0;
+    final modePaiement = data['type_paiement'] ?? '-';
 
-  pdf.addPage(
-    pw.Page(
-      build: (context) {
-        return pw.Padding(
-          padding: const pw.EdgeInsets.all(24),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // En-tête
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Nom de ta boutique',
-                      style: pw.TextStyle(
-                          fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                  pw.Text(data['typeDoc'] ?? "RECU",
-                      style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.blueGrey800)),
-                ],
-              ),
-              pw.SizedBox(height: 8),
-              pw.Text("N° : ${data['_id']?.toString().substring(0, 4) ?? '-'}"),
-              pw.SizedBox(height: 16),
-              pw.Text("Client : ${data['nom'] ?? '-'}"),
-              pw.Text("Contact : ${data['contactClient'] ?? '-'}"),
-              pw.SizedBox(height: 8),
-              pw.Text("Vendeur : ${data['operateur'] ?? '-'}"),
-              pw.Text("Date : ${_formatDate(data['date'])}"),
-              pw.Text("Statut : ${data['statut'] ?? '-'}"),
-              pw.SizedBox(height: 16),
-              pw.Divider(),
+    pdf.addPage(
+      pw.Page(
+        build: (context) {
+          return pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // En-tête
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Nom de ta boutique',
+                        style: pw.TextStyle(
+                            fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Text(data['typeDoc'] ?? "RECU",
+                        style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blueGrey800)),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                    "N° : ${data['_id']?.toString().substring(0, 4) ?? '-'}"),
+                pw.SizedBox(height: 16),
+                pw.Text("Client : ${data['nom'] ?? '-'}"),
+                pw.Text("Contact : ${data['contactClient'] ?? '-'}"),
+                pw.SizedBox(height: 8),
+                pw.Text("Vendeur : ${data['operateur'] ?? '-'}"),
+                pw.Text("Date : ${_formatDate(data['date'])}"),
+                pw.Text("Statut : ${data['statut'] ?? '-'}"),
+                pw.SizedBox(height: 16),
+                pw.Divider(),
 
-              // Tableau des produits
-              pw.Table.fromTextArray(
-                border: null,
-                headers: ['Produit', 'Qté', 'PU', 'Remise', 'TVA', 'Sous-total'],
-                data: produits.map((e) {
-                  return [
-                    e['nom'] ?? '-',
-                    '${e['quantite'] ?? 0}',
-                    '${e['prix_unitaire'] ?? 0} F',
-                    '${(e['remise'] ?? 0)} ${e['remise_type'] == 'pourcent' ? '%' : 'F'}',
-                    '${e['tva'] ?? 0}%',
-                    '${e['sous_total'] ?? 0} F',
-                  ];
-                }).toList(),
-                cellAlignment: pw.Alignment.centerLeft,
-                headerStyle: pw.TextStyle(
-                    fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-                headerDecoration:
-                    const pw.BoxDecoration(color: PdfColors.blueGrey800),
-              ),
+                // Tableau des produits
+                pw.Table.fromTextArray(
+                  border: null,
+                  headers: [
+                    'Produit',
+                    'Qté',
+                    'PU',
+                    'Remise',
+                    'TVA',
+                    'Sous-total'
+                  ],
+                  data: produits.map((e) {
+                    return [
+                      e['nom'] ?? '-',
+                      '${e['quantite'] ?? 0}',
+                      '${e['prix_unitaire'] ?? 0} F',
+                      '${(e['remise'] ?? 0)} ${e['remise_type'] == 'pourcent' ? '%' : 'F'}',
+                      '${e['tva'] ?? 0}%',
+                      '${e['sous_total'] ?? 0} F',
+                    ];
+                  }).toList(),
+                  cellAlignment: pw.Alignment.centerLeft,
+                  headerStyle: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                  headerDecoration:
+                      const pw.BoxDecoration(color: PdfColors.blueGrey800),
+                ),
 
-              pw.SizedBox(height: 16),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
+                pw.SizedBox(height: 16),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
 
-              // Récapitulatif
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text("Sous-total brut : $sousTotalBrut F",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      if (remiseGlobale > 0)
-                        pw.Text("Remise globale : $remiseGlobale $remiseGlobaleType"),
-                      if (tvaGlobale > 0)
-                        pw.Text("TVA globale : $tvaGlobale%"),
-                      if (livraison > 0)
-                        pw.Text("Frais de livraison : $livraison F"),
-                      if (emballage > 0)
-                        pw.Text("Frais d'emballage : $emballage F"),
-                      pw.SizedBox(height: 6),
-                      pw.Text("Total : $total F",
-                          style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold,
-                              fontSize: 13,
-                              color: PdfColors.blue800)),
-                      pw.Text("Montant reçu : $montantRecu F"),
-                      pw.Text("Monnaie rendue : $monnaie F"),
-                      if (reste > 0)
-                        pw.Text("Reste à payer : $reste F",
+                // Récapitulatif
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.end,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text("Sous-total brut : $sousTotalBrut F",
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        if (remiseGlobale > 0)
+                          pw.Text(
+                              "Remise globale : $remiseGlobale $remiseGlobaleType"),
+                        if (tvaGlobale > 0)
+                          pw.Text("TVA globale : $tvaGlobale%"),
+                        if (livraison > 0)
+                          pw.Text("Frais de livraison : $livraison F"),
+                        if (emballage > 0)
+                          pw.Text("Frais d'emballage : $emballage F"),
+                        pw.SizedBox(height: 6),
+                        pw.Text("Total : $total F",
                             style: pw.TextStyle(
-                                color: PdfColors.red,
-                                fontWeight: pw.FontWeight.bold)),
-                      pw.Text("Mode de paiement : $modePaiement"),
-                    ],
-                  )
-                ],
-              ),
-              pw.SizedBox(height: 30),
-              pw.Center(
-                child: pw.Text("Merci pour votre achat !",
-                    style: pw.TextStyle(
-                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              )
-            ],
-          ),
-        );
-      },
-    ),
-  );
+                                fontWeight: pw.FontWeight.bold,
+                                fontSize: 13,
+                                color: PdfColors.blue800)),
+                        pw.Text("Montant reçu : $montantRecu F"),
+                        pw.Text("Monnaie rendue : $monnaie F"),
+                        if (reste > 0)
+                          pw.Text("Reste à payer : $reste F",
+                              style: pw.TextStyle(
+                                  color: PdfColors.red,
+                                  fontWeight: pw.FontWeight.bold)),
+                        pw.Text("Mode de paiement : $modePaiement"),
+                      ],
+                    )
+                  ],
+                ),
+                pw.SizedBox(height: 30),
+                pw.Center(
+                  child: pw.Text("Merci pour votre achat !",
+                      style: pw.TextStyle(
+                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                )
+              ],
+            ),
+          );
+        },
+      ),
+    );
 
-  await Printing.layoutPdf(
-    onLayout: (PdfPageFormat format) async => pdf.save(),
-  );
-}
-
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
 }

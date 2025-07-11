@@ -112,8 +112,12 @@ class _DepenseScreenState extends State<DepenseScreen> {
     setState(() {
       _filtered = _depenses.where((d) {
         final typeOk = _filterType == "all" || d.type == _filterType;
-        final motifOk = d.motifs.toLowerCase().contains(_filterMotif.toLowerCase());
-        final dateOk = _filterDate == null || (d.date.isAfter(_filterDate!.start.subtract(const Duration(days: 1))) && d.date.isBefore(_filterDate!.end.add(const Duration(days: 1))));
+        final motifOk =
+            d.motifs.toLowerCase().contains(_filterMotif.toLowerCase());
+        final dateOk = _filterDate == null ||
+            (d.date.isAfter(
+                    _filterDate!.start.subtract(const Duration(days: 1))) &&
+                d.date.isBefore(_filterDate!.end.add(const Duration(days: 1))));
         return typeOk && motifOk && dateOk;
       }).toList();
     });
@@ -122,7 +126,8 @@ class _DepenseScreenState extends State<DepenseScreen> {
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) {
         return SizedBox(
           height: 400,
@@ -131,21 +136,26 @@ class _DepenseScreenState extends State<DepenseScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Filtres", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("Filtres",
+                    style: GoogleFonts.poppins(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 TextField(
                   onChanged: (val) {
                     _filterMotif = val;
                     _applyFilters();
                   },
-                  decoration: const InputDecoration(labelText: "Rechercher un motif"),
+                  decoration:
+                      const InputDecoration(labelText: "Rechercher un motif"),
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: _filterType,
                   items: [
-                    const DropdownMenuItem(value: "all", child: Text("Tous les types")),
-                    ..._typeOptions.map((t) => DropdownMenuItem(value: t["value"], child: Text(t["label"]))),
+                    const DropdownMenuItem(
+                        value: "all", child: Text("Tous les types")),
+                    ..._typeOptions.map((t) => DropdownMenuItem(
+                        value: t["value"], child: Text(t["label"]))),
                   ],
                   onChanged: (val) {
                     _filterType = val!;
@@ -167,8 +177,13 @@ class _DepenseScreenState extends State<DepenseScreen> {
                       _applyFilters();
                     }
                   },
-                  icon: const Icon(Icons.date_range, color: Colors.white,),
-                  label: Text("Choisir une période",style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
+                  icon: const Icon(
+                    Icons.date_range,
+                    color: Colors.white,
+                  ),
+                  label: Text("Choisir une période",
+                      style: GoogleFonts.roboto(
+                          fontSize: 14, color: Colors.white)),
                 ),
                 const SizedBox(height: 10),
                 TextButton(
@@ -182,7 +197,11 @@ class _DepenseScreenState extends State<DepenseScreen> {
                     });
                     Navigator.pop(context);
                   },
-                  child: Text("Réinitialiser les filtres",style: GoogleFonts.roboto(fontSize: 14, color: Colors.white),),
+                  child: Text(
+                    "Réinitialiser les filtres",
+                    style:
+                        GoogleFonts.roboto(fontSize: 14, color: Colors.white),
+                  ),
                 )
               ],
             ),
@@ -195,32 +214,41 @@ class _DepenseScreenState extends State<DepenseScreen> {
   void _showAddDepenseBottomSheet() {
     showModalBottomSheet(
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       context: context,
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 16, right: 16, top: 24),
+              left: 16,
+              right: 16,
+              top: 24),
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Text("Nouvelle dépense", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600)),
+                Text("Nouvelle dépense",
+                    style: GoogleFonts.poppins(
+                        fontSize: 18, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _motifController,
-                  decoration: const InputDecoration(labelText: "Motif", prefixIcon: Icon(Icons.description)),
+                  decoration: const InputDecoration(
+                      labelText: "Motif", prefixIcon: Icon(Icons.description)),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _montantController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: "Montant", prefixIcon: Icon(Icons.money)),
+                  decoration: const InputDecoration(
+                      labelText: "Montant", prefixIcon: Icon(Icons.money)),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _selectedType,
-                  decoration: const InputDecoration(labelText: "Type de dépense", prefixIcon: Icon(Icons.category)),
+                  decoration: const InputDecoration(
+                      labelText: "Type de dépense",
+                      prefixIcon: Icon(Icons.category)),
                   items: _typeOptions.map((option) {
                     return DropdownMenuItem<String>(
                       value: option["value"],
@@ -242,13 +270,18 @@ class _DepenseScreenState extends State<DepenseScreen> {
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   onPressed: () async {
-                    final token = Provider.of<AuthProvider>(context, listen: false).token;
-                    final userId = Provider.of<AuthProvider>(context, listen: false).userId;
-                    final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
- 
+                    final token =
+                        Provider.of<AuthProvider>(context, listen: false).token;
+                    final userId =
+                        Provider.of<AuthProvider>(context, listen: false)
+                            .userId;
+                    final adminId =
+                        Provider.of<AuthProvider>(context, listen: false)
+                            .adminId;
+
                     final data = {
                       "userId": userId,
-                      "adminId":adminId,
+                      "adminId": adminId,
                       "motifs": _motifController.text,
                       "montants": int.tryParse(_montantController.text) ?? 0,
                       "type": _selectedType,
@@ -258,11 +291,13 @@ class _DepenseScreenState extends State<DepenseScreen> {
                     showDialog(
                       context: context,
                       barrierDismissible: false,
-                      builder: (_) => const Center(child: CircularProgressIndicator()),
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
                     );
 
                     try {
-                      final res = await ServicesDepense().postNewDepenses(data, token);
+                      final res =
+                          await ServicesDepense().postNewDepenses(data, token);
                       Navigator.pop(context);
                       if (res.statusCode == 201) {
                         _motifController.clear();
@@ -275,8 +310,15 @@ class _DepenseScreenState extends State<DepenseScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  icon: const Icon(Icons.check, color: Colors.white,),
-                  label: Text("Enregistrer", style: GoogleFonts.roboto(fontSize: 14, color: Colors.white),),
+                  icon: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    "Enregistrer",
+                    style:
+                        GoogleFonts.roboto(fontSize: 14, color: Colors.white),
+                  ),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -289,19 +331,27 @@ class _DepenseScreenState extends State<DepenseScreen> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'transport': return Icons.directions_car;
-      case 'salaire': return Icons.person;
-      case 'achat': return Icons.shopping_cart;
-      default: return Icons.receipt;
+      case 'transport':
+        return Icons.directions_car;
+      case 'salaire':
+        return Icons.person;
+      case 'achat':
+        return Icons.shopping_cart;
+      default:
+        return Icons.receipt;
     }
   }
 
   Color _getColorForType(String type) {
     switch (type) {
-      case 'transport': return Colors.orange;
-      case 'salaire': return Colors.blue;
-      case 'achat': return Colors.purple;
-      default: return Colors.grey;
+      case 'transport':
+        return Colors.orange;
+      case 'salaire':
+        return Colors.blue;
+      case 'achat':
+        return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -311,12 +361,28 @@ class _DepenseScreenState extends State<DepenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Dépenses", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueGrey//const Color(0xff001c30),
-      ),
+          title: Text("Dépenses",
+              style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.blueGrey //const Color(0xff001c30),
+          ),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: _filtered.isEmpty
@@ -342,11 +408,14 @@ class _DepenseScreenState extends State<DepenseScreen> {
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600, fontSize: 16),
                       ),
-                       IconButton(
-            onPressed: _showFilterSheet,
-            icon: const Icon(Icons.filter_alt_outlined, color: Colors.black,),
-            tooltip: "Filtrer",
-          )
+                      IconButton(
+                        onPressed: _showFilterSheet,
+                        icon: const Icon(
+                          Icons.filter_alt_outlined,
+                          color: Colors.black,
+                        ),
+                        tooltip: "Filtrer",
+                      )
                     ],
                   ),
                   const SizedBox(height: 8),

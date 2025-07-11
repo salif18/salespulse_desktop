@@ -194,16 +194,28 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Statistiques produits en tendance",
-            style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black)),
-        backgroundColor:Colors.white //const Color(0xff001c30),
-      ),
+          title: Text("Statistiques produits en tendance",
+              style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black)),
+          backgroundColor: Colors.white //const Color(0xff001c30),
+          ),
       body: Padding(
           padding: const EdgeInsets.all(12.0),
           child: isLoading
@@ -211,28 +223,30 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
               : errorMessage.isNotEmpty
                   ? Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                           Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                          Text(errorMessage,
-                              style: const TextStyle(color: Colors.red)),
-                        ],
-                      ))
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset("assets/images/erreur.png",
+                            width: 200, height: 200, fit: BoxFit.cover),
+                        const SizedBox(height: 20),
+                        Text(errorMessage,
+                            style: const TextStyle(color: Colors.red)),
+                      ],
+                    ))
                   : produitsTendance.isEmpty
                       ? Center(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                               Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                              Text(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/not_data.png",
+                                width: 200, height: 200, fit: BoxFit.cover),
+                            const SizedBox(height: 20),
+                            Text(
                               "Aucune donnée disponible",
                               style: GoogleFonts.poppins(
                                   fontSize: 14, fontWeight: FontWeight.w400),
-                                                      ),
-                            ],
-                          ))
+                            ),
+                          ],
+                        ))
                       : LayoutBuilder(builder: (context, constraints) {
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -254,25 +268,28 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                         label: Text(
                                       "Image".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                           color: Colors.white,),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     )),
                                     DataColumn(
                                         label: Text(
                                       "Nom".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     )),
                                     DataColumn(
                                         label: Text(
                                       "Quantité vendue".toUpperCase(),
                                       style: GoogleFonts.roboto(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                           color: Colors.white,),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     )),
                                   ],
                                   rows: produitsTendance.map((produit) {
@@ -280,12 +297,14 @@ class _StatistiquesProduitsPageState extends State<StatistiquesProduitsPage> {
                                       DataCell(
                                         produit.image.isNotEmpty
                                             ? Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Image.network(produit.image,
-                                                  width: 60,
-                                                  height: 60,
-                                                  fit: BoxFit.cover),
-                                            )
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Image.network(
+                                                    produit.image,
+                                                    width: 60,
+                                                    height: 60,
+                                                    fit: BoxFit.cover),
+                                              )
                                             : const Icon(
                                                 Icons.image_not_supported),
                                       ),

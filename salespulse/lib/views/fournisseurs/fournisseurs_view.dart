@@ -80,7 +80,7 @@ class _FournisseurViewState extends State<FournisseurView> {
         // ignore: use_build_context_synchronously
         api.showSnackBarErrorPersonalized(context, body["message"]);
       }
-    }on DioException catch (e) {
+    } on DioException catch (e) {
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -141,7 +141,7 @@ class _FournisseurViewState extends State<FournisseurView> {
     if (_globalKey.currentState!.validate()) {
       final data = {
         "userId": userId,
-        "adminId":adminId,
+        "adminId": adminId,
         "prenom": _prenom.text,
         "nom": _nom.text,
         "numero": _numero.text,
@@ -187,12 +187,24 @@ class _FournisseurViewState extends State<FournisseurView> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: Colors.white,//const Color(0xff001c30),
+            backgroundColor: Colors.white, //const Color(0xff001c30),
             expandedHeight: 50, // Augmentation de la hauteur
             pinned: true,
             floating: true,
@@ -232,11 +244,16 @@ class _FournisseurViewState extends State<FournisseurView> {
                               width: MediaQuery.of(context).size.width * 0.6,
                               child: Column(
                                 children: [
-                                   Image.asset("assets/images/erreur.png",width: 200,height: 200, fit: BoxFit.cover),
+                                  Image.asset("assets/images/erreur.png",
+                                      width: 200,
+                                      height: 200,
+                                      fit: BoxFit.cover),
                                   const SizedBox(height: 20),
                                   Text(
                                     "Erreur de chargement des données. Verifier votre réseau de connexion. Réessayer en tirant l'ecrans vers le bas!!",
-                                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w400),
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400),
                                   ),
                                 ],
                               ))),
@@ -252,14 +269,20 @@ class _FournisseurViewState extends State<FournisseurView> {
                 )));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return SliverFillRemaining(
-                    child: Center(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                         Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                        Text("Pas de données disponibles",style: GoogleFonts.poppins(fontSize: 14,fontWeight: FontWeight.w400),),
-                      ],
-                    )));
+                    child: Center(
+                        child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("assets/images/not_data.png",
+                        width: 200, height: 200, fit: BoxFit.cover),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Pas de données disponibles",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14, fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                )));
               } else {
                 return SliverPadding(
                   padding: const EdgeInsets.all(16),
@@ -289,40 +312,40 @@ class _FournisseurViewState extends State<FournisseurView> {
                                       label: Text(
                                     'PHOTO',
                                     style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        ),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   )),
                                   DataColumn(
                                       label: Text('NOM',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('TEL',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('PRODUIT',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                 color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('ADRESSE',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                 color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                   DataColumn(
                                       label: Text('ACTION',
                                           style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                                color: Colors.white,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold))),
                                 ],
                                 rows: snapshot.data!.map((fournisseur) {
@@ -337,10 +360,15 @@ class _FournisseurViewState extends State<FournisseurView> {
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
-                                          child: ClipOval(child: Image.asset("assets/images/contact2.png",width: 50,height: 50,)),
+                                          child: ClipOval(
+                                              child: Image.asset(
+                                            "assets/images/contact2.png",
+                                            width: 50,
+                                            height: 50,
+                                          )),
                                         ),
                                       ),
-                      
+
                                       // Nom
                                       DataCell(Text(
                                         fournisseur.prenom,
@@ -348,25 +376,26 @@ class _FournisseurViewState extends State<FournisseurView> {
                                           fontSize: 14,
                                         ),
                                       )),
-                      
+
                                       // Tél
-                                      DataCell(Text(fournisseur.numero.toString(),
-                                          style: GoogleFonts.roboto(
-                                            fontSize: 14,
-                                          ))),
-                      
+                                      DataCell(
+                                          Text(fournisseur.numero.toString(),
+                                              style: GoogleFonts.roboto(
+                                                fontSize: 14,
+                                              ))),
+
                                       // Produit
                                       DataCell(Text(fournisseur.produit,
                                           style: GoogleFonts.roboto(
                                             fontSize: 14,
                                           ))),
-                      
+
                                       // Adresse
                                       DataCell(Text(fournisseur.address,
                                           style: GoogleFonts.roboto(
                                             fontSize: 14,
                                           ))),
-                      
+
                                       // Action (supprimer)
                                       DataCell(
                                         IconButton(
@@ -378,7 +407,8 @@ class _FournisseurViewState extends State<FournisseurView> {
                                                 await showRemoveFournisseur(
                                                     context);
                                             if (confirm == true) {
-                                              _removeFournisseur(fournisseur.id);
+                                              _removeFournisseur(
+                                                  fournisseur.id);
                                             }
                                           },
                                         ),
@@ -574,14 +604,17 @@ class _FournisseurViewState extends State<FournisseurView> {
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
+              child: Text("Annuler",
+                  style: GoogleFonts.roboto(
+                      fontSize: 14, color: Colors.blueAccent)),
             ),
             TextButton(
-               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text("Supprimer", style: GoogleFonts.roboto(fontSize: 14,color: Colors.white)),
+              child: Text("Supprimer",
+                  style: GoogleFonts.roboto(fontSize: 14, color: Colors.white)),
             ),
           ],
         );

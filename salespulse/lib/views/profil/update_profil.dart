@@ -19,13 +19,13 @@ class _UpdateProfilState extends State<UpdateProfil> {
   ServicesAuth api = ServicesAuth();
   // CLE KEY POUR LE FORMULAIRE
   final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
-   
+
   final _name = TextEditingController();
   final _numero = TextEditingController();
   final _email = TextEditingController();
   final _entreprise = TextEditingController();
 
-   @override
+  @override
   void dispose() {
     _name.dispose();
     _numero.dispose();
@@ -36,13 +36,12 @@ class _UpdateProfilState extends State<UpdateProfil> {
 
   Future _sendUpdate() async {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final token =  provider.token;
+    final token = provider.token;
     var data = {
       "name": _name.text,
-        "boutique_name": _entreprise.text,
-        "numero": _numero.text,
-        "email": _email.text,
-        
+      "boutique_name": _entreprise.text,
+      "numero": _numero.text,
+      "email": _email.text,
     };
     try {
       showDialog(
@@ -52,8 +51,8 @@ class _UpdateProfilState extends State<UpdateProfil> {
               child: CircularProgressIndicator(),
             );
           });
-          
-      final res = await api.postUpdateUser(data,token);
+
+      final res = await api.postUpdateUser(data, token);
       final body = json.decode(res.body);
       Navigator.pop(context);
       if (res.statusCode == 200) {
@@ -67,27 +66,38 @@ class _UpdateProfilState extends State<UpdateProfil> {
           "Erreur lors de l'envoi des données , veuillez réessayer. $err");
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor:Colors.white,
+        backgroundColor: Colors.white,
         toolbarHeight: 50,
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon:const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color:Colors.black)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 20, color: Colors.black)),
         title: Text(
           "Modification de compte",
           style: GoogleFonts.roboto(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black
-          ),
+              fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
         ),
       ),
       body: Container(
-         alignment: Alignment.center,
+        alignment: Alignment.center,
         padding: const EdgeInsets.all(20),
         child: SingleChildScrollView(
           child: Container(
@@ -150,7 +160,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TextFormField(
-         controller: _name,
+        controller: _name,
         keyboardType: TextInputType.name,
         decoration: InputDecoration(
           filled: true,
@@ -171,7 +181,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TextFormField(
-         controller: _entreprise,
+        controller: _entreprise,
         keyboardType: TextInputType.name,
         decoration: InputDecoration(
           filled: true,
@@ -192,7 +202,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TextFormField(
-         controller: _numero,
+        controller: _numero,
         keyboardType: TextInputType.phone,
         decoration: InputDecoration(
           filled: true,
@@ -213,7 +223,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TextFormField(
-         controller: _email,
+        controller: _email,
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           filled: true,

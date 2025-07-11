@@ -64,7 +64,6 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
           totalDepenses = depenses.fold(
               0, (sum, item) => sum + ((item['montants'] ?? 0) as int));
         });
-  
       }
     } on DioException catch (e) {
       if (e.response != null && e.response?.statusCode == 403) {
@@ -121,19 +120,34 @@ class _UserOperationsPageState extends State<UserOperationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
         elevation: 1,
-        leading: IconButton(onPressed: ()=> 
-        Navigator.pop(context),
-         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white,)),
+        leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: Colors.white,
+            )),
         title: Text(
           "Opérations de ${widget.user.name}",
           style: GoogleFonts.poppins(
-            fontSize: 16,
-              color: Colors.white, fontWeight: FontWeight.w600),
+              fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
         actions: [

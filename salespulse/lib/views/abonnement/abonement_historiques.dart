@@ -35,7 +35,7 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     try {
       final api = AbonnementApi();
-      final res = await api.getHistoriqueAbonnement(context,token);
+      final res = await api.getHistoriqueAbonnement(context, token);
       setState(() {
         historiques = res;
         loading = false;
@@ -100,6 +100,18 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
   @override
   Widget build(BuildContext context) {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -115,7 +127,6 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
                 MaterialPageRoute(
                     builder: (context) =>
                         HistoriquePaiementPage(token: token))),
-           
             child: Text(
               'Mes paiement',
               style: GoogleFonts.roboto(
@@ -124,7 +135,9 @@ class _AbonnementHistoriquePageState extends State<AbonnementHistoriquePage> {
                   color: Colors.black),
             ),
           ),
-          const SizedBox(width: 20,)
+          const SizedBox(
+            width: 20,
+          )
         ],
       ),
       body: loading

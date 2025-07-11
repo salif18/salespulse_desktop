@@ -55,7 +55,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           _applyFilters();
         });
       }
-    }on DioException catch (e) {
+    } on DioException catch (e) {
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -189,6 +189,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
@@ -361,11 +373,12 @@ class _AddUserModalState extends State<AddUserModal> {
 
     try {
       final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
-      final boutique = Provider.of<AuthProvider>(context, listen: false).societeName;
+      final boutique =
+          Provider.of<AuthProvider>(context, listen: false).societeName;
       final data = {
         "adminId": adminId,
         "name": _nameController.text,
-        "boutique_name":boutique,
+        "boutique_name": boutique,
         "numero": _phoneController.text,
         "email": _emailController.text,
         "role": _selectedRole,
@@ -577,7 +590,11 @@ class _AddUserModalState extends State<AddUserModal> {
         },
         {'value': 'employe', 'label': 'Employé', 'icon': Icons.person},
         {'value': 'comptable', 'label': 'Comptable', 'icon': Icons.calculate},
-         {'value': 'caissier', 'label': 'Caissier', 'icon': Icons.shopping_cart_checkout_outlined},
+        {
+          'value': 'caissier',
+          'label': 'Caissier',
+          'icon': Icons.shopping_cart_checkout_outlined
+        },
       ]
           .map<DropdownMenuItem<String>>((role) => DropdownMenuItem<String>(
                 value: role['value'] as String,

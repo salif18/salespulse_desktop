@@ -51,12 +51,12 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
 
   Future<void> fetchClients() async {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
-  
+
     try {
       final res = await _clientApi.getClients(token);
 
       if (res.statusCode == 200) {
-        if(!mounted) return ;
+        if (!mounted) return;
         setState(() {
           clients = (res.data["clients"] as List)
               .map((e) => ClientModel.fromJson(e))
@@ -64,7 +64,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
         });
       }
     } on DioException catch (e) {
-       if(!mounted) return ;
+      if (!mounted) return;
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -94,7 +94,7 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
           return;
         }
       }
- if(!mounted) return ;
+      if (!mounted) return;
       // 🚫 Autres DioException (ex: réseau)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -105,14 +105,14 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
         ),
       );
     } on TimeoutException {
-       if(!mounted) return ;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
         "Le serveur ne répond pas. Veuillez réessayer plus tard.",
         style: GoogleFonts.poppins(fontSize: 14),
       )));
     } catch (e) {
-       if(!mounted) return ;
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());
@@ -246,10 +246,22 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-          backgroundColor: Colors.blueGrey,//const Color(0xff001c30),
+          backgroundColor: Colors.blueGrey, //const Color(0xff001c30),
           title: Text(
             "Historique des ventes",
             style: GoogleFonts.roboto(
@@ -456,63 +468,73 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
                             DataColumn(
                                 label: Text("Date".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Client".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Contact".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Total".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Paiement".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Statut".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Reste".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Monnaie".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Produits".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Règlement de compte".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                           ],
                           rows: filteredVentes.map((vente) {
                             return DataRow(cells: [
@@ -776,142 +798,142 @@ class _HistoriqueVentesScreenState extends State<HistoriqueVentesScreen> {
     return null; // échec du chargement réseau
   }
 
-Future<void> generateFacturePdf(VenteModel vente) async {
-  final pdf = pw.Document();
-  final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
+  Future<void> generateFacturePdf(VenteModel vente) async {
+    final pdf = pw.Document();
+    final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
-  ProfilModel? profil;
-  final token = Provider.of<AuthProvider>(context, listen: false).token;
+    ProfilModel? profil;
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
 
-  try {
-    final res = await ServicesProfil().getProfils(token);
-    if (res.statusCode == 200) {
-      profil = ProfilModel.fromJson(res.data["profils"]);
+    try {
+      final res = await ServicesProfil().getProfils(token);
+      if (res.statusCode == 200) {
+        profil = ProfilModel.fromJson(res.data["profils"]);
+      }
+    } catch (e) {
+      debugPrint("Erreur chargement profil: $e");
     }
-  } catch (e) {
-    debugPrint("Erreur chargement profil: $e");
-  }
 
-  final pw.MemoryImage? logoNetwork =
-      await tryLoadNetworkImage(profil?.image ?? "");
+    final pw.MemoryImage? logoNetwork =
+        await tryLoadNetworkImage(profil?.image ?? "");
 
-  final pw.ImageProvider logoLocal = pw.MemoryImage(
-    (await rootBundle.load('assets/logos/salespulse.jpg'))
-        .buffer
-        .asUint8List(),
-  );
+    final pw.ImageProvider logoLocal = pw.MemoryImage(
+      (await rootBundle.load('assets/logos/salespulse.jpg'))
+          .buffer
+          .asUint8List(),
+    );
 
-  final int reste = (vente.total - vente.montantRecu) > 0
-      ? (vente.total - vente.montantRecu)
-      : 0;
+    final int reste = (vente.total - vente.montantRecu) > 0
+        ? (vente.total - vente.montantRecu)
+        : 0;
 
-  pdf.addPage(
-    pw.Page(
-      margin: const pw.EdgeInsets.all(24),
-      build: (context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Image(logoNetwork ?? logoLocal, width: 100, height: 100),
-            pw.SizedBox(height: 10),
-            pw.Text("FACTURE",
-                style: pw.TextStyle(
-                    fontSize: 24, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            pw.Text("Facture N°: ${vente.id.toString().substring(0, 4)}",
-                style: const pw.TextStyle(fontSize: 12)),
-            pw.Text("Date : ${dateFormatter.format(vente.date)}",
-                style: const pw.TextStyle(fontSize: 12)),
-            pw.SizedBox(height: 10),
-            pw.Text("Client : ${vente.clientNom ?? 'Occasionnel'}",
-                style: const pw.TextStyle(fontSize: 12)),
-            pw.SizedBox(height: 16),
+    pdf.addPage(
+      pw.Page(
+        margin: const pw.EdgeInsets.all(24),
+        build: (context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Image(logoNetwork ?? logoLocal, width: 100, height: 100),
+              pw.SizedBox(height: 10),
+              pw.Text("FACTURE",
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Text("Facture N°: ${vente.id.toString().substring(0, 4)}",
+                  style: const pw.TextStyle(fontSize: 12)),
+              pw.Text("Date : ${dateFormatter.format(vente.date)}",
+                  style: const pw.TextStyle(fontSize: 12)),
+              pw.SizedBox(height: 10),
+              pw.Text("Client : ${vente.clientNom ?? 'Occasionnel'}",
+                  style: const pw.TextStyle(fontSize: 12)),
+              pw.SizedBox(height: 16),
 
-            // Détail produits
-            pw.Text("Détail des produits :",
-                style: pw.TextStyle(
-                    fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 8),
-            ...vente.produits.map((p) {
-              return pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 8),
-                padding: const pw.EdgeInsets.all(8),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text("${p.nom} x${p.quantite}",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                    pw.Text("PU : ${p.prixUnitaire} Fcfa"),
-                    if ((p.remise ?? 0) > 0)
-                      pw.Text("Remise : ${p.remise} ${p.remiseType == 'pourcent' ? '%' : 'Fcfa'}"),
-                    if ((p.tva ?? 0) > 0)
-                      pw.Text("TVA : ${p.tva}%"),
-                    pw.Text("Sous-total : ${p.sousTotal} Fcfa",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                  ],
-                ),
-              );
-            }),
-
-            pw.Divider(),
-            pw.SizedBox(height: 8),
-
-            // Récapitulatif
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    if ((vente.remiseGlobale ?? 0) > 0)
-                      pw.Text(
-                          "Remise globale : ${vente.remiseGlobale} ${vente.remiseGlobaleType == 'pourcent' ? '%' : 'Fcfa'}",
-                          style: const pw.TextStyle(fontSize: 12)),
-                    if ((vente.tvaGlobale ?? 0) > 0)
-                      pw.Text("TVA globale : ${vente.tvaGlobale}%",
-                          style: const pw.TextStyle(fontSize: 12)),
-                    if ((vente.livraison ?? 0) > 0)
-                      pw.Text("Livraison : ${vente.livraison} Fcfa",
-                          style: const pw.TextStyle(fontSize: 12)),
-                    if ((vente.emballage ?? 0) > 0)
-                      pw.Text("Emballage : ${vente.emballage} Fcfa",
-                          style: const pw.TextStyle(fontSize: 12)),
-                    pw.SizedBox(height: 4),
-                    pw.Text("Total : ${vente.total} Fcfa",
-                        style: pw.TextStyle(
-                            fontSize: 14,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.blue800)),
-                    pw.Text("Reçu : ${vente.montantRecu} Fcfa"),
-                    pw.Text("Monnaie : ${vente.monnaie} Fcfa"),
-                    if (reste > 0)
-                      pw.Text("Reste : $reste Fcfa",
+              // Détail produits
+              pw.Text("Détail des produits :",
+                  style: pw.TextStyle(
+                      fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 8),
+              ...vente.produits.map((p) {
+                return pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text("${p.nom} x${p.quantite}",
                           style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.red)),
-                  ],
-                )
-              ],
-            ),
-            pw.SizedBox(height: 16),
-            pw.Text("Mode de paiement : ${vente.typePaiement}",
-                style: const pw.TextStyle(fontSize: 12)),
-            pw.Text("Statut : ${vente.statut}",
-                style: const pw.TextStyle(fontSize: 12)),
-          ],
-        );
-      },
-    ),
-  );
+                              fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                      pw.Text("PU : ${p.prixUnitaire} Fcfa"),
+                      if ((p.remise ?? 0) > 0)
+                        pw.Text(
+                            "Remise : ${p.remise} ${p.remiseType == 'pourcent' ? '%' : 'Fcfa'}"),
+                      if ((p.tva ?? 0) > 0) pw.Text("TVA : ${p.tva}%"),
+                      pw.Text("Sous-total : ${p.sousTotal} Fcfa",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                );
+              }),
 
-  await Printing.layoutPdf(onLayout: (format) => pdf.save());
-}
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+
+              // Récapitulatif
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      if ((vente.remiseGlobale ?? 0) > 0)
+                        pw.Text(
+                            "Remise globale : ${vente.remiseGlobale} ${vente.remiseGlobaleType == 'pourcent' ? '%' : 'Fcfa'}",
+                            style: const pw.TextStyle(fontSize: 12)),
+                      if ((vente.tvaGlobale ?? 0) > 0)
+                        pw.Text("TVA globale : ${vente.tvaGlobale}%",
+                            style: const pw.TextStyle(fontSize: 12)),
+                      if ((vente.livraison ?? 0) > 0)
+                        pw.Text("Livraison : ${vente.livraison} Fcfa",
+                            style: const pw.TextStyle(fontSize: 12)),
+                      if ((vente.emballage ?? 0) > 0)
+                        pw.Text("Emballage : ${vente.emballage} Fcfa",
+                            style: const pw.TextStyle(fontSize: 12)),
+                      pw.SizedBox(height: 4),
+                      pw.Text("Total : ${vente.total} Fcfa",
+                          style: pw.TextStyle(
+                              fontSize: 14,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.blue800)),
+                      pw.Text("Reçu : ${vente.montantRecu} Fcfa"),
+                      pw.Text("Monnaie : ${vente.monnaie} Fcfa"),
+                      if (reste > 0)
+                        pw.Text("Reste : $reste Fcfa",
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.red)),
+                    ],
+                  )
+                ],
+              ),
+              pw.SizedBox(height: 16),
+              pw.Text("Mode de paiement : ${vente.typePaiement}",
+                  style: const pw.TextStyle(fontSize: 12)),
+              pw.Text("Statut : ${vente.statut}",
+                  style: const pw.TextStyle(fontSize: 12)),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) => pdf.save());
+  }
 
   // Future<void> generateFacturePdf(VenteModel vente) async {
   //   final pdf = pw.Document();
@@ -1181,8 +1203,12 @@ Future<void> generateFacturePdf(VenteModel vente) async {
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700),
-            child: Text("Valider",style: GoogleFonts.roboto(fontSize: 14,color: Colors.white),),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade700),
+            child: Text(
+              "Valider",
+              style: GoogleFonts.roboto(fontSize: 14, color: Colors.white),
+            ),
             onPressed: () async {
               final montant = int.tryParse(montantController.text) ?? 0;
               if (montant <= 0) {
@@ -1197,11 +1223,12 @@ Future<void> generateFacturePdf(VenteModel vente) async {
                   Provider.of<AuthProvider>(context, listen: false).userId;
               final userName =
                   Provider.of<AuthProvider>(context, listen: false).userName;
-              final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
+              final adminId =
+                  Provider.of<AuthProvider>(context, listen: false).adminId;
               final reglement = {
                 "venteId": vente.id, // ⇦ ID de la vente concernée
                 "userId": userId, // ⇦ ID du vendeur
-                "adminId":adminId,
+                "adminId": adminId,
                 "clientId": vente.clientId,
                 "nom": vente.clientNom,
                 "montant": montant,
@@ -1215,11 +1242,16 @@ Future<void> generateFacturePdf(VenteModel vente) async {
                   await ServicesReglements().postReglements(reglement, token);
               if (res.statusCode == 201) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                       backgroundColor: Colors.green,
-                      content: Text("Règlement effectué",style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),)));
-                 fetchVentes();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text(
+                      "Règlement effectué",
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    )));
+                fetchVentes();
                 // Tu peux recharger les crédits ici
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(

@@ -113,7 +113,7 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
               ],
             ),
           );
-          return[];
+          return [];
         }
       }
 
@@ -239,7 +239,8 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
         int fraisEmballage = result["fraisEmballage"];
 
         // Prix unitaire initial avec promo si disponible
-        int prixInitial = produit.isPromo ? produit.prixPromo : produit.prixVente;
+        int prixInitial =
+            produit.isPromo ? produit.prixPromo : produit.prixVente;
 
         // ✅ Appliquer la remise correctement
         int prixRemise = remiseType == 'pourcent'
@@ -471,6 +472,18 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     // Thème local avec Poppins
     final theme = Theme.of(context).copyWith(
       textTheme: GoogleFonts.poppinsTextTheme(
@@ -657,34 +670,37 @@ class _AddVenteScreenState extends State<AddVenteScreen> {
                                                 style:
                                                     theme.textTheme.bodyMedium),
                                             const SizedBox(height: 4),
-                                               Row(
-                      children: [
-                        if (item.isPromo) ...[
-                          Text(
-                            "${item.prixVente} Fcfa",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              decoration: TextDecoration.lineThrough,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "${item.prixUnitaire} Fcfa",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.redAccent,
-                            ),
-                          ),
-                        ] else ...[
-                          Text(
-                            "Unité: ${item.prixVente} Fcfa",
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ]
-                      ],
-                    ),
+                                            Row(
+                                              children: [
+                                                if (item.isPromo) ...[
+                                                  Text(
+                                                    "${item.prixVente} Fcfa",
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                      decoration: TextDecoration
+                                                          .lineThrough,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    "${item.prixUnitaire} Fcfa",
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.redAccent,
+                                                    ),
+                                                  ),
+                                                ] else ...[
+                                                  Text(
+                                                    "Unité: ${item.prixVente} Fcfa",
+                                                    style: theme
+                                                        .textTheme.bodySmall,
+                                                  ),
+                                                ]
+                                              ],
+                                            ),
                                             const SizedBox(height: 4),
                                             Text(
                                                 "Sous-total: ${item.sousTotal} Fcfa",

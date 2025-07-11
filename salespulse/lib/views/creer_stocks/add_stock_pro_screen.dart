@@ -137,7 +137,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
       debugPrint("Erreur sélection image: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur lors de la sélection de l'image")),
+          const SnackBar(
+              content: Text("Erreur lors de la sélection de l'image")),
         );
       }
     }
@@ -147,9 +148,13 @@ class _AddProduitPageState extends State<AddProduitPage> {
     if (!_formKey.currentState!.validate()) return;
 
     // Validation des dates
-    if (_dateExpiration != null && _dateAchat != null && _dateExpiration!.isBefore(_dateAchat!)) {
+    if (_dateExpiration != null &&
+        _dateAchat != null &&
+        _dateExpiration!.isBefore(_dateAchat!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("La date d'expiration doit être après la date d'achat")),
+        const SnackBar(
+            content:
+                Text("La date d'expiration doit être après la date d'achat")),
       );
       return;
     }
@@ -166,7 +171,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
 
     if (prixVente < prixAchat) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Le prix de vente doit être supérieur au prix d'achat")),
+        const SnackBar(
+            content:
+                Text("Le prix de vente doit être supérieur au prix d'achat")),
       );
       return;
     }
@@ -176,7 +183,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
     final adminId = Provider.of<AuthProvider>(context, listen: false).adminId;
     final userId = Provider.of<AuthProvider>(context, listen: false).userId;
     formData.fields
-    ..add(MapEntry("userId", userId))
+      ..add(MapEntry("userId", userId))
       ..add(MapEntry("adminId", adminId))
       ..add(MapEntry("nom", _nom.text))
       ..add(MapEntry("categories", _selectedCategorie!))
@@ -187,9 +194,11 @@ class _AddProduitPageState extends State<AddProduitPage> {
       ..add(MapEntry("seuil_alerte", _seuil.text))
       ..add(MapEntry("unite", _unite.text))
       ..add(MapEntry("isPromo", _isPromo.toString()))
-      ..add(MapEntry("prix_promo", _prixPromo.text.isEmpty ? "0" : _prixPromo.text))
+      ..add(MapEntry(
+          "prix_promo", _prixPromo.text.isEmpty ? "0" : _prixPromo.text))
       ..add(MapEntry("date_achat", _dateAchat?.toIso8601String() ?? ""))
-      ..add(MapEntry("date_expiration", _dateExpiration?.toIso8601String() ?? ""));
+      ..add(MapEntry(
+          "date_expiration", _dateExpiration?.toIso8601String() ?? ""));
 
     if (_imageFile != null) {
       final fileName = _imageFile!.path.split('/').last;
@@ -225,6 +234,18 @@ class _AddProduitPageState extends State<AddProduitPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -284,7 +305,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     )
                                   : _imageUrl != null && _imageUrl!.isNotEmpty
                                       ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           child: Image.network(
                                             _imageUrl!,
                                             fit: BoxFit.cover,
@@ -292,7 +314,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                         )
                                       : Center(
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Icon(
                                                 Icons.image_search,
@@ -311,7 +334,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                         ),
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Boutons d'import
                             Wrap(
                               spacing: 12,
@@ -319,7 +342,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               children: [
                                 ElevatedButton.icon(
                                   onPressed: _pickImageFromGallery,
-                                  icon: const Icon(Icons.photo_library, size: 18),
+                                  icon:
+                                      const Icon(Icons.photo_library, size: 18),
                                   label: Text(
                                     "Galerie",
                                     style: GoogleFonts.poppins(fontSize: 13),
@@ -336,7 +360,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                 ),
                                 ElevatedButton.icon(
                                   onPressed: () => _importFromExcel(context),
-                                  icon: const Icon(Icons.insert_drive_file, size: 18),
+                                  icon: const Icon(Icons.insert_drive_file,
+                                      size: 18),
                                   label: Text(
                                     "Importer Excel",
                                     style: GoogleFonts.poppins(fontSize: 13),
@@ -355,7 +380,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                   onPressed: () {
                                     showDialog(
                                       context: context,
-                                      builder: (context) => _buildUrlImageDialog(),
+                                      builder: (context) =>
+                                          _buildUrlImageDialog(),
                                     );
                                   },
                                   icon: const Icon(Icons.link, size: 18),
@@ -378,9 +404,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(width: 32),
-                      
+
                       // Colonne droite - Formulaire
                       Flexible(
                         flex: 3,
@@ -406,7 +432,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Description
                             _buildTextField(
                               controller: _description,
@@ -415,7 +441,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               maxLines: 3,
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 2 - Dates
                             Row(
                               children: [
@@ -444,7 +470,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 3 - Prix
                             Row(
                               children: [
@@ -461,9 +487,12 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (double.parse(value) <= 0) return "Doit être supérieur à 0";
+                                      if (value == null || value.isEmpty)
+                                        return "Ce champ est obligatoire";
+                                      if (double.tryParse(value) == null)
+                                        return "Valeur numérique invalide";
+                                      if (double.parse(value) <= 0)
+                                        return "Doit être supérieur à 0";
                                       return null;
                                     },
                                   ),
@@ -482,11 +511,17 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (double.parse(value) <= 0) return "Doit être supérieur à 0";
-                                      if (_prixAchat.text.isNotEmpty && double.tryParse(_prixAchat.text) != null) {
-                                        if (double.parse(value) <= double.parse(_prixAchat.text)) {
+                                      if (value == null || value.isEmpty)
+                                        return "Ce champ est obligatoire";
+                                      if (double.tryParse(value) == null)
+                                        return "Valeur numérique invalide";
+                                      if (double.parse(value) <= 0)
+                                        return "Doit être supérieur à 0";
+                                      if (_prixAchat.text.isNotEmpty &&
+                                          double.tryParse(_prixAchat.text) !=
+                                              null) {
+                                        if (double.parse(value) <=
+                                            double.parse(_prixAchat.text)) {
                                           return "Doit être supérieur au prix d'achat";
                                         }
                                       }
@@ -497,7 +532,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 4 - Stock et Unité
                             Row(
                               children: [
@@ -508,9 +543,12 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     hint: "0",
                                     keyboardType: TextInputType.number,
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                      if (int.tryParse(value) == null) return "Valeur numérique invalide";
-                                      if (int.parse(value) < 0) return "Doit être positif";
+                                      if (value == null || value.isEmpty)
+                                        return "Ce champ est obligatoire";
+                                      if (int.tryParse(value) == null)
+                                        return "Valeur numérique invalide";
+                                      if (int.parse(value) < 0)
+                                        return "Doit être positif";
                                       return null;
                                     },
                                   ),
@@ -521,14 +559,15 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                     controller: _unite,
                                     label: "Unité",
                                     hint: "pièce, kg, litre...",
-                                    validator: (value) =>
-                                        value!.isEmpty ? "Ce champ est obligatoire" : null,
+                                    validator: (value) => value!.isEmpty
+                                        ? "Ce champ est obligatoire"
+                                        : null,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Ligne 5 - Seuil d'alerte
                             _buildTextField(
                               controller: _seuil,
@@ -537,22 +576,28 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value != null && value.isNotEmpty) {
-                                  if (int.tryParse(value) == null) return "Valeur numérique invalide";
-                                  if (int.parse(value) < 0) return "Doit être positif";
+                                  if (int.tryParse(value) == null)
+                                    return "Valeur numérique invalide";
+                                  if (int.parse(value) < 0)
+                                    return "Doit être positif";
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Promotion
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: _isPromo ? Colors.orange[50] : Colors.transparent,
+                                color: _isPromo
+                                    ? Colors.orange[50]
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: _isPromo ? Colors.orange[100]! : Colors.grey[200]!,
+                                  color: _isPromo
+                                      ? Colors.orange[100]!
+                                      : Colors.grey[200]!,
                                 ),
                               ),
                               child: Column(
@@ -586,11 +631,21 @@ class _AddProduitPageState extends State<AddProduitPage> {
                                       ),
                                       validator: _isPromo
                                           ? (value) {
-                                              if (value == null || value.isEmpty) return "Ce champ est obligatoire";
-                                              if (double.tryParse(value) == null) return "Valeur numérique invalide";
-                                              if (double.parse(value) <= 0) return "Doit être supérieur à 0";
-                                              if (_prixVente.text.isNotEmpty && double.tryParse(_prixVente.text) != null) {
-                                                if (double.parse(value) >= double.parse(_prixVente.text)) {
+                                              if (value == null ||
+                                                  value.isEmpty)
+                                                return "Ce champ est obligatoire";
+                                              if (double.tryParse(value) ==
+                                                  null)
+                                                return "Valeur numérique invalide";
+                                              if (double.parse(value) <= 0)
+                                                return "Doit être supérieur à 0";
+                                              if (_prixVente.text.isNotEmpty &&
+                                                  double.tryParse(
+                                                          _prixVente.text) !=
+                                                      null) {
+                                                if (double.parse(value) >=
+                                                    double.parse(
+                                                        _prixVente.text)) {
                                                   return "Doit être inférieur au prix de vente";
                                                 }
                                               }
@@ -603,7 +658,7 @@ class _AddProduitPageState extends State<AddProduitPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Bouton d'enregistrement
                             SizedBox(
                               height: 50,
@@ -668,7 +723,8 @@ class _AddProduitPageState extends State<AddProduitPage> {
                 return Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: isExpiration ? Colors.red[400]! : Colors.blue[400]!,
+                      primary:
+                          isExpiration ? Colors.red[400]! : Colors.blue[400]!,
                     ),
                   ),
                   child: child!,
@@ -831,7 +887,9 @@ class _AddProduitPageState extends State<AddProduitPage> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text("Annuler", style: GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
+          child: Text("Annuler",
+              style:
+                  GoogleFonts.roboto(fontSize: 14, color: Colors.blueAccent)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
@@ -841,7 +899,11 @@ class _AddProduitPageState extends State<AddProduitPage> {
               Navigator.pop(context);
             }
           },
-          child: Text("Valider", style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+          child: Text("Valider",
+              style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
         ),
       ],
     );
@@ -897,37 +959,61 @@ class _AddProduitPageState extends State<AddProduitPage> {
           final row = sheet.rows[i];
 
           // ATTENTION : adapte les indices aux colonnes dans ton fichier Excel
-          final photo = row.isNotEmpty ? row[0]?.value.toString().trim() ?? '' : '';
-          final nom = row.length > 1 ? row[1]?.value.toString().trim() ?? '' : '';
-          final categorie = row.length > 2 ? row[2]?.value.toString().trim() ?? '' : '';
-          final description = row.length > 3 ? row[3]?.value.toString().trim() ?? '' : '';
-          final prixAchat = row.length > 4 ? double.tryParse(row[4]?.value.toString() ?? '0') ?? 0 : 0;
-          final prixVente = row.length > 5 ? double.tryParse(row[5]?.value.toString() ?? '0') ?? 0 : 0;
-          final stock = row.length > 6 ? int.tryParse(row[6]?.value.toString() ?? '0') ?? 0 : 0;
-          final seuil = row.length > 7 ? int.tryParse(row[7]?.value.toString() ?? '5') ?? 5 : 5;
-          final unite = row.length > 8 ? row[8]?.value.toString().trim() ?? 'pièce' : 'pièce';
-          final isPromoStr = row.length > 9 ? row[9]?.value.toString().toLowerCase() ?? 'false' : 'false';
-          final prixPromo = row.length > 10 ? double.tryParse(row[10]?.value.toString() ?? '0') ?? 0 : 0;
-          final dateAchatStr = row.length > 11 ? row[11]?.value.toString() ?? '' : '';
-          final dateExpirationStr = row.length > 12 ? row[12]?.value.toString() ?? '' : '';
+          final photo =
+              row.isNotEmpty ? row[0]?.value.toString().trim() ?? '' : '';
+          final nom =
+              row.length > 1 ? row[1]?.value.toString().trim() ?? '' : '';
+          final categorie =
+              row.length > 2 ? row[2]?.value.toString().trim() ?? '' : '';
+          final description =
+              row.length > 3 ? row[3]?.value.toString().trim() ?? '' : '';
+          final prixAchat = row.length > 4
+              ? double.tryParse(row[4]?.value.toString() ?? '0') ?? 0
+              : 0;
+          final prixVente = row.length > 5
+              ? double.tryParse(row[5]?.value.toString() ?? '0') ?? 0
+              : 0;
+          final stock = row.length > 6
+              ? int.tryParse(row[6]?.value.toString() ?? '0') ?? 0
+              : 0;
+          final seuil = row.length > 7
+              ? int.tryParse(row[7]?.value.toString() ?? '5') ?? 5
+              : 5;
+          final unite = row.length > 8
+              ? row[8]?.value.toString().trim() ?? 'pièce'
+              : 'pièce';
+          final isPromoStr = row.length > 9
+              ? row[9]?.value.toString().toLowerCase() ?? 'false'
+              : 'false';
+          final prixPromo = row.length > 10
+              ? double.tryParse(row[10]?.value.toString() ?? '0') ?? 0
+              : 0;
+          final dateAchatStr =
+              row.length > 11 ? row[11]?.value.toString() ?? '' : '';
+          final dateExpirationStr =
+              row.length > 12 ? row[12]?.value.toString() ?? '' : '';
 
           if (nom.isEmpty || categorie.isEmpty) continue;
 
-          bool isPromo = (isPromoStr == 'true' || isPromoStr == '1' || isPromoStr == 'oui');
+          bool isPromo = (isPromoStr == 'true' ||
+              isPromoStr == '1' ||
+              isPromoStr == 'oui');
 
           DateTime? dateAchat;
           DateTime? dateExpiration;
 
           try {
-            if (dateAchatStr.isNotEmpty) dateAchat = DateTime.parse(dateAchatStr);
-            if (dateExpirationStr.isNotEmpty) dateExpiration = DateTime.parse(dateExpirationStr);
+            if (dateAchatStr.isNotEmpty)
+              dateAchat = DateTime.parse(dateAchatStr);
+            if (dateExpirationStr.isNotEmpty)
+              dateExpiration = DateTime.parse(dateExpirationStr);
           } catch (_) {
             // Ignorer erreurs de parsing date
           }
 
           final data = {
             "userId": userId,
-            "adminId":adminId,
+            "adminId": adminId,
             "nom": nom,
             "image": photo,
             "categories": categorie,
@@ -948,10 +1034,10 @@ class _AddProduitPageState extends State<AddProduitPage> {
           if (res.statusCode == 201 || res.statusCode == 200) {
             nbProduitsAjoutes++;
           } else {
-            erreurs.add("Ligne ${i+1}: Erreur ${res.statusCode} - $nom");
+            erreurs.add("Ligne ${i + 1}: Erreur ${res.statusCode} - $nom");
           }
         } catch (e) {
-          erreurs.add("Ligne ${i+1}: ${e.toString()}");
+          erreurs.add("Ligne ${i + 1}: ${e.toString()}");
         }
       }
 
@@ -985,8 +1071,10 @@ class _AddProduitPageState extends State<AddProduitPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("$nbProduitsAjoutes produit(s) ajouté(s) depuis Excel."),
-            backgroundColor: nbProduitsAjoutes > 0 ? Colors.green : Colors.orange,
+            content:
+                Text("$nbProduitsAjoutes produit(s) ajouté(s) depuis Excel."),
+            backgroundColor:
+                nbProduitsAjoutes > 0 ? Colors.green : Colors.orange,
           ),
         );
       }

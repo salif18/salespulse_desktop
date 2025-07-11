@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:salespulse/providers/auth_provider.dart';
 import 'package:salespulse/services/paiement_historique_api.dart';
 // 🔁 importe ton service API
 
@@ -31,9 +33,24 @@ class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text("Historique des paiements",style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold),),
+        title: Text(
+          "Historique des paiements",
+          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
       ),
@@ -44,7 +61,8 @@ class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(child: Text("Erreur ou aucun paiement trouvé."));
+            return const Center(
+                child: Text("Erreur ou aucun paiement trouvé."));
           }
 
           final paiements = snapshot.data!;
@@ -66,8 +84,12 @@ class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
                 ),
                 child: ListTile(
                   leading: Icon(
-                    type == 'premium' ? Icons.workspace_premium : Icons.access_time,
-                    color: type == 'premium' ? Colors.amber[800] : Colors.grey[600],
+                    type == 'premium'
+                        ? Icons.workspace_premium
+                        : Icons.access_time,
+                    color: type == 'premium'
+                        ? Colors.amber[800]
+                        : Colors.grey[600],
                     size: 32,
                   ),
                   title: Text(
@@ -86,9 +108,8 @@ class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
                       statut,
                       style: const TextStyle(color: Colors.white),
                     ),
-                    backgroundColor: statut == 'réussi'
-                        ? Colors.green
-                        : Colors.redAccent,
+                    backgroundColor:
+                        statut == 'réussi' ? Colors.green : Colors.redAccent,
                   ),
                 ),
               );

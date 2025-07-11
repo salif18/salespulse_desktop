@@ -59,18 +59,18 @@ class _ClientsEnRetardScreenState extends State<ClientsEnRetardScreen> {
     _clientsFuture = _fetchClientsEnRetard();
   }
 
-Future<List<ClientRetard>> _fetchClientsEnRetard() async {
-  final token = Provider.of<AuthProvider>(context, listen: false).token;
+  Future<List<ClientRetard>> _fetchClientsEnRetard() async {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
 
-  final response = await api.getClientRetard(token);
-  try {
-    if (response.statusCode == 200) {
-      final List<dynamic> data = response.data['clients'];
-      return data.map((json) => ClientRetard.fromJson(json)).toList();
-    } else {
-      throw Exception('Erreur lors du chargement des données');
-    }
-  } on DioException catch (e) {
+    final response = await api.getClientRetard(token);
+    try {
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['clients'];
+        return data.map((json) => ClientRetard.fromJson(json)).toList();
+      } else {
+        throw Exception('Erreur lors du chargement des données');
+      }
+    } on DioException catch (e) {
       if (e.response != null && e.response?.statusCode == 403) {
         final errorMessage = e.response?.data['error'] ?? '';
 
@@ -120,8 +120,8 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
           .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       debugPrint(e.toString());
     }
-  throw Exception('Erreur inconnue lors du chargement des clients en retard');
-}
+    throw Exception('Erreur inconnue lors du chargement des clients en retard');
+  }
 
   void _generatePdf(List<ClientRetard> clients) async {
     final pdf = pw.Document();
@@ -153,10 +153,22 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,//const Color(0xff001c30),
+        backgroundColor: Colors.white, //const Color(0xff001c30),
         title: Text("Clients en Retard de Paiement",
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.black)),
         actions: [
@@ -180,24 +192,24 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.6,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset("assets/images/erreur.png",
-                                        width: 200,
-                                        height: 200,
-                                        fit: BoxFit.cover),
-                                    const SizedBox(height: 20),
-                                    Text(
-                                      "Erreur de chargement des données. Verifier votre réseau de connexion et réessayer  !!",
-                                      style: GoogleFonts.poppins(fontSize: 14),
-                                    ),
-                                  ],
-                                ))),);
+            return Center(
+              child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset("assets/images/erreur.png",
+                              width: 200, height: 200, fit: BoxFit.cover),
+                          const SizedBox(height: 20),
+                          Text(
+                            "Erreur de chargement des données. Verifier votre réseau de connexion et réessayer  !!",
+                            style: GoogleFonts.poppins(fontSize: 14),
+                          ),
+                        ],
+                      ))),
+            );
           }
 
           final clients = snapshot.data ?? [];
@@ -212,8 +224,8 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
                   const SizedBox(height: 20),
                   Text("Aucun client en retard de paiement.",
                       style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          )),
+                        fontSize: 14,
+                      )),
                 ],
               ),
             );
@@ -247,40 +259,46 @@ Future<List<ClientRetard>> _fetchClientsEnRetard() async {
                                 label: Text(
                               "Nom".toUpperCase(),
                               style: GoogleFonts.roboto(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                   color: Colors.white,),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             )),
                             DataColumn(
                                 label: Text("Contact".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Total".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Reçu".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Reste".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                             DataColumn(
                                 label: Text("Date".toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                         color: Colors.white,))),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ))),
                           ],
                           rows: clients.map((c) {
                             return DataRow(cells: [

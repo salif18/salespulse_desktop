@@ -93,17 +93,22 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
         page++;
       });
     } on DioException {
-       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text( "Problème de connexion : Vérifiez votre Internet.", style: GoogleFonts.poppins(fontSize: 14),)));
-
-  } on TimeoutException {
-     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(  "Le serveur ne répond pas. Veuillez réessayer plus tard.",style: GoogleFonts.poppins(fontSize: 14),)));
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
-    debugPrint(e.toString());
-  }finally {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Problème de connexion : Vérifiez votre Internet.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+        "Le serveur ne répond pas. Veuillez réessayer plus tard.",
+        style: GoogleFonts.poppins(fontSize: 14),
+      )));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
+      debugPrint(e.toString());
+    } finally {
       setState(() => isLoading = false);
     }
   }
@@ -277,6 +282,18 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
+    // Vérification automatique de l'authentification
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await authProvider.checkAuth()) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+
+    if (authProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -292,7 +309,7 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
           style: GoogleFonts.roboto(
               fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor:Colors.white,// const Color(0xff001c30),
+        backgroundColor: Colors.white, // const Color(0xff001c30),
         actions: [
           IconButton(
             icon: Icon(
@@ -306,46 +323,80 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
       ),
       body: mouvements.isEmpty && !isLoading
           ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                           Image.asset("assets/images/not_data.png",width: 200,height: 200, fit: BoxFit.cover),
-                                  const SizedBox(height: 20),
-                          Text("Aucun produit trouvé",
-                              style: GoogleFonts.poppins(fontSize: 14)),
-                        ],
-                      ))
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("assets/images/not_data.png",
+                    width: 200, height: 200, fit: BoxFit.cover),
+                const SizedBox(height: 20),
+                Text("Aucun produit trouvé",
+                    style: GoogleFonts.poppins(fontSize: 14)),
+              ],
+            ))
           : Column(
               children: [
                 Expanded(
-                  child:  SingleChildScrollView(
+                    child: SingleChildScrollView(
                   controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    child: LayoutBuilder(builder: (context, constraints) {
-                          return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    return SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: ConstrainedBox(
-                           constraints:  BoxConstraints(minWidth: constraints.maxWidth),
+                        constraints:
+                            BoxConstraints(minWidth: constraints.maxWidth),
                         child: Container(
                           decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white,
-                                ),
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white,
+                          ),
                           child: DataTable(
-                             columnSpacing: 20,
-                             headingRowHeight: 35,
-                                  headingRowColor:
-                                      WidgetStateProperty.all(Colors.blueGrey),
-                                  headingTextStyle: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
+                            columnSpacing: 20,
+                            headingRowHeight: 35,
+                            headingRowColor:
+                                WidgetStateProperty.all(Colors.blueGrey),
+                            headingTextStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                             columns: [
-                               DataColumn(label: Text("Type".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white),)),
-                               DataColumn(label: Text("Quantité".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
-                               DataColumn(label: Text("Date".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
-                               DataColumn(label: Text("Description".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
-                               DataColumn(label: Text("Avant".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
-                               DataColumn(label: Text("Après".toUpperCase(), style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold, color: Colors.white))),
+                              DataColumn(
+                                  label: Text(
+                                "Type".toUpperCase(),
+                                style: GoogleFonts.roboto(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              )),
+                              DataColumn(
+                                  label: Text("Quantité".toUpperCase(),
+                                      style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text("Date".toUpperCase(),
+                                      style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text("Description".toUpperCase(),
+                                      style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text("Avant".toUpperCase(),
+                                      style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text("Après".toUpperCase(),
+                                      style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white))),
                             ],
                             rows: mouvements.map((mouv) {
                               final color = _colorForType(mouv.type);
@@ -374,8 +425,8 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
                                   mouv.quantite.toString(),
                                   style: TextStyle(color: color),
                                 )),
-                                DataCell(Text(
-                                    DateFormat('dd/MM/yyyy HH:mm').format(mouv.date))),
+                                DataCell(Text(DateFormat('dd/MM/yyyy HH:mm')
+                                    .format(mouv.date))),
                                 DataCell(
                                   SizedBox(
                                     width: 250,
@@ -388,16 +439,17 @@ class _MouvementsListFilteredState extends State<MouvementsListFiltered> {
                                 DataCell(Text(mouv.ancienStock.toString())),
                                 DataCell(Text(
                                   mouv.nouveauStock.toString(),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 )),
                               ]);
                             }).toList(),
                           ),
                         ),
                       ),
-                    );}
-                                    ),
-                  )),
+                    );
+                  }),
+                )),
                 if (isLoading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
